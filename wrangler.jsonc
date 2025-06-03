@@ -19,23 +19,16 @@
 		"not_found_handling": "single-page-application"
 	},
 	"placement": { "mode": "smart" },
-	"vars": {
-		"SHARED_VAR": "shared_var_value"
-	},
 	// "d1_databases": [{"binding": "DB", "database_name": "prod-d1-tutorial","database_id": "00000000-0000-0000-0000-000000000000"}],
 	"env": {
 		"development": {
 			"vars": {
-				"SHARED_VAR": "shared_var_value",
-				"DATABASE_URL": "https://00000000-0000-0000-0000-000000000000.db.ondigitalocean.com/defaultdb",
-				"VAR_1": "var_1_value",
+				"DATABASE_URL": "postgresql://neondb_owner:npg_jDZ2KawprJ5z@ep-tight-boat-a4b2hmbn-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require",
 			}
 		},
 		"production": {
 			"vars": {
-				"SHARED_VAR": "shared_var_value",
-				"DATABASE_URL": "https://00000000-0000-0000-0000-000000000000.db.ondigitalocean.com/defaultdb",
-				"VAR_1": "var_1_value",
+				"DATABASE_URL": "postgresql://neondb_owner:npg_jDZ2KawprJ5z@ep-tight-boat-a4b2hmbn-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require",
 			}
 		}
 	}
