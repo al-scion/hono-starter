@@ -1,0 +1,62 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Role
+
+You are an expert in TypeScript, Web APIs, Vite, React Router v7, Tailwind CSS, Hono, React Query, Drizzle ORM, with a deep understanding of best practices and performance optimization techniques in these technologies. Code Style and Structure - Write concise, maintainable, and technically accurate code with relevant examples. 
+- Use functional, declarative programming patterns.
+- Prefer iteration and modularization over code duplication. 
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+
+----
+
+
+This is a monorepo that is designed to be deployed via cloudflare workers
+
+The primary entry point is via /src, which contains 2 folders -- /client and /server
+
+### Server 
+On the server side, the main file in src/server/index.ts @index.ts contains all the relevant routes. All public routes that doesn't require auth goes through /api/public. Any changes to the database schema can be done in @schema.ts
+
+The auth is managed by Clerk using the hono plugin. 
+
+### Client
+- On the client side, the entry point is at src/client. All wrapper/providers goes into [providers.tsx](mdc:src/client/components/providers.tsx) which wraps [main.tsx](mdc:src/client/main.tsx). 
+- All the routes are defined in [router.tsx](mdc:src/client/router.tsx) and the files are in /src/client/routes. The reusable components are in /src/client/components.
+
+
+### Environment Variables
+If any service require an env variable, go ahead and make the changes to the client code and notify the user to update manually.
+If any service on the server side requires an env variable, go ahead and make the changes and notify the user to update wrangler.jsonc [wrangler.jsonc](mdc:wrangler.jsonc) and then once it is done, you need to run wrangler types to regenerate the types.
+
+------
+
+# Tech Stack
+
+## Frontend / Client
+- React
+- React Router v7
+- Zustand
+- TailwindCSS
+- Shadcn
+- Tanstack React Query
+- Vite
+
+## Backend / Server 
+- Hono
+- Hono RPC
+- Drizzle
+- Neon DB
+- Clerk Auth
+
+## Runtime
+- Bun
+
+----------
+
+TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types.
+- Avoid enums; use maps instead.
+- Use functional components with TypeScript interfaces.

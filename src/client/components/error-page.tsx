@@ -1,5 +1,3 @@
-import { useRouteError } from 'react-router-dom';
-
 export function ErrorPage({ error }: { error: Error }) {
   return (
     <div className='flex flex-col items-center justify-center h-screen bg-gray-50'>
@@ -14,7 +12,6 @@ export function ErrorPage({ error }: { error: Error }) {
   )
 }
 
-export function ErrorBoundary() {
-  const error = useRouteError() as Error;
+export function ErrorBoundary({ error }: { error: Error }) {
   return <ErrorPage error={error} />;
 }
