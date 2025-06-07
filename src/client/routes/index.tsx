@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { useAuth } from '@clerk/clerk-react';
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import TiptapEditor from "@/components/tiptap/editor";
 
 function AppPage() {
   const { userId } = useAuth();
@@ -36,7 +37,10 @@ function AppPage() {
           Get user data
         </TooltipContent>
       </Tooltip>
-      <Input />
+      <Input className="w-40" />
+      <div className="w-full mt-8">
+        <TiptapEditor />
+      </div>
     </div>
   );
 }
