@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuth } from '@clerk/clerk-react';
+import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function AppPage() {
   const { userId } = useAuth();
@@ -24,9 +26,17 @@ function AppPage() {
       <Button onClick={() => router.navigate({ to: '/app/dashboard' })}>
         Go to Dashboard
       </Button>
-      <Button onClick={() => {console.log(userId)}}>
-        Get user data
-      </Button>
+      <Tooltip>
+        <TooltipTrigger>
+          <Button onClick={() => {console.log(userId)}}>
+            Get user data
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          Get user data
+        </TooltipContent>
+      </Tooltip>
+      <Input />
     </div>
   );
 }
