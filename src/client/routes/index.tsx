@@ -16,7 +16,7 @@ function AppPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center gap-2">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-2">
       <Button onClick={() => toast.success(JSON.stringify(import.meta.env, null, 2))}>
         Show Toast
       </Button>
@@ -27,7 +27,7 @@ function AppPage() {
         Go to Dashboard
       </Button>
       <Tooltip>
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <Button onClick={() => {console.log(userId)}}>
             Get user data
           </Button>

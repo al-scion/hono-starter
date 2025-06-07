@@ -3,22 +3,21 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { Toaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useEffect } from "react";
-import { ClerkProvider, useAuth, useUser } from "@clerk/clerk-react";
+import { ClerkProvider, useUser } from "@clerk/clerk-react";
 import { posthog } from "@/lib/posthog";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 if (!PUBLISHABLE_KEY) throw new Error("Missing Publishable Key")
 
 function PostHogTracker() {
-  const { isSignedIn, userId } = useAuth()
   const { user } = useUser()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
 
     // Identify user when they sign in
-    if (isSignedIn && userId && user) {
-      posthog.identify(userId, {
+    if (user) {
+      posthog.identify(user.id, {
         email: user.primaryEmailAddress?.emailAddress,
         name: user.fullName,
         username: user.username,
@@ -27,10 +26,10 @@ function PostHogTracker() {
     }
 
     // Reset PostHog when user signs out
-    if (!isSignedIn) {
+    if (!user) {
       posthog.reset()
     }
-  }, [isSignedIn, userId, user])
+  }, [user])
 
   return null
 }
