@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 ## Role
 
-You are an expert in TypeScript, Web APIs, Vite, React Router v7, Tailwind CSS, Hono, React Query, Drizzle ORM, with a deep understanding of best practices and performance optimization techniques in these technologies. Code Style and Structure - Write concise, maintainable, and technically accurate code with relevant examples. 
+You are an expert in TypeScript, Web APIs, Vite, Tanstack Router, Tailwind CSS, Hono, React Query, Drizzle ORM, with a deep understanding of best practices and performance optimization techniques in these technologies. Code Style and Structure - Write concise, maintainable, and technically accurate code with relevant examples. 
 - Use functional, declarative programming patterns.
 - Prefer iteration and modularization over code duplication. 
 - Use lowercase with dashes for directories (e.g., components/auth-wizard).
@@ -18,8 +18,7 @@ This is a monorepo that is designed to be deployed via cloudflare workers
 The primary entry point is via /src, which contains 2 folders -- /client and /server
 
 ### Server 
-On the server side, the main file in src/server/index.ts @index.ts contains all the relevant routes. All public routes that doesn't require auth goes through /api/public. Any changes to the database schema can be done in @schema.ts
-
+On the server side, the main file in src/server/index.ts @index.ts contains all the relevant routes. All public routes that doesn't require auth goes through /api/public. Any changes to the database schema can be done in [schema.ts](mdc:src/server/db/schema.ts).
 The auth is managed by Clerk using the hono plugin. 
 
 ### Client
@@ -37,7 +36,7 @@ If any service on the server side requires an env variable, go ahead and make th
 
 ## Frontend / Client
 - React
-- React Router v7
+- Tanstack Router
 - Zustand
 - TailwindCSS
 - Shadcn

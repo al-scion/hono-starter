@@ -6,16 +6,13 @@ import { type ReactNode } from "react";
 import { ClerkProvider } from "@clerk/clerk-react";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
-}
+if (!PUBLISHABLE_KEY) throw new Error("Missing Publishable Key")
 
 export function Providers({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient();
   
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} signInUrl="/auth/sign-in" signUpUrl="/auth/sign-up">
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} signInUrl="/auth/sign-in" signUpUrl="/auth/sign-up" afterSignOutUrl="/">
       <QueryClientProvider client={queryClient}>
         <ThemeProvider
           attribute="class"

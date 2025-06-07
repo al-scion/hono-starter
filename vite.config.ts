@@ -10,14 +10,10 @@ export default defineConfig({
     TanStackRouterVite({
       target: 'react',
       autoCodeSplitting: true,
-      routesDirectory: './src/client/routes',
-      generatedRouteTree: './src/client/routeTree.gen.ts',
-      routeFileIgnorePrefix: '-',
-      quoteStyle: 'single',
     }),
     react({
       babel: {
-        plugins: [["babel-plugin-react-compiler", "ReactCompilerConfig"]],
+        plugins: [["babel-plugin-react-compiler"]],
       },
     }),
     cloudflare(), 

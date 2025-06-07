@@ -14,11 +14,11 @@ import {
 } from "@/components/ui/sidebar"
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/dashboard')({
-  component: Page,
+export const Route = createFileRoute('/app/_layout/dashboard')({
+  component: Dashboard,
 })
 
-export default function Page() {
+export default function Dashboard() {
   return (
     <SidebarProvider>
       <AppSidebar />
