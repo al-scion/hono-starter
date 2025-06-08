@@ -1,3 +1,5 @@
+import { ReactRenderer } from '@tiptap/react'
+import tippy from 'tippy.js'
 import { useEffect, useImperativeHandle, useState } from 'react'
 
 interface MentionItem {
@@ -11,7 +13,7 @@ interface MentionListProps {
   ref: any
 }
 
-export default function MentionList(props: MentionListProps) {
+function MentionList(props: MentionListProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
   const selectItem = (index: number) => {
@@ -79,4 +81,78 @@ export default function MentionList(props: MentionListProps) {
       )}
     </div>
   )
+}
+
+export default {
+  items: ({ query }: { query: string }) => {
+    const users = [
+      { id: 'user_1', label: 'Lea Thompson' },
+      { id: 'user_2', label: 'Cyndi Lauper' },
+      { id: 'user_3', label: 'Tom Cruise' },
+      { id: 'user_4', label: 'Madonna' },
+      { id: 'user_5', label: 'Jerry Hall' },
+      { id: 'user_6', label: 'Joan Collins' },
+      { id: 'user_7', label: 'Winona Ryder' },
+      { id: 'user_8', label: 'Christina Applegate' },
+      { id: 'user_9', label: 'Alyssa Milano' },
+      { id: 'user_10', label: 'Molly Ringwald' },
+    ]
+
+    return users.filter(user => user.label.toLowerCase().startsWith(query.toLowerCase()))
+  },
+
+  render: () => {
+    let component: ReactRenderer
+    let popup: any
+
+    return {
+      onStart: (props: any) => {
+        component = new ReactRenderer(MentionList, {
+          props,
+          editor: props.editor,
+        })
+
+        if (!props.clientRect) {
+          return
+        }
+
+        popup = tippy('body', {
+          getReferenceClientRect: props.clientRect,
+          appendTo: () => document.body,
+          content: component.element,
+          showOnCreate: true,
+          interactive: true,
+          trigger: 'manual',
+          placement: 'bottom-start',
+        })
+      },
+
+      onUpdate(props: any) {
+        component.updateProps(props)
+
+        if (!props.clientRect) {
+          return
+        }
+
+        popup[0].setProps({
+          getReferenceClientRect: props.clientRect,
+        })
+      },
+
+      onKeyDown(props: any) {
+        if (props.event.key === 'Escape') {
+          popup[0].hide()
+
+          return true
+        }
+
+        return (component.ref as any)?.onKeyDown(props)
+      },
+
+      onExit() {
+        popup[0].destroy()
+        component.destroy()
+      },
+    }
+  },
 } 

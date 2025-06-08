@@ -1,6 +1,5 @@
 import * as React from "react"
 import { ChevronDown, Plus } from "lucide-react"
-import { UserButton } from "@clerk/clerk-react"
 
 import {
   DropdownMenu,
@@ -76,7 +75,6 @@ export function TeamSwitcher({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <UserButton />
       </SidebarMenuItem>
     </SidebarMenu>
   )

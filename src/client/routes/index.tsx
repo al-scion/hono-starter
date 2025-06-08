@@ -6,6 +6,8 @@ import { useAuth } from '@clerk/clerk-react';
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import TiptapEditor from "@/components/tiptap/editor";
+import { Kbd } from "@/components/custom/kbd";
+import { UIMessage } from "@ai-sdk/react";
 
 function AppPage() {
   const { userId } = useAuth();
@@ -13,6 +15,15 @@ function AppPage() {
 
   const handleMakeApiRequest = async () => {
     const response = await api.public.$get({ query: { name: "John" } });
+    console.log(await response.json());
+  }
+
+  const sendTestMessage = async () => {
+    const response = await api.chat.stream.$post({
+      json: {
+        messages: [{ role: 'user', parts: [{ type: 'text', text: 'Hello, how are you?' }] }] as UIMessage[]
+      }
+    });
     console.log(await response.json());
   }
 
@@ -27,14 +38,18 @@ function AppPage() {
       <Button onClick={() => router.navigate({ to: '/app/dashboard' })}>
         Go to Dashboard
       </Button>
+      <Button onClick={() => sendTestMessage()}>
+        Send test message
+      </Button>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button onClick={() => {console.log(userId)}}>
             Get user data
           </Button>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent variant="outline">
           Get user data
+          <Kbd keys="ctrl+p" />
         </TooltipContent>
       </Tooltip>
       <Input className="w-40" />

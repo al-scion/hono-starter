@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite"
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
+import mkcert from 'vite-plugin-mkcert'
 import path from "path";
 
 export default defineConfig({
@@ -18,6 +19,7 @@ export default defineConfig({
     }),
     cloudflare(), 
     tailwindcss(),
+    mkcert()
   ],
   resolve: {
     alias: {
