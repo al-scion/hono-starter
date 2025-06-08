@@ -5,7 +5,6 @@ import { api } from "@/lib/api";
 import { useAuth } from '@clerk/clerk-react';
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import TiptapEditor from "@/components/tiptap/editor";
 import { Kbd } from "@/components/custom/kbd";
 import { UIMessage } from "@ai-sdk/react";
 
@@ -19,7 +18,7 @@ function AppPage() {
   }
 
   const sendTestMessage = async () => {
-    const response = await api.chat.stream.$post({
+    const response = await api.chat.$post({
       json: {
         messages: [{ role: 'user', parts: [{ type: 'text', text: 'Hello, how are you?' }] }] as UIMessage[]
       }
@@ -53,9 +52,6 @@ function AppPage() {
         </TooltipContent>
       </Tooltip>
       <Input className="w-40" />
-      <div className="w-full mt-8">
-        <TiptapEditor />
-      </div>
     </div>
   );
 }

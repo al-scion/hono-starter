@@ -1,5 +1,4 @@
-"use client"
-
+import { useRouter, useLocation } from "@tanstack/react-router"
 import { type LucideIcon } from "lucide-react"
 
 import {
@@ -15,18 +14,28 @@ export function NavMain({
     title: string
     url: string
     icon: LucideIcon
-    isActive?: boolean
+    onClick?: () => void
   }[]
 }) {
+  const router = useRouter();
+  const location = useLocation();
+
   return (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild isActive={item.isActive}>
-            <a href={item.url}>
-              <item.icon />
-              <span>{item.title}</span>
-            </a>
+          <SidebarMenuButton 
+            isActive={location.pathname.includes(item.url)} 
+            onClick={() => {
+              if (item.onClick) {
+                item.onClick();
+              } else {
+                router.navigate({ to: item.url });
+              }
+            }}
+          >
+            <item.icon />
+            <span>{item.title}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}

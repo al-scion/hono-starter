@@ -1,25 +1,7 @@
 import { cn } from "@/lib/utils"
 import { forwardRef } from "react"
 import { Icon } from "@/components/custom/icons"
-
-interface Hotkey {
-  id: string;
-  label: string;
-  keys: {
-    windows: string;
-    mac: string;
-  };
-  enabled: boolean;
-}
-
-const placeholderHotkeys: Hotkey[] = [
-  {
-    id: 'placeholder',
-    label: 'Placeholder',
-    keys: { windows: 'ctrl+p', mac: 'cmd+p' },
-    enabled: true,
-  },
-]
+import { shortcuts } from "@/components/command/shortcut-menu"
 
 const KEY_SYMBOLS: Record<string, Record<string, string>> = {
   mac: {
@@ -107,7 +89,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
 
     const os = window.navigator.userAgent.toLowerCase().includes('mac') ? 'mac' : 'windows';
 
-    const hotkeys = placeholderHotkeys;
+    const hotkeys = shortcuts;
     let hotkeysEnabled = true;
 
     let keyArray: string[] = [];
@@ -145,7 +127,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
         {icon ? (
           <kbd
             className={cn(
-              "flex w-5 h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-sm",
+              "flex w-5 h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-xs",
               variant === 'default' && "bg-background",
               variant === 'secondary' && "bg-muted",
               kbdClassName
@@ -163,7 +145,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
               <kbd
                 key={index}
                 className={cn(
-                  "flex h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-sm",
+                  "flex h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-xs",
                   "w-5",
                   variant === 'default' && "bg-background",
                   variant === 'secondary' && "bg-muted",
@@ -181,7 +163,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
               <kbd
                 key={index}
                 className={cn(
-                  "flex h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-sm",
+                  "flex h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-xs",
                   key.length > 1 ? "min-w-[1.25rem] px-[3px] tracking-normal" : "w-5 tracking-tight",
                   variant === 'default' && "bg-background",
                   variant === 'secondary' && "bg-muted",

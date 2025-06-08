@@ -5,6 +5,9 @@ interface State {
   increment: () => void;
   decrement: () => void;
   setCount: (count: number) => void;
+
+  commandOpen: boolean;
+  setCommandOpen: (commandOpen: boolean) => void;
 }
 
 export const useStore = create<State>((set) => ({
@@ -12,4 +15,7 @@ export const useStore = create<State>((set) => ({
   increment: () => set((state) => ({ count: state.count + 1 })),
   decrement: () => set((state) => ({ count: state.count - 1 })),
   setCount: (count: number) => set({ count }),
+
+  commandOpen: false,
+  setCommandOpen: (commandOpen: boolean) => set({ commandOpen }),
 }));

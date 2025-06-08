@@ -22,8 +22,10 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
+  SidebarFooter,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { useStore } from "@/lib/state"
 
 // This is sample data.
 const data = {
@@ -49,17 +51,17 @@ const data = {
       title: "Search",
       url: "#",
       icon: Search,
+      onClick: () => useStore.setState({ commandOpen: true }),
     },
     {
-      title: "Ask AI",
-      url: "#",
+      title: "Chat",
+      url: "/app/chat",
       icon: Sparkles,
     },
     {
       title: "Home",
-      url: "#",
+      url: "/app/dashboard",
       icon: Home,
-      isActive: true,
     },
     {
       title: "Inbox",
@@ -258,7 +260,12 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar className="border-r-0" variant="inset" {...props}>
+    <Sidebar 
+      // className="border-r-0" 
+      variant="inset" 
+      // collapsible="icon" 
+      {...props}
+    >
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
         <NavMain items={data.navMain} />
@@ -266,8 +273,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavFavorites favorites={data.favorites} />
         <NavWorkspaces workspaces={data.workspaces} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
+      <SidebarFooter>
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

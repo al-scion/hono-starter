@@ -4,11 +4,10 @@ import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
 export const chatRouter = new Hono<{ Bindings: Env }>()
-  .post('/stream', zValidator('json', z.object({
+  .post('/', zValidator('json', z.object({
     messages: z.array(z.any()),
   })), async (c) => {
-      const body = await c.req.json();
-      const { messages }: { messages: UIMessage[] } = body;
+      const { messages }: { messages: UIMessage[] } = await c.req.json();
       
       // Convert UIMessages to ModelMessages for the AI SDK
       const modelMessages = convertToModelMessages(messages);
