@@ -54,7 +54,7 @@ export function ShortcutMenu() {
       open={shortcutMenuOpen} 
       onOpenChange={(open) => {setShortcutMenuOpen(open)}}
     >
-      <SheetContent className="flex flex-col m-2 rounded-lg gap-4 p-3 h-auto">
+      <SheetContent className="flex flex-col m-2 rounded-lg gap-4 p-4 h-auto">
         <SheetTitle>Keyboard Shortcuts</SheetTitle>
         <SheetDescription className="sr-only">Keyboard Shortcuts</SheetDescription>
 
@@ -73,16 +73,17 @@ export function ShortcutMenu() {
               <SearchIcon size={16} />
             </div>
           </div>
-          <CommandList>
+
+          <CommandList className="mt-2">
             <CommandEmpty>
               <span className="text-muted-foreground">No shortcuts found</span>
             </CommandEmpty>
             {shortcuts.map(shortcut => (
-              <CommandGroup key={shortcut.type} heading={shortcut.type}>
+              <CommandGroup key={shortcut.type} heading={shortcut.type} className='[&_[cmdk-group-heading]]:px-0'>
                 {shortcuts
                   .filter((item: typeof shortcuts[number]) => item.type === shortcut.type)
                   .map((item: typeof shortcuts[number]) => (
-                    <CommandItem key={item.id} className="cursor-default data-[selected=true]:bg-background">
+                    <CommandItem key={item.id} className="cursor-default data-[selected=true]:bg-background px-0">
                       <span>{item.label}</span>
                       <CommandShortcut>
                         <Kbd shortcutId={item.id} />

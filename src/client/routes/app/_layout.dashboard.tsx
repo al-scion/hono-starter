@@ -1,4 +1,3 @@
-import { NavActions } from "@/components/sidebar/nav-actions"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,6 +7,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import {
   SidebarTrigger,
+  useSidebar
 } from "@/components/ui/sidebar"
 import { createFileRoute } from '@tanstack/react-router'
 
@@ -16,15 +16,20 @@ export const Route = createFileRoute('/app/_layout/dashboard')({
 })
 
 export default function Dashboard() {
+  const { state } = useSidebar()
   return (
     <>
       <header className="flex h-14 shrink-0 items-center gap-2">
         <div className="flex flex-1 items-center gap-2 px-3">
-          <SidebarTrigger />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
+          {state === 'collapsed' && (
+            <>
+            <SidebarTrigger />
+            <Separator
+              orientation="vertical"
+              className="data-[orientation=vertical]:h-4"
+            />
+            </>
+          )}
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -34,9 +39,6 @@ export default function Dashboard() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-        </div>
-        <div className="ml-auto px-3">
-          <NavActions />
         </div>
       </header>
       <div className="flex flex-1 flex-col gap-4 px-4 py-10">

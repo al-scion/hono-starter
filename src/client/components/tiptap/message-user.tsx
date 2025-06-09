@@ -1,16 +1,16 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link';
-import { marked } from 'marked'
-import { useEffect } from 'react'
+import Mention from '@tiptap/extension-mention'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUser } from '@clerk/clerk-react'
 
 interface MessageUserProps {
   text: string;
+  metadata: any;
 }
 
-export function MessageUser({ text }: MessageUserProps) {
+export function MessageUser({ metadata }: MessageUserProps) {
   const { user } = useUser()
   const avatarUrl = user?.imageUrl
 
@@ -19,21 +19,16 @@ export function MessageUser({ text }: MessageUserProps) {
       StarterKit,
       Link.configure({
         autolink: false,
-      })
+      }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'mention bg-blue-100 text-blue-800 px-1 py-0.5 rounded focus:outline-none',
+        },
+      }),
     ],
     editable: false,
+    content: metadata.content as string,
   })
-
-  useEffect(() => {
-    if (editor && text) {
-      const htmlContent = marked(text, {
-        breaks: true,  // Convert \n to <br>
-        gfm: true,     // Enable GitHub Flavored Markdown
-        async: false
-      })
-      editor.commands.setContent(htmlContent)
-    }
-  }, [text, editor])
 
   return (
     <div className="flex flex-row items-start gap-2 border rounded-lg bg-muted px-3 py-2">

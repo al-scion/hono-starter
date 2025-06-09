@@ -4,28 +4,34 @@ import Text from '@tiptap/extension-text'
 import Mention from '@tiptap/extension-mention'
 import HardBreak from '@tiptap/extension-hard-break'
 import Placeholder from '@tiptap/extension-placeholder'
+import Link from '@tiptap/extension-link';
 import { EditorContent, useEditor } from '@tiptap/react'
 import suggestion from './suggestion'
+import { useStore } from '@/lib/state';
+import type { useChat } from '@ai-sdk/react';
+import { useLocalStorage } from 'usehooks-ts';
 
 interface EditorProps {
-  value: string
-  disabled?: boolean
   placeholder?: string
   className?: string
-  append?: (message: any) => void
+  sendMessage: ReturnType<typeof useChat>['sendMessage']
+  enabledTools?: string[]
   [key: string]: any
 }
 
 export function Editor(
   { 
-    value, 
-    disabled, 
     placeholder,
-    append,
+    sendMessage,
     className,
+    enabledTools = [],
     ...props
   }: EditorProps
 ) {
+
+  const { setContextItems } = useStore();
+  const [modelId] = useLocalStorage('modelId', '');
+
   const editor = useEditor({
     extensions: [
       Document,
@@ -43,9 +49,14 @@ export function Editor(
           allowSpaces: true,
         },
       }),
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        HTMLAttributes: {
+          class: 'bg-blue-100 text-blue-800 px-1 py-0.5 rounded focus:outline-none',
+        },
+      }),
     ],
-    editable: !disabled,
-    content: value,
     editorProps: {
       attributes: {
         class: `mx-auto ${className}`,
@@ -55,10 +66,20 @@ export function Editor(
           event.preventDefault()
           
           const text = editor?.getText().trim()
-          if (append && text) {
-            append({
+          const content = editor?.getHTML()
+          if (text) {
+            sendMessage({
               role: 'user',
-              parts: [{ type: 'text', text }]
+              parts: [{ type: 'text', text }],
+              metadata: {
+                content: content,
+              },
+              
+            }, {
+              headers: {
+                modelId: modelId,
+                'enabled-tools': JSON.stringify(enabledTools),
+              }
             })
             editor?.commands.clearContent()
           }
@@ -67,8 +88,27 @@ export function Editor(
         return false
       },
     },
+    onUpdate(props) {
+      // Extract mention items from the editor's JSON content and set them in state
+      const docContent = props.editor?.getJSON()?.content ?? [];
+      const mentions = Array.from(
+        new Map(
+          docContent
+            .flatMap((node: any) => node.content ?? [])
+            .filter((item: any) => item.type === 'mention')
+            .map((item: any) => [item.attrs?.id ?? JSON.stringify(item), item])
+        ).values()
+      );
+      setContextItems(mentions);
+      console.log(mentions);
+      // setMentionItems(mentionedItems || []);
+    },
     ...props,
   })
 
-  return <EditorContent editor={editor} />
+  return (
+    <>
+      <EditorContent editor={editor} />
+    </>
+  )
 }

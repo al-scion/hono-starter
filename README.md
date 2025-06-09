@@ -14,13 +14,14 @@ This template provides a modern, full-stack setup for building React application
 - [**React**](https://react.dev/) - A modern UI library for building interactive interfaces
 - [**TailwindCSS**](https://tailwindcss.com/) - Utility-first CSS framework for rapid UI development
 - [**Shadcn/ui**](https://ui.shadcn.com/) - Re-usable components built with Radix UI and Tailwind CSS
-- [**React Router v7**](https://reactrouter.com/) - Declarative routing for React applications
-- [**React Query**](https://tanstack.com/query/latest) - Powerful data synchronization and state management
+- [**Tanstack Router**](https://tanstack.com/router/latest) - Declarative routing for React applications
+- [**Tanstack Query**](https://tanstack.com/query/latest) - Powerful data synchronization and state management
 
 ### Backend
 - [**Hono**](https://hono.dev/) - Ultralight, modern backend framework
 - [**Hono RPC**](https://hono.dev/guides/rpc) - Type-safe RPC implementation for Hono
 - [**Drizzle**](https://orm.drizzle.team/) - TypeScript ORM for SQL databases
+- [**Clerk**](https://clerk.com/) - Authentication for modern web applications
 
 ### Development & Runtime
 - [**Bun**](https://bun.sh/) - Fast all-in-one JavaScript runtime and toolkit

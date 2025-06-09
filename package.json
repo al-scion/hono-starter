@@ -11,12 +11,15 @@
     "publish": true
   },
   "dependencies": {
-    "@ai-sdk/openai": "2.0.0-alpha.2",
-    "@ai-sdk/react": "2.0.0-alpha.2",
+    "@ai-sdk/anthropic": "^2.0.0-alpha.10",
+    "@ai-sdk/google": "^2.0.0-alpha.10",
+    "@ai-sdk/openai": "^2.0.0-alpha.10",
+    "@ai-sdk/react": "^2.0.0-alpha.10",
     "@clerk/clerk-react": "^5.31.8",
     "@hono/clerk-auth": "^2.0.0",
     "@hono/zod-validator": "^0.7.0",
     "@neondatabase/serverless": "^1.0.0",
+    "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-collapsible": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.14",

@@ -1,10 +1,13 @@
 import { ReactRenderer } from '@tiptap/react'
 import tippy from 'tippy.js'
 import { useEffect, useImperativeHandle, useState } from 'react'
+import { User } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface MentionItem {
   id: string
   label: string
+  icon: React.ElementType
 }
 
 interface MentionListProps {
@@ -63,18 +66,20 @@ function MentionList(props: MentionListProps) {
   }))
 
   return (
-    <div className="z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+    <div className="z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 shadow-md">
       {props.items.length ? (
         props.items.map((item: MentionItem, index: number) => (
-          <button
-            className={`relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground ${
-              index === selectedIndex ? 'bg-accent text-accent-foreground' : ''
+          <Button
+            variant="ghost"
+            className={`flex w-full justify-start px-2 py-1.5 text-sm ${
+              index === selectedIndex ? 'bg-accent' : ''
             }`}
             key={item.id}
             onClick={() => selectItem(index)}
           >
+            <item.icon className="size-4" />
             {item.label}
-          </button>
+          </Button>
         ))
       ) : (
         <div className="px-2 py-1.5 text-sm text-muted-foreground">No result</div>
@@ -86,16 +91,16 @@ function MentionList(props: MentionListProps) {
 export default {
   items: ({ query }: { query: string }) => {
     const users = [
-      { id: 'user_1', label: 'Lea Thompson' },
-      { id: 'user_2', label: 'Cyndi Lauper' },
-      { id: 'user_3', label: 'Tom Cruise' },
-      { id: 'user_4', label: 'Madonna' },
-      { id: 'user_5', label: 'Jerry Hall' },
-      { id: 'user_6', label: 'Joan Collins' },
-      { id: 'user_7', label: 'Winona Ryder' },
-      { id: 'user_8', label: 'Christina Applegate' },
-      { id: 'user_9', label: 'Alyssa Milano' },
-      { id: 'user_10', label: 'Molly Ringwald' },
+      { id: 'user_1', label: 'Lea Thompson', icon: User },
+      { id: 'user_2', label: 'Cyndi Lauper', icon: User },
+      { id: 'user_3', label: 'Tom Cruise', icon: User },
+      { id: 'user_4', label: 'Madonna', icon: User },
+      { id: 'user_5', label: 'Jerry Hall', icon: User },
+      { id: 'user_6', label: 'Joan Collins', icon: User },
+      { id: 'user_7', label: 'Winona Ryder', icon: User },
+      { id: 'user_8', label: 'Christina Applegate', icon: User },
+      { id: 'user_9', label: 'Alyssa Milano', icon: User },
+      { id: 'user_10', label: 'Molly Ringwald', icon: User },
     ]
 
     return users.filter(user => user.label.toLowerCase().startsWith(query.toLowerCase()))

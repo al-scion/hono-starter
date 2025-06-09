@@ -8,6 +8,9 @@ interface State {
 
   commandOpen: boolean;
   setCommandOpen: (commandOpen: boolean) => void;
+
+  contextItems: any[];
+  setContextItems: (contextItems: any[]) => void;
 }
 
 export const useStore = create<State>((set) => ({
@@ -18,4 +21,7 @@ export const useStore = create<State>((set) => ({
 
   commandOpen: false,
   setCommandOpen: (commandOpen: boolean) => set({ commandOpen }),
+
+  contextItems: [],
+  setContextItems: (contextItems: any[]) => set({ contextItems }),
 }));
