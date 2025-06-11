@@ -12,6 +12,7 @@ import type { useChat } from '@ai-sdk/react';
 import { useLocalStorage } from 'usehooks-ts';
 
 interface EditorProps {
+  id: string
   placeholder?: string
   className?: string
   sendMessage: ReturnType<typeof useChat>['sendMessage']
@@ -21,6 +22,7 @@ interface EditorProps {
 
 export function Editor(
   { 
+    id,
     placeholder,
     sendMessage,
     className,
@@ -100,8 +102,6 @@ export function Editor(
         ).values()
       );
       setContextItems(mentions);
-      console.log(mentions);
-      // setMentionItems(mentionedItems || []);
     },
     ...props,
   })

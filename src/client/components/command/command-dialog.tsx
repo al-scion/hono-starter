@@ -52,7 +52,7 @@ export function CommandComponent() {
           </CommandItem>
         ))}
       </CommandList>
-      <div className="flex flex-row px-2 py-1 gap-3 text-xs select-none cursor-default border-t">
+      <div className="flex flex-row p-2 gap-3 text-xs select-none cursor-default border-t">
         <div className="flex flex-row gap-1 items-center">
           <Kbd icon="ArrowUpDown" />
           <span>Navigate</span>

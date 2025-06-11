@@ -55,7 +55,7 @@ const data = {
     },
     {
       title: "Chat",
-      url: "/app/chat",
+      url: '/app/chat',
       icon: Sparkles,
     },
     {

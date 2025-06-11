@@ -6,6 +6,9 @@ interface State {
   decrement: () => void;
   setCount: (count: number) => void;
 
+  chatId: string;
+  setChatId: (chatId: string) => void;
+
   commandOpen: boolean;
   setCommandOpen: (commandOpen: boolean) => void;
 
@@ -18,6 +21,9 @@ export const useStore = create<State>((set) => ({
   increment: () => set((state) => ({ count: state.count + 1 })),
   decrement: () => set((state) => ({ count: state.count - 1 })),
   setCount: (count: number) => set({ count }),
+
+  chatId: crypto.randomUUID(),
+  setChatId: (chatId: string) => set({ chatId }),
 
   commandOpen: false,
   setCommandOpen: (commandOpen: boolean) => set({ commandOpen }),

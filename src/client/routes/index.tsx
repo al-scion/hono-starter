@@ -18,7 +18,7 @@ function AppPage() {
   }
 
   const sendTestMessage = async () => {
-    const response = await api.chat.$post({
+    const response = await api.chat.stream.$post({
       json: {
         messages: [{ role: 'user', parts: [{ type: 'text', text: 'Hello, how are you?' }] }] as UIMessage[]
       }

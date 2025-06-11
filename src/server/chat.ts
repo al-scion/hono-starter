@@ -59,7 +59,7 @@ export const chatRouter = new Hono<{ Bindings: Env }>()
       // Return the proper UI Message Stream Response for AI SDK v5
       return result.toUIMessageStreamResponse({
         sendReasoning: enableReasoning, 
-        sendSources: true,
+        sendSources: true,  
       });
     }
   )

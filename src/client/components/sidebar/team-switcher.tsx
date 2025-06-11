@@ -27,7 +27,7 @@ export function TeamSwitcher({
   }[]
 }) {
 
-  const [activeTeam, setActiveTeam] = React.useState(teams[0])
+  const [activeTeam] = React.useState(teams[0])
   const { state } = useSidebar()
   const { setTheme, theme } = useTheme()
 
@@ -49,16 +49,16 @@ export function TeamSwitcher({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem className="gap-2 p-2 py-1.5">
               <Plus className="size-4" />
               <div>Add team</div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            <DropdownMenuItem className="gap-2 p-2 py-1.5" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               <div>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</div>
             </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 p-2">
+            <DropdownMenuItem className="gap-2 p-2 py-1.5">
               <LogOut className="size-4" />
               <div>Sign out</div>
             </DropdownMenuItem>

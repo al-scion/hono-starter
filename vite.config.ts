@@ -4,6 +4,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite"
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
 import mkcert from 'vite-plugin-mkcert'
+import devtoolsJson from 'vite-plugin-devtools-json';
 import path from "path";
 
 export default defineConfig({
@@ -17,9 +18,10 @@ export default defineConfig({
         plugins: [["babel-plugin-react-compiler"]],
       },
     }),
-    cloudflare(), 
+    cloudflare({experimental: {headersAndRedirectsDevModeSupport: true}}), 
     tailwindcss(),
-    mkcert()
+    mkcert(),
+    devtoolsJson()
   ],
   resolve: {
     alias: {

@@ -14,6 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
+import { Route as AuthCallbackImport } from './routes/auth.callback'
 import { Route as AuthLayoutImport } from './routes/auth/_layout'
 import { Route as AppLayoutImport } from './routes/app/_layout'
 import { Route as AuthLayoutSignUpImport } from './routes/auth/_layout.sign-up'
@@ -44,6 +45,12 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const AuthCallbackRoute = AuthCallbackImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
 } as any)
 
 const AuthLayoutRoute = AuthLayoutImport.update({
@@ -119,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLayoutImport
       parentRoute: typeof AuthRoute
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackImport
+      parentRoute: typeof AuthImport
+    }
     '/app/_layout/chat': {
       id: '/app/_layout/chat'
       path: '/chat'
@@ -192,10 +206,12 @@ const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
 
 interface AuthRouteChildren {
   AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
+  AuthCallbackRoute: typeof AuthCallbackRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthLayoutRoute: AuthLayoutRouteWithChildren,
+  AuthCallbackRoute: AuthCallbackRoute,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
@@ -204,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
+  '/auth/callback': typeof AuthCallbackRoute
   '/app/chat': typeof AppLayoutChatRoute
   '/app/dashboard': typeof AppLayoutDashboardRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
@@ -214,6 +231,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
+  '/auth/callback': typeof AuthCallbackRoute
   '/app/chat': typeof AppLayoutChatRoute
   '/app/dashboard': typeof AppLayoutDashboardRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
@@ -227,6 +245,7 @@ export interface FileRoutesById {
   '/app/_layout': typeof AppLayoutRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/auth/_layout': typeof AuthLayoutRouteWithChildren
+  '/auth/callback': typeof AuthCallbackRoute
   '/app/_layout/chat': typeof AppLayoutChatRoute
   '/app/_layout/dashboard': typeof AppLayoutDashboardRoute
   '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute
@@ -239,6 +258,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/auth/callback'
     | '/app/chat'
     | '/app/dashboard'
     | '/auth/sign-in'
@@ -248,6 +268,7 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/auth/callback'
     | '/app/chat'
     | '/app/dashboard'
     | '/auth/sign-in'
@@ -259,6 +280,7 @@ export interface FileRouteTypes {
     | '/app/_layout'
     | '/auth'
     | '/auth/_layout'
+    | '/auth/callback'
     | '/app/_layout/chat'
     | '/app/_layout/dashboard'
     | '/auth/_layout/sign-in'
@@ -313,7 +335,8 @@ export const routeTree = rootRoute
     "/auth": {
       "filePath": "auth",
       "children": [
-        "/auth/_layout"
+        "/auth/_layout",
+        "/auth/callback"
       ]
     },
     "/auth/_layout": {
@@ -323,6 +346,10 @@ export const routeTree = rootRoute
         "/auth/_layout/sign-in",
         "/auth/_layout/sign-up"
       ]
+    },
+    "/auth/callback": {
+      "filePath": "auth.callback.tsx",
+      "parent": "/auth"
     },
     "/app/_layout/chat": {
       "filePath": "app/_layout.chat.tsx",
