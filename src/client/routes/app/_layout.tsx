@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { CommandComponent } from '@/components/command/command-dialog';
 import { ShortcutMenu } from '@/components/command/shortcut-menu';
+import { IntegrationsDialog } from '@/components/chat/integrations-dialog';
 
 export const Route = createFileRoute('/app/_layout')({
   component: RouteComponent,
@@ -24,6 +25,7 @@ function RouteComponent() {
       </SidebarProvider>
       <CommandComponent />
       <ShortcutMenu />
+      <IntegrationsDialog />
     </SignedIn>
   )
 }

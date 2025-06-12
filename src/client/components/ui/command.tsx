@@ -15,9 +15,11 @@ function Command({
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive>) {
+
   return (
     <CommandPrimitive
       data-slot="command"
+      loop
       className={cn(
         "bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md",
         className
@@ -70,6 +72,8 @@ function CommandInput({
       {/* <SearchIcon className="size-4 shrink-0 opacity-50" /> */}
       <CommandPrimitive.Input
         data-slot="command-input"
+        placeholder="Search..."
+        autoFocus
         className={cn(
           "placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
           className
@@ -146,6 +150,7 @@ function CommandItem({
       data-slot="command-item"
       className={cn(
         "data-[selected=true]:bg-accent cursor-pointer data-[selected=true]:text-accent-foreground relative flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "border border-transparent data-[selected=true]:border-border",
         className
       )}
       {...props}

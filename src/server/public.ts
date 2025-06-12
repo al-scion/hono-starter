@@ -9,3 +9,13 @@ export const publicRouter = new Hono<{ Bindings: Env }>()
     const { name } = c.req.valid('query');
     return c.json({ message: `Hello, ${name}! This is a public route.` });
   })
+
+
+  .get('/auth-callback', async (c) => {
+
+    // TO DO: proper handling of the auth callback
+    const params = c.req.query();
+    console.log(params);
+
+    return c.json({ success: true });
+  })

@@ -221,8 +221,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar 
       // className="border-r-0" 
-      variant="inset" 
-      // collapsible="icon" 
+      variant="inset"
       {...props}
     >
       <SidebarHeader>

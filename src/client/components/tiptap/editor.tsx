@@ -50,6 +50,7 @@ export function Editor(
           decorationClass: 'bg-muted px-1 py-0.5 rounded',
           allowSpaces: true,
         },
+        deleteTriggerWithBackspace: true,
       }),
       Link.configure({
         openOnClick: false,

@@ -19,8 +19,6 @@ export const mcpRouter = new Hono<{ Bindings: Env }>()
 
     return streamSSE(c, async (stream) => {
 
-      console.log('registering mcp', name, url, redirectUrl, headers)
-
       const result = await oauth.registerMcp(name, url, redirectUrl, headers) as any;
       await stream.writeSSE({
         data: JSON.stringify(result),
@@ -46,5 +44,5 @@ export const mcpRouter = new Hono<{ Bindings: Env }>()
     
     await oauth.resumeAuth(session, code);
     
-    return c.html(html`<script>window.close()`);
+    return c.html(html`<div>hello</div>`);
   })

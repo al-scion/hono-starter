@@ -14,7 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as AuthCallbackImport } from './routes/auth.callback'
+import { Route as AuthCallbackImport } from './routes/auth/callback'
 import { Route as AuthLayoutImport } from './routes/auth/_layout'
 import { Route as AppLayoutImport } from './routes/app/_layout'
 import { Route as AuthLayoutSignUpImport } from './routes/auth/_layout.sign-up'
@@ -348,7 +348,7 @@ export const routeTree = rootRoute
       ]
     },
     "/auth/callback": {
-      "filePath": "auth.callback.tsx",
+      "filePath": "auth/callback.tsx",
       "parent": "/auth"
     },
     "/app/_layout/chat": {

@@ -12,6 +12,9 @@ interface State {
   commandOpen: boolean;
   setCommandOpen: (commandOpen: boolean) => void;
 
+  integrationsDialogOpen: boolean;
+  setIntegrationsDialogOpen: (integrationsDialogOpen: boolean) => void;
+
   contextItems: any[];
   setContextItems: (contextItems: any[]) => void;
 }
@@ -27,6 +30,9 @@ export const useStore = create<State>((set) => ({
 
   commandOpen: false,
   setCommandOpen: (commandOpen: boolean) => set({ commandOpen }),
+
+  integrationsDialogOpen: false,
+  setIntegrationsDialogOpen: (integrationsDialogOpen: boolean) => set({ integrationsDialogOpen }),
 
   contextItems: [],
   setContextItems: (contextItems: any[]) => set({ contextItems }),

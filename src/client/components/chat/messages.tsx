@@ -4,9 +4,9 @@ import { MessageAssistant } from "@/components/tiptap/message-assistant";
 import { MessageUser } from "@/components/tiptap/message-user";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, History, Square, CodeXml, Table, X, Wrench, ArrowRight, Loader2, Settings, ArrowLeft } from "lucide-react";
+import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Wrench, ArrowRight, Loader, Settings, ArrowLeft } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandList, CommandItem, CommandGroup, CommandShortcut, CommandSeparator, CommandInput } from "@/components/ui/command";
+import { Command, CommandList, CommandItem, CommandGroup, CommandShortcut, CommandSeparator, CommandInput, CommandEmpty } from "@/components/ui/command";
 import { useLocalStorage } from "usehooks-ts";
 import { useStickToBottom } from "use-stick-to-bottom";
 import { Switch } from "@/components/ui/switch";
@@ -29,18 +29,18 @@ const models = [{
   id: 'google/gemini-2.5-pro-preview-06-05',
   label: 'Gemini 2.5 Pro',
   iconUrl: '/svg/google.svg'
-// }, {
-//   id: 'google/gemini-2.5-flash-preview-05-20',
-//   label: 'Gemini 2.5 Flash',
-//   iconUrl: '/svg/google.svg'
-// }, {
-//   id: 'meta/llama-4-maverick-03-26-experimental',
-//   label: 'Llama 4 Maverick',
-//   iconUrl: '/svg/meta.svg'
-// }, {
-//   id: 'deepseek/deepseek-v3-0324',
-//   label: 'DeepSeek V3',
-//   iconUrl: '/svg/deepseek.svg'
+}, {
+  id: 'google/gemini-2.5-flash-preview-05-20',
+  label: 'Gemini 2.5 Flash',
+  iconUrl: '/svg/google.svg'
+}, {
+  id: 'meta/llama-4-maverick-03-26-experimental',
+  label: 'Llama 4 Maverick',
+  iconUrl: '/svg/meta.svg'
+}, {
+  id: 'deepseek/deepseek-v3-0324',
+  label: 'DeepSeek V3',
+  iconUrl: '/svg/deepseek.svg'
 }]
 
 const tools = [{
@@ -74,12 +74,12 @@ interface mcpServer {
 
 const mcpServers: mcpServer[] = [{
   type: 'url',
-  url: 'https://mcp.context7.com/mcp',
-  name: 'Context7',
-}, {
-  type: 'url',
   url: 'https://mcp.notion.com/mcp',
   name: 'Notion',
+}, {
+  type: 'url',
+  url: 'https://mcp.context7.com/mcp',
+  name: 'Context7',
 }, {
   type: 'url',
   url: 'https://mcp.linear.app/sse',
@@ -101,18 +101,6 @@ const mcpServers: mcpServer[] = [{
   url: 'https://mcp.deepwiki.com/sse',
   name: 'DeepWiki',
 }, {
-//   type: 'url',
-//   url: 'https://mcp.gmail.com/sse',
-//   name: 'Gmail',
-// }, {
-//   type: 'url',
-//   url: 'https://mcp.gmail.com/sse',
-//   name: 'Calendar',
-// }, {
-//   type: 'url',
-//   url: 'https://api.dashboard.plaid.com/mcp/sse',
-//   name: 'Plaid',
-// }, {
   type: 'url',
   url: 'https://app.hubspot.com/mcp/v1/http',
   name: 'Hubspot',
@@ -132,8 +120,12 @@ const mcpServers: mcpServer[] = [{
 
 export function Messages() {
   const [modelId, setModelId] = useLocalStorage('modelId', models[0].id);
-  const { chatId, setChatId } = useStore()
+  const { chatId, setChatId, contextItems, setIntegrationsDialogOpen } = useStore()
   const selectedModel = models.find(m => m.id === modelId) || models[0];
+
+  const handleTestButton = () => {
+    setIntegrationsDialogOpen(true)
+  }
   
   const [enabledTools, setEnabledTools] = useLocalStorage<string[]>('enabledTools', []);
   const [configuredMCPs, setConfiguredMCPs] = useLocalStorage<string[]>('configuredMCPs', []);
@@ -152,10 +144,9 @@ export function Messages() {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isToolPopoverOpen, setIsToolPopoverOpen] = useState(false);
   const [isModelSettingsOpen, setIsModelSettingsOpen] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<string>('');
 
   const { scrollRef, contentRef } = useStickToBottom();
-
-  const { contextItems } = useStore();
 
   const handleConnectMCP = async (mcp: mcpServer) => {
 
@@ -237,10 +228,22 @@ export function Messages() {
       <div className="flex flex-row items-center gap-2 mb-2">
 
         {/* temporary placeholder, will be for title */}
-        <Button variant="ghost" className="h-6 px-1 gap-1">
-          New Chat
-          <ChevronDown className="size-4" />
-        </Button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" className="h-6 px-1 gap-1">
+              New Chat
+              <ChevronDown className="size-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="p-0">
+            <Command>
+              <CommandInput />
+              <CommandList>
+                <CommandEmpty>No chats found</CommandEmpty>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+         </Popover>
         <div className="flex flex-row gap-2 ml-auto">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -252,8 +255,8 @@ export function Messages() {
               New chat
             </TooltipContent>
           </Tooltip>
-          <Button variant="ghost" className="size-6 p-0">
-            <History className="size-4" />
+          <Button variant="ghost" className="size-6 p-0" onClick={handleTestButton}>
+            <Settings className="size-4" />
           </Button>
         </div>
 
@@ -371,7 +374,7 @@ export function Messages() {
           {contextItems.map((item, index) => 
             <div key={index} className="flex flex-row items-center gap-1 border rounded py-1 px-1 bg-muted group">
               <Table className="size-3.5 group-hover:hidden" />
-              <X className="size-3.5 hidden group-hover:block" /> 
+              <X className="size-3.5 hidden group-hover:block cursor-pointer" /> 
               <p className="text-xs">{item.attrs.label}</p>
             </div>
           )}
@@ -420,10 +423,32 @@ export function Messages() {
                   Integrations
                 </TooltipContent>
               </Tooltip>
-              <PopoverContent className="p-0" align="start">
-                <Command>
-                  <CommandInput placeholder="Search..." />
-                  <CommandList className="mask-y-from-95%">
+              <PopoverContent className="p-0 relative" align="start">
+                {configuredMCPs.includes(selectedTool) && (
+                <div className='absolute left-[calc(100%+0.25rem)] top-0 border shadow rounded-md w-56 bg-background pointer-none transition-all duration-300'>                  
+                  <div className="flex flex-row items-center h-9 px-3 gap-2 text-md border-b">
+                    <img src={`/svg/${selectedTool.toLowerCase()}.svg`} alt={selectedTool} className="size-4" />
+                    <span className="font-medium">{selectedTool}</span>
+                  </div>
+                  <div className="px-3 py-2 flex flex-col gap-2 text-sm">
+                    <div className="flex flex-row items-center gap-2">
+                      {/* <Checkbox /> */}
+                      <span className="text-sm">tool_1</span>
+                    </div>
+                    <div className="flex flex-row items-center gap-2">
+                      {/* <Checkbox /> */}
+                      <span className="text-sm">tool_2</span>
+                    </div>
+                    <div className="flex flex-row items-center gap-2">
+                      {/* <Checkbox /> */}
+                      <span className="text-sm">tool_2</span>
+                    </div>
+                  </div>
+                </div>)}
+                <Command value={selectedTool} onValueChange={setSelectedTool}>
+                  <CommandInput autoFocus/>
+                  <CommandList className="mask-y-from-98%">
+                    <CommandEmpty>No tools found</CommandEmpty>
                     <CommandGroup heading="Tools">
                       {tools.map((tool) => (
                         <CommandItem
@@ -446,19 +471,19 @@ export function Messages() {
                     </CommandGroup>
                       <CommandSeparator />
                     <CommandGroup heading="Integrations">
-                      {mcpServers.map((mcp) => (
-                        <CommandItem
-                          key={mcp.name}
-                          value={mcp.name}
-                          onSelect={() => {
-                            setEnabledTools(prev => 
-                            prev.includes(mcp.name) 
-                              ? prev.filter(id => id !== mcp.name)
-                              : [...prev, mcp.name]
-                            )
-                            handleConnectMCP(mcp)
-                          }}
-                        >
+                      {mcpServers
+                        .slice()
+                        .sort((a, b) => {
+                          const aConfigured = configuredMCPs.includes(a.name) ? 0 : 1;
+                          const bConfigured = configuredMCPs.includes(b.name) ? 0 : 1;
+                          return aConfigured - bConfigured;
+                        })
+                        .map((mcp) => (
+                          <CommandItem
+                            key={mcp.name}
+                            value={mcp.name}
+                            onSelect={() => handleConnectMCP(mcp)}
+                          >
                           <Avatar className='size-4 rounded-xs'>
                             <AvatarImage src={`/svg/${mcp.name.toLowerCase()}.svg`} />
                             <Wrench className="size-4" />
@@ -466,15 +491,28 @@ export function Messages() {
                           <span>{mcp.name}</span>
                           <CommandShortcut className='flex flex-row items-center'>
                             {loadingMCPs.includes(mcp.name) ? (
-                              <Loader2 className="size-4 animate-spin" />
+                              <Loader className="size-4 animate-spin" />
                             ) : configuredMCPs.includes(mcp.name) ? (
-                              <Switch checked={enabledMCPs.includes(mcp.name)} className="data-[state=checked]:bg-green-600" />
+                              <div className="flex flex-row items-center gap-2">
+                                <Settings className="size-4" />
+                                <Switch checked={enabledMCPs.includes(mcp.name)} className="data-[state=checked]:bg-green-600" />
+                              </div>
                             ) : (
-                              <ArrowRight className="size-4" />
+                              <div className="flex flex-row items-center gap-1">
+                                <span className="text-xs">Connect</span>
+                                <ArrowRight className="size-4" />
+                              </div>
                             )}
                           </CommandShortcut>
                         </CommandItem>
                       ))}
+                    </CommandGroup>
+                    <CommandSeparator />
+                    <CommandGroup>
+                      <CommandItem onSelect={() => setIntegrationsDialogOpen(true)}>
+                        <Plus className="size-4" />
+                        <span>Add integrations</span>
+                      </CommandItem>
                     </CommandGroup>
                   </CommandList>
                 </Command>

@@ -48,18 +48,12 @@ const app = new Hono<{ Bindings: Env }>()
     await next();
   })
   .use('*', async (c, next) => {
-    const aiGateway = c.env.AI.gateway(c.env.CLOUDFLARE_GATEWAY_NAME);
-    const getProviderUrl = async (provider: AIGatewayProviders) => aiGateway.getUrl(provider);
-    const headers = {
-      // 'cf-aig-authorization': `Bearer ${c.env.CLOUDFLARE_AIG_TOKEN}`,
-    };
+    const baseURL = `https://gateway.ai.cloudflare.com/v1/${c.env.CLOUDFLARE_ACCOUNT_ID}/${c.env.CLOUDFLARE_GATEWAY_NAME}`;
+    const headers = {'cf-aig-authorization': `Bearer ${c.env.CLOUDFLARE_AIG_TOKEN}`};
     const modelRegistry = createProviderRegistry({
-      openai: createOpenAI({baseURL: `${await getProviderUrl('openai')}`, headers, apiKey: c.env.OPENAI_API_KEY}),
-      anthropic: createAnthropic({baseURL: `${await getProviderUrl('anthropic')}`, headers, apiKey: c.env.ANTHROPIC_API_KEY}),
-      google: createGoogleGenerativeAI({baseURL: `${await getProviderUrl('google-ai-studio')}`, headers, apiKey: c.env.GOOGLE_GENERATIVE_AI_API_KEY}),
-      // groq: createGroq({baseURL: `${baseURL}/groq`, headers, apiKey: c.env.GROQ_API_KEY}),
-      // xai: createXai({baseURL: `${baseURL}/xai`, headers, apiKey: c.env.XAI_API_KEY}),
-      // fireworks: createFireworks({baseURL, headers, apiKey: c.env.FIREWORKS_API_KEY}),
+      openai: createOpenAI({baseURL: `${baseURL}/openai`, headers, apiKey: c.env.OPENAI_API_KEY}),
+      anthropic: createAnthropic({baseURL: `${baseURL}/anthropic`, headers, apiKey: c.env.ANTHROPIC_API_KEY}),
+      google: createGoogleGenerativeAI({baseURL: `${baseURL}/google-ai-studio/v1beta`, headers, apiKey: c.env.GOOGLE_GENERATIVE_AI_API_KEY}),
     }, {
       separator: '/'
     })
