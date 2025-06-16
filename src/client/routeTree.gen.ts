@@ -20,7 +20,7 @@ import { Route as AppLayoutImport } from './routes/app/_layout'
 import { Route as AuthLayoutSignUpImport } from './routes/auth/_layout.sign-up'
 import { Route as AuthLayoutSignInImport } from './routes/auth/_layout.sign-in'
 import { Route as AppLayoutDashboardImport } from './routes/app/_layout.dashboard'
-import { Route as AppLayoutChatImport } from './routes/app/_layout.chat'
+import { Route as AppLayoutDocumentDocIdImport } from './routes/app/_layout.document.$docId'
 
 // Create Virtual Routes
 
@@ -81,9 +81,9 @@ const AppLayoutDashboardRoute = AppLayoutDashboardImport.update({
   getParentRoute: () => AppLayoutRoute,
 } as any)
 
-const AppLayoutChatRoute = AppLayoutChatImport.update({
-  id: '/chat',
-  path: '/chat',
+const AppLayoutDocumentDocIdRoute = AppLayoutDocumentDocIdImport.update({
+  id: '/document/$docId',
+  path: '/document/$docId',
   getParentRoute: () => AppLayoutRoute,
 } as any)
 
@@ -133,13 +133,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackImport
       parentRoute: typeof AuthImport
     }
-    '/app/_layout/chat': {
-      id: '/app/_layout/chat'
-      path: '/chat'
-      fullPath: '/app/chat'
-      preLoaderRoute: typeof AppLayoutChatImport
-      parentRoute: typeof AppLayoutImport
-    }
     '/app/_layout/dashboard': {
       id: '/app/_layout/dashboard'
       path: '/dashboard'
@@ -161,19 +154,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLayoutSignUpImport
       parentRoute: typeof AuthLayoutImport
     }
+    '/app/_layout/document/$docId': {
+      id: '/app/_layout/document/$docId'
+      path: '/document/$docId'
+      fullPath: '/app/document/$docId'
+      preLoaderRoute: typeof AppLayoutDocumentDocIdImport
+      parentRoute: typeof AppLayoutImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface AppLayoutRouteChildren {
-  AppLayoutChatRoute: typeof AppLayoutChatRoute
   AppLayoutDashboardRoute: typeof AppLayoutDashboardRoute
+  AppLayoutDocumentDocIdRoute: typeof AppLayoutDocumentDocIdRoute
 }
 
 const AppLayoutRouteChildren: AppLayoutRouteChildren = {
-  AppLayoutChatRoute: AppLayoutChatRoute,
   AppLayoutDashboardRoute: AppLayoutDashboardRoute,
+  AppLayoutDocumentDocIdRoute: AppLayoutDocumentDocIdRoute,
 }
 
 const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(
@@ -221,10 +221,10 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
-  '/app/chat': typeof AppLayoutChatRoute
   '/app/dashboard': typeof AppLayoutDashboardRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/auth/sign-up': typeof AuthLayoutSignUpRoute
+  '/app/document/$docId': typeof AppLayoutDocumentDocIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -232,10 +232,10 @@ export interface FileRoutesByTo {
   '/app': typeof AppLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
-  '/app/chat': typeof AppLayoutChatRoute
   '/app/dashboard': typeof AppLayoutDashboardRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/auth/sign-up': typeof AuthLayoutSignUpRoute
+  '/app/document/$docId': typeof AppLayoutDocumentDocIdRoute
 }
 
 export interface FileRoutesById {
@@ -246,10 +246,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRouteWithChildren
   '/auth/_layout': typeof AuthLayoutRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
-  '/app/_layout/chat': typeof AppLayoutChatRoute
   '/app/_layout/dashboard': typeof AppLayoutDashboardRoute
   '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute
   '/auth/_layout/sign-up': typeof AuthLayoutSignUpRoute
+  '/app/_layout/document/$docId': typeof AppLayoutDocumentDocIdRoute
 }
 
 export interface FileRouteTypes {
@@ -259,20 +259,20 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/auth/callback'
-    | '/app/chat'
     | '/app/dashboard'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/app/document/$docId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/app'
     | '/auth'
     | '/auth/callback'
-    | '/app/chat'
     | '/app/dashboard'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/app/document/$docId'
   id:
     | '__root__'
     | '/'
@@ -281,10 +281,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/auth/_layout'
     | '/auth/callback'
-    | '/app/_layout/chat'
     | '/app/_layout/dashboard'
     | '/auth/_layout/sign-in'
     | '/auth/_layout/sign-up'
+    | '/app/_layout/document/$docId'
   fileRoutesById: FileRoutesById
 }
 
@@ -328,8 +328,8 @@ export const routeTree = rootRoute
       "filePath": "app/_layout.tsx",
       "parent": "/app",
       "children": [
-        "/app/_layout/chat",
-        "/app/_layout/dashboard"
+        "/app/_layout/dashboard",
+        "/app/_layout/document/$docId"
       ]
     },
     "/auth": {
@@ -351,10 +351,6 @@ export const routeTree = rootRoute
       "filePath": "auth/callback.tsx",
       "parent": "/auth"
     },
-    "/app/_layout/chat": {
-      "filePath": "app/_layout.chat.tsx",
-      "parent": "/app/_layout"
-    },
     "/app/_layout/dashboard": {
       "filePath": "app/_layout.dashboard.tsx",
       "parent": "/app/_layout"
@@ -366,6 +362,10 @@ export const routeTree = rootRoute
     "/auth/_layout/sign-up": {
       "filePath": "auth/_layout.sign-up.tsx",
       "parent": "/auth/_layout"
+    },
+    "/app/_layout/document/$docId": {
+      "filePath": "app/_layout.document.$docId.tsx",
+      "parent": "/app/_layout"
     }
   }
 }

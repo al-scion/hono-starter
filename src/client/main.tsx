@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import { Providers } from "@/components/providers";
 import "@/index.css";
+import "@xyflow/react/dist/style.css";
 
 const router = createRouter({ routeTree })
 
@@ -18,5 +19,5 @@ createRoot(document.getElementById("root")!).render(
     <Providers>
       <RouterProvider router={router} />
     </Providers>
-  </StrictMode>,
+  </StrictMode>
 );

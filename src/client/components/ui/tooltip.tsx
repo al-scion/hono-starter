@@ -38,7 +38,7 @@ const tooltipVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground",
+        default: "bg-primary text-primary-foreground my-1",
         outline: "border bg-background text-foreground shadow-md my-1",
       },
     },
@@ -65,9 +65,9 @@ function TooltipContent({
         {...props}
       >
         {children}
-        {variant !== "outline" && (
+        {/* {variant !== "outline" && (
           <TooltipPrimitive.Arrow className="bg-primary fill-primary z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]" />
-        )}
+        )} */}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>
   )

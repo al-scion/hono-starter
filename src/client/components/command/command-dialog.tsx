@@ -1,30 +1,18 @@
 import { Box, Home } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandItem, CommandGroup } from '@/components/ui/command';
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { Kbd } from '@/components/custom/kbd';
+import { Kbd } from '@/components/shortcuts/kbd';
 import { useStore } from '@/lib/state';
-import { useEffect } from 'react';
 import { useRouter } from '@tanstack/react-router';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 export function CommandComponent() {
   const { commandOpen, setCommandOpen, setIntegrationsDialogOpen } = useStore();
   const router = useRouter();
 
-  // Add keyboard shortcut to toggle the command dialog with Ctrl/Cmd + K
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === 'k' &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault()
-        setCommandOpen(!commandOpen)
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [setCommandOpen, commandOpen])
+  useHotkeys('ctrl+k, meta+k', () => {
+    setCommandOpen(!commandOpen)
+  }, { enableOnFormTags: true, preventDefault: true, enableOnContentEditable: true })
 
   return (
     <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
@@ -34,16 +22,6 @@ export function CommandComponent() {
       <CommandList>
         <CommandEmpty>No results found</CommandEmpty>
         <CommandGroup>
-          {/* {commandItems.map((item) => (
-            <CommandItem
-              key={item.id}
-              value={item.id}
-              className="group h-10 data-[selected=false]:bg-transparent"
-            >
-              <item.icon />
-              <span>{item.name}</span>
-            </CommandItem>
-          ))} */}
           <CommandItem onSelect={() => {
             setCommandOpen(false)
             router.navigate({ to: '/app/dashboard' })

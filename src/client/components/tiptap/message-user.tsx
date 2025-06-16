@@ -4,10 +4,11 @@ import Link from '@tiptap/extension-link';
 import Mention from '@tiptap/extension-mention'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useUser } from '@clerk/clerk-react'
+import { User } from 'lucide-react';
 
 interface MessageUserProps {
   text: string;
-  metadata: any;
+  metadata?: any;
 }
 
 export function MessageUser({ metadata }: MessageUserProps) {
@@ -27,7 +28,7 @@ export function MessageUser({ metadata }: MessageUserProps) {
       }),
     ],
     editable: false,
-    content: metadata.content as string,
+    content: metadata?.content as string,
   })
 
   return (
@@ -35,7 +36,7 @@ export function MessageUser({ metadata }: MessageUserProps) {
       <Avatar className="size-5">
         <AvatarImage src={avatarUrl} />
         <AvatarFallback>
-          {user?.firstName?.charAt(0)}
+          <User className="size-5 p-0.5 border rounded-full bg-background" />
         </AvatarFallback>
       </Avatar>
       <EditorContent editor={editor} />

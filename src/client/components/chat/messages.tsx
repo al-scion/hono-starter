@@ -3,8 +3,8 @@ import { Editor } from "@/components/tiptap/editor";
 import { MessageAssistant } from "@/components/tiptap/message-assistant";
 import { MessageUser } from "@/components/tiptap/message-user";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Wrench, ArrowRight, Loader, Settings, ArrowLeft } from "lucide-react";
+import { useRef, useState, ChangeEvent } from "react";
+import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Wrench, ArrowRight, Loader, Settings, Ellipsis, Trash2, PenBox, Star, ChevronRight, PanelRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandList, CommandItem, CommandGroup, CommandShortcut, CommandSeparator, CommandInput, CommandEmpty } from "@/components/ui/command";
 import { useLocalStorage } from "usehooks-ts";
@@ -16,31 +16,29 @@ import { DefaultChatTransport } from "ai";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "../ui/textarea";
+import { db } from "@/lib/dexie";
+import { useLiveQuery } from "dexie-react-hooks";
+import { useSidebar } from "../ui/sidebar";
+import { Claude, OpenAI, Google } from "@/lib/icons";
+import { Kbd } from "@/components/shortcuts/kbd";
+import type { Editor as TiptapEditor } from '@tiptap/core'
 
 const models = [{
   id: 'openai/gpt-4.1',
   label: 'GPT-4.1',
-  iconUrl: '/svg/openai.svg'
+  icon: OpenAI
 }, {
   id: 'anthropic/claude-sonnet-4-20250514',
   label: 'Claude 4 Sonnet',
-  iconUrl: '/svg/claude.svg'
+  icon: Claude
 }, {
   id: 'google/gemini-2.5-pro-preview-06-05',
   label: 'Gemini 2.5 Pro',
-  iconUrl: '/svg/google.svg'
+  icon: Google
 }, {
   id: 'google/gemini-2.5-flash-preview-05-20',
   label: 'Gemini 2.5 Flash',
-  iconUrl: '/svg/google.svg'
-}, {
-  id: 'meta/llama-4-maverick-03-26-experimental',
-  label: 'Llama 4 Maverick',
-  iconUrl: '/svg/meta.svg'
-}, {
-  id: 'deepseek/deepseek-v3-0324',
-  label: 'DeepSeek V3',
-  iconUrl: '/svg/deepseek.svg'
+  icon: Google
 }]
 
 const tools = [{
@@ -119,14 +117,16 @@ const mcpServers: mcpServer[] = [{
 }]
 
 export function Messages() {
-  const [modelId, setModelId] = useLocalStorage('modelId', models[0].id);
-  const { chatId, setChatId, contextItems, setIntegrationsDialogOpen } = useStore()
-  const selectedModel = models.find(m => m.id === modelId) || models[0];
 
-  const handleTestButton = () => {
-    setIntegrationsDialogOpen(true)
-  }
+  const { chatId, setChatId, contextItems, setIntegrationsDialogOpen, initialMessages, setInitialMessages } = useStore()
+  const chats = useLiveQuery(() => db.chats.orderBy('createdAt').reverse().toArray())
+  const { toggleSidebar } = useSidebar()
+  const editorRef = useRef<TiptapEditor>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
+  const [modelId, setModelId] = useLocalStorage('modelId', models[0].id);
+  const selectedModel = models.find(m => m.id === modelId) || models[0];  
+
   const [enabledTools, setEnabledTools] = useLocalStorage<string[]>('enabledTools', []);
   const [configuredMCPs, setConfiguredMCPs] = useLocalStorage<string[]>('configuredMCPs', []);
   const [enabledMCPs, setEnabledMCPs] = useLocalStorage<string[]>('enabledMCPs', []);
@@ -138,6 +138,8 @@ export function Messages() {
     transport: new DefaultChatTransport({
       api: '/api/chat/stream',
     }),
+    messages: initialMessages,
+    onFinish({message}) {db.messages.add({...message, chatId} )},
   });
 
   const [systemInstructions, setSystemInstructions] = useLocalStorage('systemInstructions', '');
@@ -145,7 +147,6 @@ export function Messages() {
   const [isToolPopoverOpen, setIsToolPopoverOpen] = useState(false);
   const [isModelSettingsOpen, setIsModelSettingsOpen] = useState(false);
   const [selectedTool, setSelectedTool] = useState<string>('');
-
   const { scrollRef, contentRef } = useStickToBottom();
 
   const handleConnectMCP = async (mcp: mcpServer) => {
@@ -222,48 +223,115 @@ export function Messages() {
     }
   }
 
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target;
+    if (files && files.length > 0) {
+      console.log("Uploaded files:", Array.from(files));
+    }
+    // Reset the input so the same file can be selected again if needed
+    e.target.value = "";
+  };
+
   return (
-    <div className="h-[calc(100vh-34px)] max-w-screen-sm mx-auto flex flex-col">
+    <div className="flex flex-col flex-1">
 
-      <div className="flex flex-row items-center gap-2 mb-2">
-
-        {/* temporary placeholder, will be for title */}
+      <div className="flex flex-row items-center gap-2 h-12 p-3 border-b">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" className="h-6 px-1 gap-1">
-              New Chat
+            <Button variant="ghost" className="h-7 px-2 -ml-1 gap-1">
+              {chats?.find(chat => chat.id === chatId)?.title || 'New Chat'}
               <ChevronDown className="size-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="p-0">
+          <PopoverContent align="start" className="p-0 w-80">
             <Command>
               <CommandInput />
               <CommandList>
                 <CommandEmpty>No chats found</CommandEmpty>
+                <CommandGroup>
+                {chats?.map((chat) => (
+                  <CommandItem 
+                    key={chat.id} 
+                    value={chat.title} 
+                    className='group truncate'
+                    onSelect={async () => {
+                      setInitialMessages(await db.messages.where('chatId').equals(chat.id).toArray());
+                      setChatId(chat.id);
+                    }} 
+                  >
+                    {chatId === chat.id && <div className="size-1.5 rounded-full bg-green-600" />}
+                    <span className="truncate">{chat.title}</span>
+                    <CommandShortcut className="opacity-0 group-data-[selected=true]:opacity-100" onClick={(e) => e.stopPropagation()}>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" className="size-7 p-0 hover:bg-zinc-200 dark:hover:bg-zinc-800">
+                            <Ellipsis className="size-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent align='end' alignOffset={-8} sideOffset={10} className="p-1 max-w-40 flex flex-col">
+                          <Button variant="ghost" size='sm' className='px-2 justify-start font-normal' >
+                            <Star className="size-4" />
+                            Star
+                          </Button>
+                          <Button variant="ghost" size='sm' className='px-2 justify-start font-normal' >
+                            <PenBox className="size-4" />
+                            Rename
+                          </Button>
+                          <Button variant="ghost" size='sm' className='px-2 justify-start font-normal' onClick={() => {
+                              db.chats.delete(chat.id)
+                              db.messages.where('chatId').equals(chat.id).delete()
+                              if (chatId === chat.id) {
+                                // If we just deleted the active chat reset to a blank one.
+                                setInitialMessages([]);
+                                setChatId(crypto.randomUUID())
+                              }
+                            }}>
+                            <Trash2 className="size-4" />
+                            Delete
+                          </Button>
+                        </PopoverContent>
+                      </Popover>
+                    </CommandShortcut>
+                  </CommandItem>
+                ))}
+                </CommandGroup>
               </CommandList>
             </Command>
           </PopoverContent>
          </Popover>
-        <div className="flex flex-row gap-2 ml-auto">
+        <div className="flex flex-row gap-1 ml-auto">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" className="size-6 p-0" onClick={() => setChatId(crypto.randomUUID())}>
+              <Button variant="ghost" className="size-7 p-0" onClick={() => {
+                // Prepare an empty state *before* switching to the new chat so
+                // the new Messages instance starts clean.
+                setInitialMessages([]);
+                setChatId(crypto.randomUUID());
+              }}>
                 <Plus className="size-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
               New chat
+              <Kbd keys={['⌘', 'N']} variant="secondary"/>
             </TooltipContent>
           </Tooltip>
-          <Button variant="ghost" className="size-6 p-0" onClick={handleTestButton}>
-            <Settings className="size-4" />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" className="size-7 p-0" onClick={() => toggleSidebar()}>
+                <PanelRight className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Toggle sidebar
+              <Kbd shortcutId="rightSidebarToggle" variant="secondary"/>
+            </TooltipContent>
+          </Tooltip>
         </div>
-
       </div>
 
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4 px-2 text-sm" style={{ overflow: 'auto' }}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4 px-3 text-sm" style={{ overflow: 'auto' }}>
         <div ref={contentRef} className="space-y-3">
           {messages.map((message, messageIndex) => {
 
@@ -276,6 +344,7 @@ export function Messages() {
                     }
                     return null;
                   })}
+                  
                 </div>
               );
             }
@@ -287,7 +356,7 @@ export function Messages() {
               //   && !message.parts.some(part => part.type === 'text')
               //   && status === 'streaming';
 
-              return <div key={`assistant-${message.id}`} className={`space-y-2 ${messageIndex === messages.length - 1 ? "min-h-[calc(100dvh-17rem)]" : ""}`}>
+              return <div key={`assistant-${message.id}`} className={`space-y-2 ${messageIndex === messages.length - 1 ? "min-h-[calc(100dvh-20rem)]" : ""}`}>
 
                 {sources.length > 0 && 
                   <Accordion type="single" collapsible className="w-full border rounded-lg">
@@ -306,12 +375,12 @@ export function Messages() {
                             <Avatar className='size-4'>
                               <AvatarImage  src={`https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(source.url).hostname)}&sz=32`} />
                               <AvatarFallback className="border bg-muted">
-                                A
+                                <Globe className="size-4" />
                               </AvatarFallback>
                             </Avatar>
                             <span className="truncate max-w-[360px]">{source.title}</span>
                             <span className='text-muted-foreground font-light'>
-                              {new URL(source.url).hostname.replace(/^www\./, '').split('.').slice(-2).join('.')}
+                              {new URL(source.url).hostname.replace(/^www\./, '')}
                             </span>
                           </div>
                         ))}
@@ -350,7 +419,9 @@ export function Messages() {
                   }
 
                   if (part.type === 'tool-invocation') {
-                    return <p className='bg-red-100'>TOOL CALL: {JSON.stringify(part.toolInvocation)}</p>
+                    // The SDK does not expose a `toolInvocation` property on this part type.
+                    // Render the whole object for now to avoid type errors.
+                    return <p className='bg-red-100'>TOOL CALL: {JSON.stringify(part)}</p>
                   }
 
                 })}
@@ -367,14 +438,15 @@ export function Messages() {
         </div>
       </div>
 
-      <div className="p-2 border rounded-xl flex flex-col gap-2 shadow-xs">
 
-        {contextItems.length > 0 && <div className="flex flex-wrap gap-1 p-2 -mx-2 -mt-2 border-b">
-          {/* {JSON.stringify(contextItems)} */}
+      {/* Input section */}
+      <div className="p-2 border rounded-lg flex flex-col gap-2 m-3 mt-0 focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-2 animate-in fade-in-0 duration-300 delay-100">
+
+        {contextItems.length > 0 && <div className="flex flex-wrap gap-1 p-2 -mx-2 -mt-2 border-b bg-muted/50 rounded-t-lg">
           {contextItems.map((item, index) => 
-            <div key={index} className="flex flex-row items-center gap-1 border rounded py-1 px-1 bg-muted group">
-              <Table className="size-3.5 group-hover:hidden" />
-              <X className="size-3.5 hidden group-hover:block cursor-pointer" /> 
+            <div key={index} className='group/context-item flex flex-row items-center gap-1 border rounded py-1 px-1 bg-background'>
+              <Table className="size-3.5 group-hover/context-item:hidden" />
+              <X className="size-3.5 hidden group-hover/context-item:block cursor-pointer" />
               <p className="text-xs">{item.attrs.label}</p>
             </div>
           )}
@@ -382,16 +454,26 @@ export function Messages() {
 
         <Editor 
           id={id}
-          placeholder="Ask anything, use @ to mention"
           className="focus:outline-none min-h-12 text-sm"
           sendMessage={sendMessage}
           enabledTools={enabledTools}
+          editorRef={editorRef}
+        />
+        {/* Hidden file input for uploads */}
+        <input
+          type="file"
+          multiple
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden"
         />
         <div className="flex flex-row gap-2">
           <div className="flex-1 h-6 flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button className="size-6 p-0" variant="ghost">
+                <Button className="size-6 p-0" variant="ghost" onClick={() => {
+                  fileInputRef.current?.click();
+                }}>
                   <Paperclip className="size-4" />
                 </Button>
               </TooltipTrigger>
@@ -401,7 +483,12 @@ export function Messages() {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button className="size-6 p-0" variant="ghost">
+                <Button className="size-6 p-0" variant="ghost" onClick={() => {
+                  editorRef?.current?.chain()
+                  .insertContent('@')
+                  .focus()
+                  .run()
+                }}>
                   <AtSign className="size-4" />
                 </Button>
               </TooltipTrigger>
@@ -415,7 +502,6 @@ export function Messages() {
                   <TooltipTrigger asChild>
                     <Button variant="ghost" className="h-6 px-1 text-xs font-medium flex items-center gap-1">
                       <Unplug className="size-4" />
-                      {/* <ChevronsUpDown className="size-3" /> */}
                     </Button>
                   </TooltipTrigger>
                 </PopoverTrigger>
@@ -423,31 +509,28 @@ export function Messages() {
                   Integrations
                 </TooltipContent>
               </Tooltip>
-              <PopoverContent className="p-0 relative" align="start">
+              <PopoverContent className="p-0 relative">
                 {configuredMCPs.includes(selectedTool) && (
-                <div className='absolute left-[calc(100%+0.25rem)] top-0 border shadow rounded-md w-56 bg-background pointer-none transition-all duration-300'>                  
+                <div className='absolute right-[calc(100%+0.25rem)] top-0 border shadow rounded-md w-56 bg-background pointer-none transition-all duration-300'>                  
                   <div className="flex flex-row items-center h-9 px-3 gap-2 text-md border-b">
                     <img src={`/svg/${selectedTool.toLowerCase()}.svg`} alt={selectedTool} className="size-4" />
                     <span className="font-medium">{selectedTool}</span>
                   </div>
                   <div className="px-3 py-2 flex flex-col gap-2 text-sm">
                     <div className="flex flex-row items-center gap-2">
-                      {/* <Checkbox /> */}
                       <span className="text-sm">tool_1</span>
                     </div>
                     <div className="flex flex-row items-center gap-2">
-                      {/* <Checkbox /> */}
                       <span className="text-sm">tool_2</span>
                     </div>
                     <div className="flex flex-row items-center gap-2">
-                      {/* <Checkbox /> */}
                       <span className="text-sm">tool_2</span>
                     </div>
                   </div>
                 </div>)}
                 <Command value={selectedTool} onValueChange={setSelectedTool}>
                   <CommandInput autoFocus/>
-                  <CommandList className="mask-y-from-98%">
+                  <CommandList>
                     <CommandEmpty>No tools found</CommandEmpty>
                     <CommandGroup heading="Tools">
                       {tools.map((tool) => (
@@ -526,11 +609,7 @@ export function Messages() {
                 <PopoverTrigger asChild>
                   <TooltipTrigger asChild>
                   <Button variant="ghost" className="h-6 px-1 text-xs font-medium flex items-center gap-1">
-                    <img 
-                      src={selectedModel.iconUrl} 
-                      alt={selectedModel.label}
-                      className="size-4 dark:invert dark:grayscale"
-                    />
+                    <selectedModel.icon className="size-4" />
                     <ChevronsUpDown className="size-3" />
                   </Button>
                   </TooltipTrigger>
@@ -539,8 +618,8 @@ export function Messages() {
                   Switch models
                 </TooltipContent>
               </Tooltip>
-              <PopoverContent className="p-0" align="start">
-                <Command>
+              <PopoverContent className="p-0">
+                <Command defaultValue={models.find(model => model.id === modelId)?.label}>
                   <CommandList>
                     <CommandGroup heading="Models" className={isModelSettingsOpen ? 'hidden' : ''}>
                       {models.map((modelOption) => (
@@ -553,11 +632,7 @@ export function Messages() {
                           }}
                           className="flex items-center gap-2"
                         >
-                          <img 
-                            src={modelOption.iconUrl} 
-                            alt={modelOption.label}
-                            className="size-4 dark:invert dark:grayscale"
-                          />
+                          <modelOption.icon className="size-4" />
                           <span>{modelOption.label}</span>
                           <CommandShortcut>
                             {modelId === modelOption.id && <Check className="size-4" />}
@@ -575,13 +650,19 @@ export function Messages() {
                         />
                       </CommandItem>
                     </CommandGroup>
-                    <CommandSeparator />
-                    <CommandGroup>
-                      <CommandItem onSelect={() => setIsModelSettingsOpen(!isModelSettingsOpen)}>
-                        {isModelSettingsOpen ? <ArrowLeft className="size-4" /> : <Settings className="size-4" />}
-                        <span>{isModelSettingsOpen ? 'Models' : 'Settings'}</span>
-                      </CommandItem>
-                    </CommandGroup>
+                    {!isModelSettingsOpen && 
+                      <>
+                        <CommandSeparator />
+                        <CommandGroup>
+                          <CommandItem onSelect={() => setIsModelSettingsOpen(!isModelSettingsOpen)}>
+                            <span>Settings</span>
+                            <CommandShortcut>
+                              <ChevronRight className="size-4" />
+                            </CommandShortcut>
+                          </CommandItem>
+                        </CommandGroup>
+                      </>
+                    }
                   </CommandList>
                 </Command>
               </PopoverContent>
@@ -594,7 +675,7 @@ export function Messages() {
               onClick={stop}
               aria-label="Stop"
             >
-              <Square className="size-3.5" />
+              <Square className="size-4" />
             </Button>
           ) : (
             <Button

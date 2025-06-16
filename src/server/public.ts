@@ -19,3 +19,11 @@ export const publicRouter = new Hono<{ Bindings: Env }>()
 
     return c.json({ success: true });
   })
+
+  .get('/webhook', async (c) => {
+    const { event } = await c.req.parseBody();
+
+
+    console.log(event);
+    return c.json({ success: true });
+  })

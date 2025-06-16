@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -75,7 +76,7 @@
   --sidebar-foreground: oklch(0.141 0.005 285.823);
   --sidebar-primary: oklch(0.21 0.006 285.885);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.92 0.004 286.32 / 0.7); /* zinc-200/80 */
+  --sidebar-accent: oklch(0.94 0.004 286.32);
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
@@ -127,7 +128,24 @@
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #71717a; /* zinc-500 */
+  color: oklch(0.71 0.01 286); /* zinc-400 */
   pointer-events: none;
   height: 0;
+}
+
+/* Tiptap Heading Styles */
+.ProseMirror .heading-base {
+  @apply font-bold leading-tight;
+}
+
+.ProseMirror h1.heading-base {
+  @apply text-3xl mb-4;
+}
+
+.ProseMirror h2.heading-base {
+  @apply text-2xl mb-3;
+}
+
+.ProseMirror h3.heading-base {
+  @apply text-xl mb-2;
 }

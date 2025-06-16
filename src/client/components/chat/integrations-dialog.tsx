@@ -206,12 +206,30 @@ export function IntegrationsDialog() {
                       required
                     />}
 
+                    {customMcpAuth === 'oauth' && 
+                    <>
+                    <Input
+                      value={customMcpApiKey}
+                      onChange={(e) => setCustomMcpApiKey(e.target.value)}
+                      placeholder="Client ID"
+                      type='text'
+                      required
+                    />
+                    <Input
+                      value={customMcpApiKey}
+                      onChange={(e) => setCustomMcpApiKey(e.target.value)}
+                      placeholder="Client Secret"
+                      type='password'
+                      required
+                    />
+                    </>
+                    }
+
                     {customMcpAuth === 'headers' && 
                       <>
                         {customMcpHeaders.map((header, index) => (
                           <div className='flex flex-row items-center gap-2'>
                             <Input type='text' placeholder='header' value={header.header} onChange={(e) => setCustomMcpHeaders(customMcpHeaders.map((h, i) => i === index ? { ...h, header: e.target.value } : h))} />
-                            <span>:</span>
                             <div className="relative w-full">
                               <Input type='text' placeholder='value' value={header.value} onChange={(e) => setCustomMcpHeaders(customMcpHeaders.map((h, i) => i === index ? { ...h, value: e.target.value } : h))} />
                               <Button variant='ghost' className='absolute top-1/2 right-2 -translate-y-1/2 size-6 p-0' onClick={() => setCustomMcpHeaders(customMcpHeaders.filter((_, i) => i !== index))}>
@@ -220,8 +238,8 @@ export function IntegrationsDialog() {
                             </div>
                           </div>)
                         )}
-                        <Button variant='secondary' size='sm' onClick={() => setCustomMcpHeaders([...customMcpHeaders, { header: '', value: '' }])}>
-                          + Header
+                        <Button variant='ghost' size='sm' onClick={() => setCustomMcpHeaders([...customMcpHeaders, { header: '', value: '' }])}>
+                          + Add header
                         </Button>
                       </>
                     }

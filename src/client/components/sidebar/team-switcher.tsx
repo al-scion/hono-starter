@@ -1,6 +1,5 @@
 import * as React from "react"
-import { ChevronDown, LogOut, Moon, Plus, Sun } from "lucide-react"
-
+import { ChevronDown, LogOut, Moon, PanelLeft, Plus, Sun } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,12 +9,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { useTheme } from "next-themes"
+import { SignOutButton } from "@clerk/clerk-react"
+import { useUser } from "@clerk/clerk-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import { Kbd } from "../shortcuts/kbd"
+import { Button } from "../ui/button"
 
 export function TeamSwitcher({
   teams,
@@ -28,25 +30,22 @@ export function TeamSwitcher({
 }) {
 
   const [activeTeam] = React.useState(teams[0])
-  const { state } = useSidebar()
   const { setTheme, theme } = useTheme()
-
-  if (!activeTeam) {
-    return null
-  }
+  const leftSidebar = useSidebar("left")
+  const { user } = useUser()
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem className="flex flex-row items-center">
+    <SidebarMenu className="justify-center">
+      <SidebarMenuItem className="flex flex-row items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="w-fit px-1.5">
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-5 items-center justify-center rounded-md">
+            <Button variant="ghost" className="h-8 rounded-md px-2 hover:bg-sidebar-accent flex-1 min-w-0 justify-start">
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-5 items-center justify-center rounded-md flex-shrink-0">
                 <activeTeam.logo className="size-3" />
               </div>
-              <span className="truncate font-medium">{activeTeam.name}</span>
-              <ChevronDown className="opacity-50" />
-            </SidebarMenuButton>
+              <span className="truncate font-medium min-w-0 flex-1">{user?.firstName}'s Workspace</span>
+              <ChevronDown className="text-muted-foreground/80 flex-shrink-0" />
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
             <DropdownMenuItem className="gap-2 p-2 py-1.5">
@@ -58,13 +57,31 @@ export function TeamSwitcher({
               {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               <div>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</div>
             </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 p-2 py-1.5">
-              <LogOut className="size-4" />
-              <div>Sign out</div>
+            <DropdownMenuItem className="gap-2 p-2 py-1.5" asChild>
+              <SignOutButton>
+                <div className="flex items-center gap-2">
+                  <LogOut className="size-4" />
+                  <span>Sign out</span>
+                </div>
+              </SignOutButton>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        {state === 'expanded' && <SidebarTrigger className="ml-auto hover:bg-sidebar-accent"/>}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              className="size-7 p-0 hover:bg-sidebar-accent ml-auto" 
+              onClick={() => leftSidebar.toggleSidebar()}
+            >
+              <PanelLeft className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Toggle sidebar
+            <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
+          </TooltipContent>
+        </Tooltip>
       </SidebarMenuItem>
     </SidebarMenu>
   )

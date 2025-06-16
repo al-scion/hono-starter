@@ -1,24 +1,17 @@
-import { createFileRoute, useSearch } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { api } from '@/lib/api'
-import { useEffect } from 'react'
 
 export const Route = createFileRoute('/auth/callback')({
+  loader: async (opts: any) => {
+    const { search } = opts
+    const response = await api.public['auth-callback'].$get({ query: search })
+    return response.json()
+  },
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  const params = useSearch({ from: '/auth/callback' })
-  const sendCallback = async () => {
-    const data = await api.public['auth-callback'].$get({query: params})
-    console.log(await data.json())
-    return data
-  }
-  
-  useEffect(() => {
-    sendCallback()
-  }, [params])
-
-
+  // The loader above already notified the backend.
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-muted">
       <div className="flex flex-col items-center gap-8 border shadow-lg p-12 rounded-xl bg-background">

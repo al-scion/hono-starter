@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { streamText, UIMessage, convertToModelMessages, smoothStream } from "ai";
+import { streamText, UIMessage, convertToModelMessages, smoothStream, generateText, Output } from "ai";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { AnthropicProviderOptions } from '@ai-sdk/anthropic';
@@ -63,3 +63,24 @@ export const chatRouter = new Hono<{ Bindings: Env }>()
       });
     }
   )
+  .post('/generate-title', async (c) => {
+    const { messages } = await c.req.json()
+    const modelId = c.req.header('modelid') || defaultModel
+    const registry = c.get('registry')
+
+    const modelMessages = convertToModelMessages(messages)
+    const result = await generateText({
+      model: registry.languageModel(modelId as never),
+      messages: modelMessages,
+      system: 'Based on the conversation, generate a title for the chat. Keep it super simple and concise',
+      experimental_output: Output.object({
+        schema: z.object({
+          title: z.string().max(100),
+        }),
+      }),
+    })
+
+    return c.json({
+      title: result.experimental_output.title
+    })
+  })

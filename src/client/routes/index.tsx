@@ -1,12 +1,16 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useRouter, redirect } from '@tanstack/react-router'
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuth } from '@clerk/clerk-react';
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Kbd } from "@/components/custom/kbd";
+import { Kbd } from "@/components/shortcuts/kbd";
 import { UIMessage } from "@ai-sdk/react";
+
+export const Route = createFileRoute('/')({
+  component: AppPage,
+})
 
 function AppPage() {
   const { userId } = useAuth();
@@ -55,7 +59,3 @@ function AppPage() {
     </div>
   );
 }
-
-export const Route = createFileRoute('/')({
-  component: AppPage,
-}) 

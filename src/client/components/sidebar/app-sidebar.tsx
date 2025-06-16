@@ -2,20 +2,13 @@ import * as React from "react"
 import {
   AudioWaveform,
   Blocks,
-  Calendar,
+  Box,
   Command,
   Home,
-  Inbox,
-  MessageCircleQuestion,
   Search,
   Settings2,
-  Sparkles,
   Trash2,
 } from "lucide-react"
-
-import { NavFavorites } from "@/components/sidebar/nav-favorites"
-import { NavMain } from "@/components/sidebar/nav-main"
-import { NavSecondary } from "@/components/sidebar/nav-secondary"
 import { NavWorkspaces } from "@/components/sidebar/nav-workspaces"
 import { TeamSwitcher } from "@/components/sidebar/team-switcher"
 import {
@@ -24,8 +17,13 @@ import {
   SidebarHeader,
   SidebarFooter,
   SidebarRail,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarGroup,
 } from "@/components/ui/sidebar"
 import { useStore } from "@/lib/state"
+import { useLocation, useRouter } from "@tanstack/react-router"
 
 // This is sample data.
 const data = {
@@ -51,12 +49,7 @@ const data = {
       title: "Search",
       url: "#",
       icon: Search,
-      onClick: () => useStore.setState({ commandOpen: true }),
-    },
-    {
-      title: "Chat",
-      url: '/app/chat',
-      icon: Sparkles,
+      onClickHandler: () => useStore.setState({ commandOpen: true }),
     },
     {
       title: "Home",
@@ -64,18 +57,13 @@ const data = {
       icon: Home,
     },
     {
-      title: "Inbox",
+      title: "Integrations",
       url: "#",
-      icon: Inbox,
-      badge: "10",
+      icon: Box,
+      onClickHandler: () => useStore.setState({ integrationsDialogOpen: true })
     },
   ],
   navSecondary: [
-    {
-      title: "Calendar",
-      url: "#",
-      icon: Calendar,
-    },
     {
       title: "Settings",
       url: "#",
@@ -91,149 +79,57 @@ const data = {
       url: "#",
       icon: Trash2,
     },
-    {
-      title: "Help",
-      url: "#",
-      icon: MessageCircleQuestion,
-    },
-  ],
-  favorites: [
-    {
-      name: "Project Management & Task Tracking",
-      url: "#",
-      emoji: "📊",
-    },
-    {
-      name: "Family Recipe Collection & Meal Planning",
-      url: "#",
-      emoji: "🍳",
-    },
-    {
-      name: "Fitness Tracker & Workout Routines",
-      url: "#",
-      emoji: "💪",
-    },
-    {
-      name: "Book Notes & Reading List",
-      url: "#",
-      emoji: "📚",
-    },
-    {
-      name: "Sustainable Gardening Tips & Plant Care",
-      url: "#",
-      emoji: "🌱",
-    },
-    {
-      name: "Language Learning Progress & Resources",
-      url: "#",
-      emoji: "🗣️",
-    },
-    {
-      name: "Home Renovation Ideas & Budget Tracker",
-      url: "#",
-      emoji: "🏠",
-    },
-  ],
-  workspaces: [
-    {
-      name: "Personal Life Management",
-      emoji: "🏠",
-      pages: [
-        {
-          name: "Daily Journal & Reflection",
-          url: "#",
-          emoji: "📔",
-        },
-        {
-          name: "Health & Wellness Tracker",
-          url: "#",
-          emoji: "🍏",
-        },
-      ],
-    },
-    {
-      name: "Professional Development",
-      emoji: "💼",
-      pages: [
-        {
-          name: "Career Objectives & Milestones",
-          url: "#",
-          emoji: "🎯",
-        },
-        {
-          name: "Skill Acquisition & Training Log",
-          url: "#",
-          emoji: "🧠",
-        },
-        {
-          name: "Networking Contacts & Events",
-          url: "#",
-          emoji: "🤝",
-        },
-      ],
-    },
-    {
-      name: "Creative Projects",
-      emoji: "🎨",
-      pages: [
-        {
-          name: "Writing Ideas & Story Outlines",
-          url: "#",
-          emoji: "✍️",
-        },
-        {
-          name: "Art & Design Portfolio",
-          url: "#",
-          emoji: "🖼️",
-        },
-        {
-          name: "Music Composition & Practice Log",
-          url: "#",
-          emoji: "🎵",
-        },
-      ],
-    },
-    {
-      name: "Home Management",
-      emoji: "🏡",
-      pages: [
-        {
-          name: "Household Budget & Expense Tracking",
-          url: "#",
-          emoji: "💰",
-        },
-        {
-          name: "Home Maintenance Schedule & Tasks",
-          url: "#",
-          emoji: "🔧",
-        },
-        {
-          name: "Family Calendar & Event Planning",
-          url: "#",
-          emoji: "📅",
-        },
-      ],
-    },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter()
+  const location = useLocation()
+  
   return (
-    <Sidebar 
-      // className="border-r-0" 
-      variant="inset"
-      {...props}
-    >
-      <SidebarHeader>
+    <Sidebar {...props}>
+      <SidebarHeader className="h-12 border-b py-1.5 justify-center">
         <TeamSwitcher teams={data.teams} />
-        <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
-        <NavFavorites favorites={data.favorites} />
-        <NavWorkspaces workspaces={data.workspaces} />
+        <SidebarGroup>
+          <SidebarMenu>
+            {data.navMain.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton 
+                  isActive={location.pathname === item.url}
+                  onClick={() => {
+                    if (item.onClickHandler) {
+                      item.onClickHandler();
+                    } else {
+                      router.navigate({ to: item.url });
+                    }
+                  }}
+                  className='data-[active=true]:bg-background data-[active=true]:border-border'
+                >
+                  <item.icon />
+                  <span>{item.title}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+        <NavWorkspaces />
       </SidebarContent>
       <SidebarFooter>
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <SidebarMenu>
+          {data.navSecondary.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton 
+                isActive={location.pathname === item.url} 
+                onClick={() => {router.navigate({to: item.url})}}
+              >
+                <item.icon />
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

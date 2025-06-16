@@ -11,6 +11,7 @@ import { createProviderRegistry } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { ElevenLabsClient } from "elevenlabs";
 
 // Routers
 import { userRouter } from './user';
@@ -29,6 +30,7 @@ declare module 'hono' {
     stripe: Stripe;
     registry: ReturnType<typeof createProviderRegistry>;
     oauth: DurableObjectStub<OAuth>;
+    elevenlabs: ElevenLabsClient;
   }
 }
 
@@ -63,8 +65,10 @@ const app = new Hono<{ Bindings: Env }>()
   .use('*', async (c, next) => {
     const db = dbClient(c.env.DATABASE_URL);
     const stripe = new Stripe(c.env.STRIPE_SECRET_KEY);
+    const elevenlabs = new ElevenLabsClient({apiKey: c.env.ELEVENLABS_API_KEY});
     c.set('db', db);
     c.set('stripe', stripe);
+    c.set('elevenlabs', elevenlabs);
     await next();
   })
   .route('/api/public', publicRouter)

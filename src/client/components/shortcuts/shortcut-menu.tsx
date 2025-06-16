@@ -1,53 +1,20 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList, CommandShortcut } from "@/components/ui/command"
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet"
-import { Kbd } from "@/components/custom/kbd"
+import { Kbd } from "@/components/shortcuts/kbd"
 import { Input } from "@/components/ui/input"
 import { SearchIcon } from "lucide-react"
 import { Command as CommandPrimitive } from "cmdk"
-
-interface Shortcut {
-  id: string;
-  label: string;
-  type: string;
-  keys: {
-    windows: string;
-    mac: string;
-  };
-  enabled: boolean;
-}
-
-export const shortcuts: Shortcut[] = [
-  {
-    id: 'chat',
-    label: 'Chat',
-    type: 'General',
-    keys: {
-      windows: 'Ctrl+K',
-      mac: 'Command+K',
-    },
-    enabled: true,
-  },
-]
+import { shortcuts } from "@/components/shortcuts/config"
+import { useHotkeys } from "react-hotkeys-hook"
 
 export function ShortcutMenu() {
   const [shortcutMenuOpen, setShortcutMenuOpen] = useState(false);
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === '/' &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault()
-        setShortcutMenuOpen(!shortcutMenuOpen)
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [setShortcutMenuOpen, shortcutMenuOpen])
+  useHotkeys('ctrl+/, meta+/', () => {
+    setShortcutMenuOpen(!shortcutMenuOpen)
+  }, { enableOnFormTags: true, preventDefault: true, enableOnContentEditable: true })
 
   return (
     <Sheet 
@@ -78,12 +45,12 @@ export function ShortcutMenu() {
             <CommandEmpty>
               <span className="text-muted-foreground">No shortcuts found</span>
             </CommandEmpty>
-            {shortcuts.map(shortcut => (
-              <CommandGroup key={shortcut.type} heading={shortcut.type} className='[&_[cmdk-group-heading]]:px-0'>
+            {Array.from(new Set(shortcuts.map((s) => s.type))).map((type) => (
+              <CommandGroup key={type} heading={type} className='[&_[cmdk-group-heading]]:px-0'>
                 {shortcuts
-                  .filter((item: typeof shortcuts[number]) => item.type === shortcut.type)
-                  .map((item: typeof shortcuts[number]) => (
-                    <CommandItem key={item.id} className="cursor-default data-[selected=true]:bg-background px-0">
+                  .filter((item: typeof shortcuts[number]) => item.type === type)
+                  .map((item) => (
+                    <CommandItem key={item.id} className="cursor-default data-[selected=true]:bg-background data-[selected=true]:border-opacity-0 px-0">
                       <span>{item.label}</span>
                       <CommandShortcut>
                         <Kbd shortcutId={item.id} />

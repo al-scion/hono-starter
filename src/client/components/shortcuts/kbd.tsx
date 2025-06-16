@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 import { forwardRef } from "react"
 import { Icon } from "@/components/custom/icons"
-import { shortcuts } from "@/components/command/shortcut-menu"
+import { shortcuts } from "@/components/shortcuts/config"
 
 const KEY_SYMBOLS: Record<string, Record<string, string>> = {
   mac: {
@@ -121,7 +121,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
     return (
       <div
         ref={ref}
-        className={cn("flex flex-row items-center gap-0.5", className)}
+        className={cn("flex flex-row items-center gap-1", className)}
         {...props}
       >
         {icon ? (
@@ -129,7 +129,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
             className={cn(
               "flex w-5 h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-xs",
               variant === 'default' && "bg-background",
-              variant === 'secondary' && "bg-muted",
+              variant === 'secondary' && "bg-muted-foreground/30 text-muted-background border-none",
               kbdClassName
             )}
           >
@@ -148,7 +148,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
                   "flex h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-xs",
                   "w-5",
                   variant === 'default' && "bg-background",
-                  variant === 'secondary' && "bg-muted",
+                  variant === 'secondary' && "bg-muted-foreground/30 text-muted-background border-none",
                   kbdClassName
                 )}
               >
@@ -166,7 +166,7 @@ const Kbd = forwardRef<HTMLDivElement, KbdProps>(
                   "flex h-5 items-center justify-center rounded-sm font-sans text-xs text-foreground font-normal select-none cursor-default border shadow-xs",
                   key.length > 1 ? "min-w-[1.25rem] px-[3px] tracking-normal" : "w-5 tracking-tight",
                   variant === 'default' && "bg-background",
-                  variant === 'secondary' && "bg-muted",
+                  variant === 'secondary' && "bg-muted-foreground/30 text-muted-background border-none",
                   kbdClassName
                 )}
               >

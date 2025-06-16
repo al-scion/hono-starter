@@ -1,38 +1,53 @@
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
-import Mention from '@tiptap/extension-mention'
 import HardBreak from '@tiptap/extension-hard-break'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link';
-import { EditorContent, useEditor } from '@tiptap/react'
-import suggestion from './suggestion'
-import { useStore } from '@/lib/state';
-import type { useChat } from '@ai-sdk/react';
-import { useLocalStorage } from 'usehooks-ts';
+import Suggestion from '@tiptap/suggestion'
+import { Extension } from '@tiptap/core'
+import Image from '@tiptap/extension-image'
+import FileHandler from '@tiptap-pro/extension-file-handler'
 
-interface EditorProps {
-  id: string
-  placeholder?: string
-  className?: string
-  sendMessage: ReturnType<typeof useChat>['sendMessage']
-  enabledTools?: string[]
-  [key: string]: any
-}
+import { EditorContent, useEditor } from '@tiptap/react'
+import { MentionSuggestion } from './suggestion'
+import { useStore } from '@/lib/state';
+import type { useChat, UIMessage } from '@ai-sdk/react';
+import { useLocalStorage } from 'usehooks-ts';
+import { db } from '@/lib/dexie';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { api } from '@/lib/api';
+import { useEffect } from 'react';
+import { useSidebar } from '../ui/sidebar'
 
 export function Editor(
   { 
     id,
-    placeholder,
     sendMessage,
     className,
     enabledTools = [],
+    editorRef,
     ...props
-  }: EditorProps
+  }: {
+    id: string
+    sendMessage: ReturnType<typeof useChat>['sendMessage']
+    className?: string
+    enabledTools?: string[]
+    editorRef: any
+  }
 ) {
 
   const { setContextItems } = useStore();
   const [modelId] = useLocalStorage('modelId', '');
+  const chat = useLiveQuery(() => db.chats.get(id))
+
+  const { state } = useSidebar('right')
+
+  useEffect(() => {
+    if (state === 'expanded') {
+      editor?.commands.focus()
+    }
+  }, [state])
 
   const editor = useEditor({
     extensions: [
@@ -40,18 +55,43 @@ export function Editor(
       Paragraph,
       Text,
       HardBreak,
-      Placeholder.configure({ placeholder }),
-      Mention.configure({
-        HTMLAttributes: {
-          class: 'mention bg-blue-100 text-blue-800 px-1 py-0.5 rounded focus:outline-none',
+      Image,
+      FileHandler.configure({
+        allowedMimeTypes: ['image/png', 'image/jpeg'],
+        onDrop(editor, files, pos) {
+          files.forEach(file => {
+            const fileReader = new FileReader()
+            fileReader.readAsDataURL(file)
+            fileReader.onload = () => {
+              editor.chain().insertContentAt(pos, {
+                type: 'image',
+                attrs: {
+                  src: fileReader.result,
+                },
+              }).focus().run()
+            }
+          })
         },
-        suggestion: {
-          ...suggestion,
-          decorationClass: 'bg-muted px-1 py-0.5 rounded',
-          allowSpaces: true,
+        onPaste(editor, files, htmlContent) {
+          files.forEach(file => {
+            if (htmlContent) {
+              return false
+            }
+            const fileReader = new FileReader()
+            fileReader.readAsDataURL(file)
+            fileReader.onload = () => {
+              editor.chain().insertContentAt(editor.state.selection.anchor, {
+                type: 'image',
+                attrs: {
+                  src: fileReader.result,
+                },
+              }).focus().run()
+            }
+          })
         },
-        deleteTriggerWithBackspace: true,
       }),
+      Placeholder.configure({ placeholder: "Ask anything, use @ to mention" }),
+      MentionSuggestion,
       Link.configure({
         openOnClick: false,
         autolink: true,
@@ -59,6 +99,22 @@ export function Editor(
           class: 'bg-blue-100 text-blue-800 px-1 py-0.5 rounded focus:outline-none',
         },
       }),
+
+      // Slash commands for actions. To be completed
+      Extension.create({
+        name: 'slashCommand',
+        addProseMirrorPlugins() {
+          return [
+            Suggestion ({
+              editor: this.editor,
+              char: '/',
+              decorationClass: 'bg-muted px-1 py-0.5 rounded',
+              decorationTag: 'slash',
+              allowSpaces: false,
+            })
+          ]
+        }
+      })
     ],
     editorProps: {
       attributes: {
@@ -70,25 +126,36 @@ export function Editor(
           
           const text = editor?.getText().trim()
           const content = editor?.getHTML()
-          if (text) {
-            sendMessage({
-              role: 'user',
-              parts: [{ type: 'text', text }],
-              metadata: {
-                content: content,
-              },
-              
-            }, {
-              headers: {
-                modelId: modelId,
-                'enabled-tools': JSON.stringify(enabledTools),
-              }
-            })
-            editor?.commands.clearContent()
+          if (!text) throw new Error('No text to send')
+
+          const message: UIMessage = {
+            id: crypto.randomUUID(),
+            role: 'user',
+            parts: [{ type: 'text', text }],
+            metadata: { content },
+          }
+          sendMessage(message, {
+            headers: {
+              modelId: modelId,
+              'enabled-tools': JSON.stringify(enabledTools),
+            }
+          })
+          editor?.commands.clearContent()
+          setContextItems([])
+          
+          db.messages.add({
+            ...message,
+            chatId: id,
+          })
+          if (!chat) {
+            db.chats.add({id, title: 'New Chat', createdAt: new Date()})
+            api.chat['generate-title'].$post({json: { messages: [message] }})
+              .then(data => data.json())
+              .then(({ title }) => db.chats.update(id, { title }))
+              .catch(console.error)
           }
           return true
         }
-        return false
       },
     },
     onUpdate(props) {
@@ -107,9 +174,10 @@ export function Editor(
     ...props,
   })
 
+  if (!editor) throw new Error('Editor not found')
+  editorRef.current = editor
+
   return (
-    <>
-      <EditorContent editor={editor} />
-    </>
+    <EditorContent editor={editor} />
   )
 }

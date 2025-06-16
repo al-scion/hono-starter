@@ -1,3 +1,4 @@
+import { UIMessage } from "@ai-sdk/react";
 import { create } from "zustand";
 
 interface State {
@@ -8,12 +9,17 @@ interface State {
 
   chatId: string;
   setChatId: (chatId: string) => void;
+  initialMessages: UIMessage[];
+  setInitialMessages: (initialMessages: UIMessage[]) => void;
 
   commandOpen: boolean;
   setCommandOpen: (commandOpen: boolean) => void;
 
   integrationsDialogOpen: boolean;
   setIntegrationsDialogOpen: (integrationsDialogOpen: boolean) => void;
+
+  deployDialogOpen: boolean;
+  setDeployDialogOpen: (deployDialogOpen: boolean) => void;
 
   contextItems: any[];
   setContextItems: (contextItems: any[]) => void;
@@ -27,12 +33,17 @@ export const useStore = create<State>((set) => ({
 
   chatId: crypto.randomUUID(),
   setChatId: (chatId: string) => set({ chatId }),
+  initialMessages: [],
+  setInitialMessages: (initialMessages: UIMessage[]) => set({ initialMessages }),
 
   commandOpen: false,
   setCommandOpen: (commandOpen: boolean) => set({ commandOpen }),
 
   integrationsDialogOpen: false,
   setIntegrationsDialogOpen: (integrationsDialogOpen: boolean) => set({ integrationsDialogOpen }),
+
+  deployDialogOpen: false,
+  setDeployDialogOpen: (deployDialogOpen: boolean) => set({ deployDialogOpen }),
 
   contextItems: [],
   setContextItems: (contextItems: any[]) => set({ contextItems }),
