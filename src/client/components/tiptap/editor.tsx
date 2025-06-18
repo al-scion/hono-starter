@@ -4,8 +4,6 @@ import Text from '@tiptap/extension-text'
 import HardBreak from '@tiptap/extension-hard-break'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link';
-import Suggestion from '@tiptap/suggestion'
-import { Extension } from '@tiptap/core'
 import Image from '@tiptap/extension-image'
 import FileHandler from '@tiptap-pro/extension-file-handler'
 
@@ -40,7 +38,6 @@ export function Editor(
   const { setContextItems } = useStore();
   const [modelId] = useLocalStorage('modelId', '');
   const chat = useLiveQuery(() => db.chats.get(id))
-
   const { state } = useSidebar('right')
 
   useEffect(() => {
@@ -99,22 +96,6 @@ export function Editor(
           class: 'bg-blue-100 text-blue-800 px-1 py-0.5 rounded focus:outline-none',
         },
       }),
-
-      // Slash commands for actions. To be completed
-      Extension.create({
-        name: 'slashCommand',
-        addProseMirrorPlugins() {
-          return [
-            Suggestion ({
-              editor: this.editor,
-              char: '/',
-              decorationClass: 'bg-muted px-1 py-0.5 rounded',
-              decorationTag: 'slash',
-              allowSpaces: false,
-            })
-          ]
-        }
-      })
     ],
     editorProps: {
       attributes: {

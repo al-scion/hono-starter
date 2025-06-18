@@ -1,4 +1,4 @@
-import { ChevronRight, Ellipsis, FileText, Plus } from "lucide-react"
+import { ChevronRight, Ellipsis, FileText, Plus, Trash2 } from "lucide-react"
 import React, { useState } from "react"
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 import { Button } from "../ui/button"
@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useConvexMutation, convexQuery } from "@convex-dev/react-query";
 import { convexApi, Id } from "@/lib/api";
 import { useParams, useRouter } from "@tanstack/react-router";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 export function NavWorkspaces() {
   
@@ -40,28 +41,16 @@ export function NavWorkspaces() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="px-2 group/sidebar-label hover:bg-sidebar-accent cursor-pointer mb-0.5">
-        <span className="text-xs">Workspace</span>
+      <SidebarGroupLabel className="px-2 pr-1 group/sidebar-label hover:bg-sidebar-accent cursor-pointer mb-0.5">
+        <span className="text-xs">Private</span>
         <div className="flex flex-row items-center gap-1 ml-auto">
-          <Button
-            asChild
-            variant="ghost"
-            className="size-5 p-0.5 ml-auto hidden group-hover/sidebar-label:block hover:bg-foreground/5"
-          >
-            <span>
-              <Ellipsis className="size-4" />
-            </span>
-          </Button>
-          <Button
-            asChild
-            variant="ghost"
-            className="size-5 p-0.5 ml-auto hidden group-hover/sidebar-label:block hover:bg-foreground/5"
-            onClick={() => createDocument({})}
-          >
-            <span>
-              <Plus className="size-4" />
-            </span>
-          </Button>
+        <Button
+          variant="ghost"
+          className="size-6 p-1 ml-auto hidden group-hover/sidebar-label:block hover:bg-zinc-300"
+          onClick={() => createDocument({})}
+        >
+          <Plus className="size-4"/>
+        </Button>
         </div>
       </SidebarGroupLabel>
       <SidebarGroupContent>
@@ -72,36 +61,41 @@ export function NavWorkspaces() {
               <React.Fragment key={document._id}>
                 <SidebarMenuItem>
                   <SidebarMenuButton 
-                    className="group/workspace-item relative"
-                    onClick={() => {
-                      router.navigate({ to: '/app/document/$docId', params: { docId: document._id }, search: { mode: 'editor' } })
-                    }}
+                    className="group/workspace-item pr-1 relative"
                     isActive={docId === document._id}
+                    onClick={() => router.navigate({ to: '/app/document/$docId', params: { docId: document._id }, search: { mode: 'editor' } })}
                   >
-                    <FileText className="size-4" />
+                    {document.emoji ? <span className="w-4 text-base leading-none">{document.emoji}</span> : <FileText className="size-4" />}
                     <span className="truncate">{document.title || 'New document'}</span>
-                    <div className="flex flex-row items-center gap-1 ml-auto">
+                    <div className="flex flex-row items-center gap-0.5 ml-auto">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            className="size-6 p-1 opacity-0 group-hover/workspace-item:opacity-100 data-[state=open]:opacity-100 hover:bg-zinc-300"
+                          >
+                            <Ellipsis className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          <DropdownMenuItem onClick={() => deleteDocument({ docId: document._id })}>
+                            <Trash2 className="size-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <Button
                         variant="ghost"
-                        className="size-5 p-0.5 hidden group-hover/workspace-item:block hover:bg-foreground/5"
+                        className="size-6 p-1 opacity-0 group-hover/workspace-item:opacity-100 hover:bg-zinc-300"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Ellipsis className="size-4" />
-                      </Button>
-                      <Button
-                        asChild
-                        variant="ghost"
-                        className="size-5 p-0.5 hidden group-hover/workspace-item:block hover:bg-foreground/5"
-                      >
-                        <span>
-                          <Plus className="size-4" />
-                        </span>
+                        <Plus className="size-4" />
                       </Button>
                     </div>
                     <Button
                       asChild
                       variant="ghost"
-                      className="absolute left-1.5 z-50 size-5 p-0.5 hidden group-hover/workspace-item:block bg-sidebar-accent hover:bg-zinc-200"
+                      className="absolute left-1 z-50 size-6 p-1 hidden group-hover/workspace-item:block bg-sidebar-accent hover:bg-zinc-300"
                       onClick={(e) => {
                         e.stopPropagation()
                         toggleWorkspace(document._id)

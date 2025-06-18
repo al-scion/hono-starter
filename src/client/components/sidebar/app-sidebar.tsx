@@ -1,13 +1,10 @@
 import * as React from "react"
 import {
-  AudioWaveform,
   Blocks,
   Box,
-  Command,
   Home,
   Search,
-  Settings2,
-  Trash2,
+  Settings,
 } from "lucide-react"
 import { NavWorkspaces } from "@/components/sidebar/nav-workspaces"
 import { TeamSwitcher } from "@/components/sidebar/team-switcher"
@@ -27,23 +24,6 @@ import { useLocation, useRouter } from "@tanstack/react-router"
 
 // This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: Command,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Search",
@@ -67,17 +47,12 @@ const data = {
     {
       title: "Settings",
       url: "#",
-      icon: Settings2,
+      icon: Settings,
     },
     {
       title: "Templates",
       url: "#",
       icon: Blocks,
-    },
-    {
-      title: "Trash",
-      url: "#",
-      icon: Trash2,
     },
   ],
 }
@@ -89,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader className="h-12 border-b py-1.5 justify-center">
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

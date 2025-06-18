@@ -2,13 +2,15 @@ import {
   ReactFlow,
   useNodesState,
   useEdgesState,
-  useOnViewportChange,
   useReactFlow,
   Background,
   type Edge,
   type Node,
   type Viewport,
-  // type ReactFlowProps
+  type OnNodesChange,
+  type OnEdgesChange,
+  applyNodeChanges,
+  applyEdgeChanges,
 } from '@xyflow/react'
 import { NodeOperationsProvider } from '@/components/canvas/node'
 import { ConnectionLine } from '@/components/canvas/connection-line'
@@ -16,7 +18,8 @@ import { ZoomSlider } from '@/components/canvas/zoom-slider'
 import { Toolbar } from '@/components/canvas/toolbar'
 import { useState, useCallback } from 'react'
 
-import { Doc } from '@/lib/api';
+import { convexApi, Doc } from '@/lib/api';
+import { useMutation } from 'convex/react';
 
 export function Canvas({
   document,
@@ -26,15 +29,44 @@ export function Canvas({
   children?: React.ReactNode
 }) {
 
+  const updateCanvas = useMutation(convexApi.document.updateCanvas)
+  
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>(document.canvas.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(document.canvas.edges);
   const [viewport, setViewport] = useState<Viewport>({x: 0, y: 0, zoom: 1})
 
-  useOnViewportChange({
-    onEnd: (viewport) => {
-      console.log('onEnd', viewport)
+  const handleNodesChange = useCallback<OnNodesChange>(
+    (changes) => {
+      setNodes((current) => {
+        const updatedNodes = applyNodeChanges(changes, current);
+        updateCanvas({
+          docId: document._id,
+          nodes: updatedNodes,
+          edges: edges
+        });
+        return updatedNodes;
+      });
     },
-  })
+    [document._id, edges, updateCanvas]
+  );
+
+  const handleEdgesChange = useCallback<OnEdgesChange>(
+    (changes) => {
+      setEdges((current) => {
+        const updatedEdges = applyEdgeChanges(changes, current);
+        updateCanvas({
+          docId: document._id,
+          nodes: nodes,
+          edges: updatedEdges
+        });
+        return updatedEdges;
+      });
+    },
+    [document._id, nodes, updateCanvas]
+  )
+
+
+  
 
   const { getNode } = useReactFlow()
   
@@ -86,8 +118,8 @@ export function Canvas({
           nodes={nodes}
           edges={edges}
           viewport={viewport}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
           onViewportChange={setViewport}
           className=''
         >

@@ -9,7 +9,7 @@ import Details from '@tiptap-pro/extension-details'
 import DetailsContent from '@tiptap-pro/extension-details-content'
 import DetailsSummary from '@tiptap-pro/extension-details-summary'
 import { useTiptapSync } from '@convex-dev/prosemirror-sync/tiptap'
-import { MentionSuggestion } from './suggestion'
+import { MentionSuggestion, SlashCommand } from './suggestion'
 
 export function DocumentEditor({ 
   sync,
@@ -56,7 +56,6 @@ export function DocumentEditor({
         hardBreak: {},
 
       }),
-
       Highlight,
       Typography,
       TaskList,
@@ -66,13 +65,14 @@ export function DocumentEditor({
       DetailsSummary,
       Placeholder.configure({ placeholder: 'Write something...' }),
       MentionSuggestion,
+      SlashCommand,
     ],
     editorProps: {
       attributes: {
         class: "focus-visible:outline-none flex-1 h-full",
       },
       handleKeyDown: (_, event) => {
-        if ((event.key === 'ArrowUp' || event.key === 'ArrowLeft' || event.key === 'Backspace') && editor?.state.selection.$anchor.pos === 1) {
+        if ((event.key === 'ArrowUp') && editor?.state.selection.$anchor.pos === 1) {
           event.preventDefault()
           titleInputRef.current?.focus()
         }
@@ -80,10 +80,7 @@ export function DocumentEditor({
     },
   })
 
-  // Expose the editor instance via the forwarded ref so callers can access commands (e.g. focus).
-  if (editor && editorRef) {
-    editorRef.current = editor;
-  }
+  if (editorRef) editorRef.current = editor;
 
   return (
     <EditorContent editor={editor} className='flex flex-1' />

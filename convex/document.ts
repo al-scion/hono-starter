@@ -6,7 +6,6 @@ export const getDocument = query({
   args: {
     docId: v.id('documents'),
   },
-  
   handler: async (ctx, args) => {
     const { docId } = args
     return await ctx.db.get(docId)
@@ -61,12 +60,37 @@ export const updateTitle = mutation({
   },
 })
 
+export const updateEmoji = mutation({
+  args: {
+    docId: v.id('documents'),
+    emoji: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { docId, emoji } = args
+    await ctx.db.patch(docId, { emoji })
+  },
+})
+
+export const updateCanvas = mutation({
+  args: {
+    docId: v.id('documents'),
+    nodes: v.array(v.any()),
+    edges: v.array(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const { docId, nodes, edges } = args
+    await ctx.db.patch(docId, { canvas: { nodes, edges } })
+  },
+})
+
 export const deleteDocument = mutation({
   args: {
     docId: v.id('documents'),
   },
   handler: async (ctx, args) => {
     const { docId } = args
+    const user = await ctx.auth.getUserIdentity()
+    if (!user) throw new Error('Unauthorized')
     await ctx.db.delete(docId)
   },
 })

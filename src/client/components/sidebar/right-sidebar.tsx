@@ -1,10 +1,9 @@
 import { Sidebar, SidebarRail } from "@/components/ui/sidebar"
 import { Messages } from "@/components/chat/messages"
 import { useStore } from "@/lib/state"
-import { cn } from "@/lib/utils"
-
 
 export function RightSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
   const { chatId } = useStore()
 
   return (
@@ -12,11 +11,7 @@ export function RightSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       side="right"
       {...props}
     >
-      <div 
-        className={cn(
-          "flex flex-col flex-1 w-full bg-background",
-          // 'rounded-lg border'
-        )}>
+      <div className="flex flex-col flex-1 w-full bg-background">
         <Messages key={chatId} />
       </div>
       <SidebarRail />

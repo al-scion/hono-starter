@@ -5,6 +5,7 @@ export default defineSchema({
 
   documents: defineTable({
     title: v.string(),
+    emoji: v.optional(v.string()),
     userId: v.string(),
     canvas: v.object({
       edges: v.array(v.any()),

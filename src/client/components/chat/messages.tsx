@@ -4,7 +4,7 @@ import { MessageAssistant } from "@/components/tiptap/message-assistant";
 import { MessageUser } from "@/components/tiptap/message-user";
 import { Button } from "@/components/ui/button";
 import { useRef, useState, ChangeEvent } from "react";
-import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Wrench, ArrowRight, Loader, Settings, Ellipsis, Trash2, PenBox, Star, ChevronRight, PanelRight } from "lucide-react";
+import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Wrench, ArrowRight, Loader, Settings, Ellipsis, Trash2, PenBox, PanelRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandList, CommandItem, CommandGroup, CommandShortcut, CommandSeparator, CommandInput, CommandEmpty } from "@/components/ui/command";
 import { useLocalStorage } from "usehooks-ts";
@@ -15,13 +15,13 @@ import { useStore } from "@/lib/state";
 import { DefaultChatTransport } from "ai";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Textarea } from "../ui/textarea";
 import { db } from "@/lib/dexie";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useSidebar } from "../ui/sidebar";
 import { Claude, OpenAI, Google } from "@/lib/icons";
 import { Kbd } from "@/components/shortcuts/kbd";
 import type { Editor as TiptapEditor } from '@tiptap/core'
+import { useHotkeys } from "react-hotkeys-hook";
 
 const models = [{
   id: 'openai/gpt-4.1',
@@ -117,9 +117,9 @@ const mcpServers: mcpServer[] = [{
 }]
 
 export function Messages() {
-
-  const { chatId, setChatId, contextItems, setIntegrationsDialogOpen, initialMessages, setInitialMessages } = useStore()
+  
   const chats = useLiveQuery(() => db.chats.orderBy('createdAt').reverse().toArray())
+  const { chatId, setChatId, contextItems, setIntegrationsDialogOpen, initialMessages, setInitialMessages } = useStore()
   const { toggleSidebar } = useSidebar()
   const editorRef = useRef<TiptapEditor>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -142,10 +142,8 @@ export function Messages() {
     onFinish({message}) {db.messages.add({...message, chatId} )},
   });
 
-  const [systemInstructions, setSystemInstructions] = useLocalStorage('systemInstructions', '');
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isToolPopoverOpen, setIsToolPopoverOpen] = useState(false);
-  const [isModelSettingsOpen, setIsModelSettingsOpen] = useState(false);
   const [selectedTool, setSelectedTool] = useState<string>('');
   const { scrollRef, contentRef } = useStickToBottom();
 
@@ -232,6 +230,13 @@ export function Messages() {
     e.target.value = "";
   };
 
+  const handleNewChat = () => {
+    setInitialMessages([]);
+    setChatId(crypto.randomUUID());
+  }
+
+  useHotkeys('ctrl+j, meta+j', handleNewChat, {enableOnContentEditable: true, enableOnFormTags: true})
+
   return (
     <div className="flex flex-col flex-1">
 
@@ -270,18 +275,14 @@ export function Messages() {
                         </PopoverTrigger>
                         <PopoverContent align='end' alignOffset={-8} sideOffset={10} className="p-1 max-w-40 flex flex-col">
                           <Button variant="ghost" size='sm' className='px-2 justify-start font-normal' >
-                            <Star className="size-4" />
-                            Star
-                          </Button>
-                          <Button variant="ghost" size='sm' className='px-2 justify-start font-normal' >
                             <PenBox className="size-4" />
                             Rename
                           </Button>
-                          <Button variant="ghost" size='sm' className='px-2 justify-start font-normal' onClick={() => {
+                          <Button variant="ghost" size='sm' className='px-2 justify-start font-normal' 
+                            onClick={() => {
                               db.chats.delete(chat.id)
                               db.messages.where('chatId').equals(chat.id).delete()
                               if (chatId === chat.id) {
-                                // If we just deleted the active chat reset to a blank one.
                                 setInitialMessages([]);
                                 setChatId(crypto.randomUUID())
                               }
@@ -302,12 +303,7 @@ export function Messages() {
         <div className="flex flex-row gap-1 ml-auto">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" className="size-7 p-0" onClick={() => {
-                // Prepare an empty state *before* switching to the new chat so
-                // the new Messages instance starts clean.
-                setInitialMessages([]);
-                setChatId(crypto.randomUUID());
-              }}>
+              <Button variant="ghost" className="size-6 p-0" onClick={handleNewChat}>
                 <Plus className="size-4" />
               </Button>
             </TooltipTrigger>
@@ -318,7 +314,7 @@ export function Messages() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" className="size-7 p-0" onClick={() => toggleSidebar()}>
+              <Button variant="ghost" className="size-6 p-0" onClick={() => toggleSidebar()}>
                 <PanelRight className="size-4" />
               </Button>
             </TooltipTrigger>
@@ -350,14 +346,9 @@ export function Messages() {
             }
 
             if (message.role === 'assistant') {
-
               const sources = message.parts.filter(part => part.type === 'source-url');
-              // const isReasoningStreaming = message.parts.some(part => part.type === 'reasoning')
-              //   && !message.parts.some(part => part.type === 'text')
-              //   && status === 'streaming';
 
               return <div key={`assistant-${message.id}`} className={`space-y-2 ${messageIndex === messages.length - 1 ? "min-h-[calc(100dvh-20rem)]" : ""}`}>
-
                 {sources.length > 0 && 
                   <Accordion type="single" collapsible className="w-full border rounded-lg">
                     <AccordionItem value="item-1" >
@@ -601,10 +592,7 @@ export function Messages() {
                 </Command>
               </PopoverContent>
             </Popover>
-            <Popover open={isPopoverOpen} onOpenChange={(state) => {
-              setIsPopoverOpen(state)
-              if (state === true) setIsModelSettingsOpen(false);
-            }}>
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
               <Tooltip>
                 <PopoverTrigger asChild>
                   <TooltipTrigger asChild>
@@ -621,7 +609,7 @@ export function Messages() {
               <PopoverContent className="p-0">
                 <Command defaultValue={models.find(model => model.id === modelId)?.label}>
                   <CommandList>
-                    <CommandGroup heading="Models" className={isModelSettingsOpen ? 'hidden' : ''}>
+                    <CommandGroup heading="Models">
                       {models.map((modelOption) => (
                         <CommandItem
                           key={modelOption.id}
@@ -640,29 +628,6 @@ export function Messages() {
                         </CommandItem>
                       ))}
                     </CommandGroup>
-                    <CommandGroup heading="System instructions" className={isModelSettingsOpen ? '' : 'hidden'}>
-                      <CommandItem className="p-0.5">
-                        <Textarea 
-                          placeholder="Add custom instructions to personalize responses" 
-                          className="resize-none p-1.5 text-xs focus-visible:ring-0 shadow-none" 
-                          value={systemInstructions}
-                          onChange={(e) => setSystemInstructions(e.target.value)}
-                        />
-                      </CommandItem>
-                    </CommandGroup>
-                    {!isModelSettingsOpen && 
-                      <>
-                        <CommandSeparator />
-                        <CommandGroup>
-                          <CommandItem onSelect={() => setIsModelSettingsOpen(!isModelSettingsOpen)}>
-                            <span>Settings</span>
-                            <CommandShortcut>
-                              <ChevronRight className="size-4" />
-                            </CommandShortcut>
-                          </CommandItem>
-                        </CommandGroup>
-                      </>
-                    }
                   </CommandList>
                 </Command>
               </PopoverContent>

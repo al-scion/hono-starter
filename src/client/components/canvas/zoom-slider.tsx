@@ -12,12 +12,14 @@ import { cn } from "@/lib/utils";
 export const ZoomSlider = forwardRef<
   HTMLDivElement,
   Omit<PanelProps, "children">
->(({ className, ...props }) => {
+>(({ className, ...props }, ref) => {
+  
   const { zoom } = useViewport();
   const { zoomTo, zoomIn, zoomOut } = useReactFlow();
  
   return (
     <Panel
+      ref={ref}
       className={cn(
         "flex rounded-md bg-background p-1 text-foreground border shadow-sm",
         className,

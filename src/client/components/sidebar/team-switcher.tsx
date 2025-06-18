@@ -1,5 +1,4 @@
-import * as React from "react"
-import { ChevronDown, LogOut, Moon, PanelLeft, Plus, Sun } from "lucide-react"
+import { Building2, ChevronDown, LogOut, Moon, PanelLeft, Plus, Sun } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +9,7 @@ import {
 import {
   SidebarMenu,
   SidebarMenuItem,
+  SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useTheme } from "next-themes"
@@ -18,36 +18,26 @@ import { useUser } from "@clerk/clerk-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { Kbd } from "../shortcuts/kbd"
 import { Button } from "../ui/button"
+import { useOrganization } from "@clerk/clerk-react"
 
-export function TeamSwitcher({
-  teams,
-}: {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
-}) {
+export function TeamSwitcher() {
 
-  const [activeTeam] = React.useState(teams[0])
   const { setTheme, theme } = useTheme()
   const leftSidebar = useSidebar("left")
   const { user } = useUser()
+  const { organization } = useOrganization()
 
   return (
     <SidebarMenu className="justify-center">
       <SidebarMenuItem className="flex flex-row items-center gap-1">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 rounded-md px-2 hover:bg-sidebar-accent flex-1 min-w-0 justify-start">
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-5 items-center justify-center rounded-md flex-shrink-0">
-                <activeTeam.logo className="size-3" />
-              </div>
-              <span className="truncate font-medium min-w-0 flex-1">{user?.firstName}'s Workspace</span>
-              <ChevronDown className="text-muted-foreground/80 flex-shrink-0" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="start">
+        <SidebarMenuButton className="pr-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex flex-row items-center gap-2">
+              {organization?.imageUrl ? <img src={organization?.imageUrl} alt={organization?.name} className="size-4 rounded-full" /> : <Building2 className="size-4" />}
+              <span className="truncate">{user?.firstName}'s Workspace</span>
+              <ChevronDown className="text-muted-foreground/80 size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start">
             <DropdownMenuItem className="gap-2 p-2 py-1.5">
               <Plus className="size-4" />
               <div>Add team</div>
@@ -66,22 +56,26 @@ export function TeamSwitcher({
               </SignOutButton>
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              className="size-7 p-0 hover:bg-sidebar-accent ml-auto" 
-              onClick={() => leftSidebar.toggleSidebar()}
-            >
-              <PanelLeft className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Toggle sidebar
-            <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
-          </TooltipContent>
-        </Tooltip>
+          </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="size-6 p-0 ml-auto hover:bg-zinc-300" 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  leftSidebar.toggleSidebar()
+                }}
+              >
+                <PanelLeft className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Toggle sidebar
+              <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
+            </TooltipContent>
+          </Tooltip>
+        </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
   )

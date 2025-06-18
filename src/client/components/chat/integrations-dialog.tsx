@@ -3,7 +3,7 @@ import { useStore } from "@/lib/state"
 import { Button } from "../ui/button"
 import { useState } from "react"
 import { Input } from "../ui/input"
-import { DialogTitle, DialogFooter, DialogDescription } from "../ui/dialog"
+import { DialogTitle, DialogFooter, DialogDescription, DialogHeader } from "../ui/dialog"
 import { Label } from "../ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X } from "lucide-react"
@@ -157,17 +157,13 @@ export function IntegrationsDialog() {
 
 
       {configRequired && (
-        <>
-          <div className="flex flex-col gap-4 p-16">
+          <div className="flex flex-col gap-6 p-4">
 
-            <header className="flex flex-col items-center justify-center">
-              <img src={`/svg/${selectedIntegration?.toLowerCase()}.svg`} alt={selectedIntegration || ''} className="size-20 border rounded-lg p-2" />
-              <DialogTitle className="mt-6 text-xl">Connect to {selectedIntegration}</DialogTitle>
-              <DialogDescription className="">{integrations.find((integration) => integration.name === selectedIntegration)?.url}</DialogDescription>
-            </header>
+            <DialogHeader>
+              <DialogTitle>Connect to {selectedIntegration}</DialogTitle>
+            </DialogHeader>
 
-            <div className="flex flex-col mt-8 space-y-6">
-
+            <div className="flex flex-col space-y-4">
               {!isCustomMcp && <div className="flex flex-col gap-2">
                 <Label>API Key</Label>
                 <Input type="text" placeholder={`${selectedIntegration} API key`} value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
@@ -177,7 +173,7 @@ export function IntegrationsDialog() {
                 <>
                   <div className="flex flex-col gap-2">
                     <Label>Name</Label>
-                    <Input type="text" placeholder="Custom MCP" value={customMcpName} onChange={(e) => setCustomMcpName(e.target.value)} />
+                    <Input type="text" placeholder="My Custom MCP" value={customMcpName} onChange={(e) => setCustomMcpName(e.target.value)} />
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -238,8 +234,12 @@ export function IntegrationsDialog() {
                             </div>
                           </div>)
                         )}
-                        <Button variant='ghost' size='sm' onClick={() => setCustomMcpHeaders([...customMcpHeaders, { header: '', value: '' }])}>
-                          + Add header
+                        <Button 
+                          variant='secondary'
+                          size='sm'
+                          className="w-fit"
+                          onClick={() => setCustomMcpHeaders([...customMcpHeaders, { header: '', value: '' }])}>
+                          Add header
                         </Button>
                       </>
                     }
@@ -249,17 +249,16 @@ export function IntegrationsDialog() {
                 </>  
               )}
             </div>
-          </div>
 
-          <DialogFooter className="border-t px-6 py-4">
-            <Button variant="outline" onClick={() => setSelectedIntegration(null)}>
-              Back
-            </Button>
-            <Button disabled={!apiKey}>
-              Connect
-            </Button>
-          </DialogFooter>
-        </>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSelectedIntegration(null)}>
+                Back
+              </Button>
+              <Button disabled={!apiKey}>
+                Connect
+              </Button>
+            </DialogFooter>     
+          </div>
       )}
 
     </CommandDialog>
