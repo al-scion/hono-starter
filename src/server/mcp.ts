@@ -1,48 +1,35 @@
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { streamSSE } from "hono/streaming";
-import { html } from "hono/html";
+import { zValidator } from "@hono/zod-validator";
+import { getAgentByName, routeAgentRequest } from "agents";
 
 export const mcpRouter = new Hono<{ Bindings: Env }>()
-
-  .post('/register', zValidator('json', z.object({
-    name: z.string().min(1),
-    url: z.string().url(),
-    headers: z.record(z.string(), z.string()).optional(),
-  })), async (c) => {
-    
-    const { name, url, headers } = c.req.valid('json');
-    const oauth = c.var.oauth;
-    const sessionId = crypto.randomUUID();
-    const redirectUrl = c.req.url.replace('/register', '/oauth/callback') + `?session=${sessionId}`;
-
-    return streamSSE(c, async (stream) => {
-
-      const result = await oauth.registerMcp(name, url, redirectUrl, headers) as any;
-      await stream.writeSSE({
-        data: JSON.stringify(result),
-      });
-      
-      if (result.authUrl) {
-        const authResult = await oauth.completeAuth(sessionId, name, url, redirectUrl, headers) as any;
-        await stream.writeSSE({
-          data: JSON.stringify(authResult),
-        });
-      }
-
-      return stream.close()
-    });
+  .all('/agent/*', async (c) => {
+    const resp = await routeAgentRequest(c.req.raw, c.env, { cors: true, prefix: 'api/mcp' });
+    return resp ?? c.json({ error: "not found" }, 404);
   })
-
-  .get('/oauth/callback', zValidator('query', z.object({
-    session: z.string().min(1),
-    code: z.string().min(1),
+  .post('/addMcp', zValidator('json', z.object({
+    name: z.string(),
+    url: z.string(),
   })), async (c) => {
-    const { session, code } = c.req.valid('query');
-    const oauth = c.var.oauth;
-    
-    await oauth.resumeAuth(session, code);
-    
-    return c.html(html`<div>hello</div>`);
+    const { name, url } = c.req.valid('json');
+    const userId = c.var.clerkAuth?.userId || 'anonymous';
+    const agent = await getAgentByName(c.env.AGENT, userId);
+    const { id, authUrl } = await agent.addMcpServer(
+      name,
+      url,
+      new URL(c.req.url).origin,
+      'api/mcp',
+    )
+    console.log('addMcp', id, authUrl)
+    return c.json({ id, authUrl });
+  })
+  .delete('/removeMcp', zValidator('json', z.object({
+    id: z.string(),
+  })), async (c) => {
+    const { id } = c.req.valid('json');
+    const userId = c.var.clerkAuth?.userId || 'anonymous';
+    const agent = await getAgentByName(c.env.AGENT, userId);
+    await agent.removeMcpServer(id);
+    return c.json({ success: true });
   })

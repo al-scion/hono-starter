@@ -13,7 +13,7 @@ import { useState } from 'react'
 export const Route = createFileRoute('/app/_layout/document/$docId')({
   component: RouteComponent,
   validateSearch: z.object({
-    mode: z.enum(['editor', 'canvas', 'hybrid']),
+    mode: z.enum(['editor', 'canvas']),
   })
 })
 
@@ -23,7 +23,6 @@ function RouteComponent() {
   const { docId } = useParams({ from: '/app/_layout/document/$docId' }) as { docId: Id<'documents'> }
   const sync = useTiptapSync(convexApi.prosemirror, docId)
   const document = useQuery(convexQuery(convexApi.document.getDocument, { docId }))
-  const [splitRatio, setSplitRatio] = useState(0.5)
 
   const { mutate: mutateTitle } = useMutation({
     mutationFn: useConvexMutation(convexApi.document.updateTitle).withOptimisticUpdate(
@@ -60,9 +59,8 @@ function RouteComponent() {
 
   return (
     <div className='flex flex-1'>
-      {(mode === 'editor' || mode === 'hybrid') && <Document sync={sync} document={document.data} updateTitle={updateTitle} />}
-      {mode === 'hybrid' && <Separator orientation='vertical' className='h-full' />}
-      {(mode === 'canvas' || mode === 'hybrid') && <Canvas document={document.data} />}
+      {(mode === 'editor') && <Document sync={sync} document={document.data} updateTitle={updateTitle} />}
+      {(mode === 'canvas') && <Canvas document={document.data} />}
     </div>
   )
 }

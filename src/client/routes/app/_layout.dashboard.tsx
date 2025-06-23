@@ -1,16 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSession } from '@clerk/clerk-react'
+import { useMcpStore } from '@/components/mcphost'
 
 export const Route = createFileRoute('/app/_layout/dashboard')({
   component: Dashboard,
 })
 
 export default function Dashboard() {
-  const { session } = useSession()
+
+  const { mcpState, agent } = useMcpStore()
 
   return (
-    <div className="">
-      <pre>{JSON.stringify(session, null, 2)}</pre>
+    <div className="text-xs break-words">
+      <pre>{JSON.stringify(mcpState, null, 2)}</pre>
+      <pre>{JSON.stringify(agent, null, 2)}</pre>
     </div>
   )
 }

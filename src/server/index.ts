@@ -5,6 +5,7 @@ import { logger } from "hono/logger";
 import Stripe from 'stripe';
 import { dbClient } from './db';
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
+import { routeAgentRequest } from "agents";
 
 // Model Providers
 import { createProviderRegistry } from "ai";
@@ -21,15 +22,14 @@ import { publicRouter } from "./public";
 import { mcpRouter } from "./mcp";
 
 // Durable Objects
-export { OAuth } from "./do/oauth";
-import { OAuth } from "./do/oauth";
+export { Agent } from "./do/agent";
+export { MCPHost } from "./do/mcphost";
 
 declare module 'hono' {
   interface ContextVariableMap {
     db: ReturnType<typeof dbClient>;
     stripe: Stripe;
     registry: ReturnType<typeof createProviderRegistry>;
-    oauth: DurableObjectStub<OAuth>;
     elevenlabs: ElevenLabsClient;
   }
 }
@@ -42,11 +42,6 @@ const app = new Hono<{ Bindings: Env }>()
     if (c.req.path.startsWith('/api/public')) {return next();}
     const auth = getAuth(c);
     if (!auth?.userId) {return c.json({ error: 'Unauthorized', message: 'Authentication required' }, 401)}
-     
-    const oauthObjectId = c.env.oauth.idFromName(auth.userId);
-    const oauthStub = c.env.oauth.get(oauthObjectId);
-    c.set('oauth', oauthStub);
-
     await next();
   })
   .use('*', async (c, next) => {
@@ -76,6 +71,10 @@ const app = new Hono<{ Bindings: Env }>()
   .route('/api/user', userRouter)
   .route('/api/chat', chatRouter)
   .route('/api/mcp', mcpRouter)
+  .all('/agents/*', async (c) => {
+    const resp = await routeAgentRequest(c.req.raw, c.env, { cors: true });
+    return resp ?? c.json({ error: "not found" }, 404);
+  })
 
 export type AppType = typeof app;
 export default app;

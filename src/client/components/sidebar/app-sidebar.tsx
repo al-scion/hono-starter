@@ -1,10 +1,9 @@
 import * as React from "react"
 import {
   Blocks,
-  Box,
-  Home,
   Search,
   Settings,
+  Unplug,
 } from "lucide-react"
 import { NavWorkspaces } from "@/components/sidebar/nav-workspaces"
 import { TeamSwitcher } from "@/components/sidebar/team-switcher"
@@ -22,9 +21,8 @@ import {
 import { useStore } from "@/lib/state"
 import { useLocation, useRouter } from "@tanstack/react-router"
 
-// This is sample data.
 const data = {
-  navMain: [
+  navHeader: [
     {
       title: "Search",
       url: "#",
@@ -32,18 +30,13 @@ const data = {
       onClickHandler: () => useStore.setState({ commandOpen: true }),
     },
     {
-      title: "Home",
-      url: "/app/dashboard",
-      icon: Home,
-    },
-    {
       title: "Integrations",
       url: "#",
-      icon: Box,
+      icon: Unplug,
       onClickHandler: () => useStore.setState({ integrationsDialogOpen: true })
     },
   ],
-  navSecondary: [
+  navFooter: [
     {
       title: "Settings",
       url: "#",
@@ -69,7 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {data.navMain.map((item) => (
+            {data.navHeader.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton 
                   isActive={location.pathname === item.url}
@@ -93,7 +86,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          {data.navSecondary.map((item) => (
+          {data.navFooter.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton 
                 isActive={location.pathname === item.url} 

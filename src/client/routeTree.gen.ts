@@ -21,6 +21,7 @@ import { Route as AuthLayoutSignUpImport } from './routes/auth/_layout.sign-up'
 import { Route as AuthLayoutSignInImport } from './routes/auth/_layout.sign-in'
 import { Route as AppLayoutDashboardImport } from './routes/app/_layout.dashboard'
 import { Route as AppLayoutDocumentDocIdImport } from './routes/app/_layout.document.$docId'
+import { Route as ApiMcpAgentUserIdCallbackSessionIdImport } from './routes/api.mcp.agent.$userId.callback.$sessionId'
 
 // Create Virtual Routes
 
@@ -86,6 +87,13 @@ const AppLayoutDocumentDocIdRoute = AppLayoutDocumentDocIdImport.update({
   path: '/document/$docId',
   getParentRoute: () => AppLayoutRoute,
 } as any)
+
+const ApiMcpAgentUserIdCallbackSessionIdRoute =
+  ApiMcpAgentUserIdCallbackSessionIdImport.update({
+    id: '/api/mcp/agent/$userId/callback/$sessionId',
+    path: '/api/mcp/agent/$userId/callback/$sessionId',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -161,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLayoutDocumentDocIdImport
       parentRoute: typeof AppLayoutImport
     }
+    '/api/mcp/agent/$userId/callback/$sessionId': {
+      id: '/api/mcp/agent/$userId/callback/$sessionId'
+      path: '/api/mcp/agent/$userId/callback/$sessionId'
+      fullPath: '/api/mcp/agent/$userId/callback/$sessionId'
+      preLoaderRoute: typeof ApiMcpAgentUserIdCallbackSessionIdImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -225,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/auth/sign-up': typeof AuthLayoutSignUpRoute
   '/app/document/$docId': typeof AppLayoutDocumentDocIdRoute
+  '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -236,6 +252,7 @@ export interface FileRoutesByTo {
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/auth/sign-up': typeof AuthLayoutSignUpRoute
   '/app/document/$docId': typeof AppLayoutDocumentDocIdRoute
+  '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 export interface FileRoutesById {
@@ -250,6 +267,7 @@ export interface FileRoutesById {
   '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute
   '/auth/_layout/sign-up': typeof AuthLayoutSignUpRoute
   '/app/_layout/document/$docId': typeof AppLayoutDocumentDocIdRoute
+  '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 export interface FileRouteTypes {
@@ -263,6 +281,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/document/$docId'
+    | '/api/mcp/agent/$userId/callback/$sessionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -273,6 +292,7 @@ export interface FileRouteTypes {
     | '/auth/sign-in'
     | '/auth/sign-up'
     | '/app/document/$docId'
+    | '/api/mcp/agent/$userId/callback/$sessionId'
   id:
     | '__root__'
     | '/'
@@ -285,6 +305,7 @@ export interface FileRouteTypes {
     | '/auth/_layout/sign-in'
     | '/auth/_layout/sign-up'
     | '/app/_layout/document/$docId'
+    | '/api/mcp/agent/$userId/callback/$sessionId'
   fileRoutesById: FileRoutesById
 }
 
@@ -292,12 +313,15 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
+  ApiMcpAgentUserIdCallbackSessionIdRoute: typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
+  ApiMcpAgentUserIdCallbackSessionIdRoute:
+    ApiMcpAgentUserIdCallbackSessionIdRoute,
 }
 
 export const routeTree = rootRoute
@@ -312,7 +336,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/app",
-        "/auth"
+        "/auth",
+        "/api/mcp/agent/$userId/callback/$sessionId"
       ]
     },
     "/": {
@@ -366,6 +391,9 @@ export const routeTree = rootRoute
     "/app/_layout/document/$docId": {
       "filePath": "app/_layout.document.$docId.tsx",
       "parent": "/app/_layout"
+    },
+    "/api/mcp/agent/$userId/callback/$sessionId": {
+      "filePath": "api.mcp.agent.$userId.callback.$sessionId.tsx"
     }
   }
 }

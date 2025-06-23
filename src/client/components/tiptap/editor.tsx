@@ -15,8 +15,6 @@ import { useLocalStorage } from 'usehooks-ts';
 import { db } from '@/lib/dexie';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { api } from '@/lib/api';
-import { useEffect } from 'react';
-import { useSidebar } from '../ui/sidebar'
 
 export function Editor(
   { 
@@ -38,13 +36,6 @@ export function Editor(
   const { setContextItems } = useStore();
   const [modelId] = useLocalStorage('modelId', '');
   const chat = useLiveQuery(() => db.chats.get(id))
-  const { state } = useSidebar('right')
-
-  useEffect(() => {
-    if (state === 'expanded') {
-      editor?.commands.focus()
-    }
-  }, [state])
 
   const editor = useEditor({
     extensions: [

@@ -4,7 +4,7 @@ import { MessageAssistant } from "@/components/tiptap/message-assistant";
 import { MessageUser } from "@/components/tiptap/message-user";
 import { Button } from "@/components/ui/button";
 import { useRef, useState, ChangeEvent } from "react";
-import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Wrench, ArrowRight, Loader, Settings, Ellipsis, Trash2, PenBox, PanelRight } from "lucide-react";
+import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Ellipsis, Trash2, PenBox, PanelRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandList, CommandItem, CommandGroup, CommandShortcut, CommandSeparator, CommandInput, CommandEmpty } from "@/components/ui/command";
 import { useLocalStorage } from "usehooks-ts";
@@ -22,6 +22,7 @@ import { Claude, OpenAI, Google } from "@/lib/icons";
 import { Kbd } from "@/components/shortcuts/kbd";
 import type { Editor as TiptapEditor } from '@tiptap/core'
 import { useHotkeys } from "react-hotkeys-hook";
+import { useMcpStore, DEFAULT_MCP_SERVERS } from "@/components/mcphost";
 
 const models = [{
   id: 'openai/gpt-4.1',
@@ -58,64 +59,6 @@ const tools = [{
   icon: CodeXml
 }]
 
-interface mcpServer {
-  type: 'url',
-  url: string,
-  name: string,
-  headers?: Record<string, string>,
-  authorization_token?: string,
-  tool_configuration?: {
-    enabled?: boolean,
-    allowed_tools: string[]
-  },
-}
-
-const mcpServers: mcpServer[] = [{
-  type: 'url',
-  url: 'https://mcp.notion.com/mcp',
-  name: 'Notion',
-}, {
-  type: 'url',
-  url: 'https://mcp.context7.com/mcp',
-  name: 'Context7',
-}, {
-  type: 'url',
-  url: 'https://mcp.linear.app/sse',
-  name: 'Linear',
-}, {
-  type: 'url',
-  url: 'https://mcp.stripe.com',
-  name: 'Stripe',
-}, {
-  type: 'url',
-  url: 'https://mcp.asana.com/sse',
-  name: 'Asana',
-}, {
-  type: 'url',
-  url: 'https://mcp.intercom.com/sse',
-  name: 'Intercom',
-}, {
-  type: 'url',
-  url: 'https://mcp.deepwiki.com/sse',
-  name: 'DeepWiki',
-}, {
-  type: 'url',
-  url: 'https://app.hubspot.com/mcp/v1/http',
-  name: 'Hubspot',
-}, {
-  type: 'url',
-  url: 'https://mcp.zapier.com/api/mcp/mcp',
-  name: 'Zapier',
-}, {
-  type: 'url',
-  url: 'https://mcp.squareup.com',
-  name: 'Square',
-}, {
-  type: 'url',
-  url: 'https://mcp.paypal.com/sse',
-  name: 'Paypal',
-}]
-
 export function Messages() {
   
   const chats = useLiveQuery(() => db.chats.orderBy('createdAt').reverse().toArray())
@@ -123,14 +66,12 @@ export function Messages() {
   const { toggleSidebar } = useSidebar()
   const editorRef = useRef<TiptapEditor>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { mcpState } = useMcpStore()
   
   const [modelId, setModelId] = useLocalStorage('modelId', models[0].id);
   const selectedModel = models.find(m => m.id === modelId) || models[0];  
 
   const [enabledTools, setEnabledTools] = useLocalStorage<string[]>('enabledTools', []);
-  const [configuredMCPs, setConfiguredMCPs] = useLocalStorage<string[]>('configuredMCPs', []);
-  const [enabledMCPs, setEnabledMCPs] = useLocalStorage<string[]>('enabledMCPs', []);
-  const [loadingMCPs, setLoadingMCPs] = useState<string[]>([]);
 
   const { id, messages, status, sendMessage, stop } = useChat({
     id: chatId,
@@ -146,80 +87,6 @@ export function Messages() {
   const [isToolPopoverOpen, setIsToolPopoverOpen] = useState(false);
   const [selectedTool, setSelectedTool] = useState<string>('');
   const { scrollRef, contentRef } = useStickToBottom();
-
-  const handleConnectMCP = async (mcp: mcpServer) => {
-
-    // If already configured, just toggle the enabled state
-    const isConfigured = configuredMCPs.some(configured => configured === mcp.name);
-    if (isConfigured) {
-      setEnabledMCPs(prev => 
-        prev.includes(mcp.name)
-          ? prev.filter(id => id !== mcp.name)
-          : [...prev, mcp.name]
-      );
-      return;
-    }
-
-    try {
-      setLoadingMCPs(prev => [...prev, mcp.name])
-
-      const response = await fetch('/api/mcp/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: mcp.name,
-          url: mcp.url,
-          headers: {
-            ...mcp.headers,
-            ...(mcp.authorization_token && { 'Authorization': `Bearer ${mcp.authorization_token}` }),
-          },
-        }),
-      })
-      if (!response.ok) {
-        throw new Error('Failed to register MCP')
-      }
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-          const chunk = decoder.decode(value)
-          const lines = chunk.split('\n')
-          for (const line of lines) {
-
-            if (line.startsWith('data: ')) {
-              const data = JSON.parse(line.slice(6))
-              console.log(data)
-
-              if (data.authUrl) {
-                const popup = window.open(data.authUrl, '_blank')
-                if (popup) {
-                  popup.addEventListener('beforeunload', () => console.log('window closed'))
-                }
-              }
-
-              if (data.tools) {
-                setEnabledMCPs(prev => 
-                  prev.includes(mcp.name)
-                    ? prev.filter(id => id !== mcp.name)
-                    : [...prev, mcp.name]
-                );
-                setConfiguredMCPs(prev => [...prev, mcp.name])
-              }
-            }
-          }
-        }
-      }
-      
-    } catch (error) {
-      console.error('MCP registration error:', error)
-    } finally {
-      setLoadingMCPs(prev => prev.filter(name => name !== mcp.name))
-    }
-  }
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
@@ -501,26 +368,8 @@ export function Messages() {
                 </TooltipContent>
               </Tooltip>
               <PopoverContent className="p-0 relative">
-                {configuredMCPs.includes(selectedTool) && (
-                <div className='absolute right-[calc(100%+0.25rem)] top-0 border shadow rounded-md w-56 bg-background pointer-none transition-all duration-300'>                  
-                  <div className="flex flex-row items-center h-9 px-3 gap-2 text-md border-b">
-                    <img src={`/svg/${selectedTool.toLowerCase()}.svg`} alt={selectedTool} className="size-4" />
-                    <span className="font-medium">{selectedTool}</span>
-                  </div>
-                  <div className="px-3 py-2 flex flex-col gap-2 text-sm">
-                    <div className="flex flex-row items-center gap-2">
-                      <span className="text-sm">tool_1</span>
-                    </div>
-                    <div className="flex flex-row items-center gap-2">
-                      <span className="text-sm">tool_2</span>
-                    </div>
-                    <div className="flex flex-row items-center gap-2">
-                      <span className="text-sm">tool_2</span>
-                    </div>
-                  </div>
-                </div>)}
                 <Command value={selectedTool} onValueChange={setSelectedTool}>
-                  <CommandInput autoFocus/>
+                  <CommandInput autoFocus />
                   <CommandList>
                     <CommandEmpty>No tools found</CommandEmpty>
                     <CommandGroup heading="Tools">
@@ -537,52 +386,32 @@ export function Messages() {
                         >
                           <tool.icon className="size-4" />
                           <span>{tool.label}</span>
-                          <CommandShortcut className='flex flex-row items-center'>
+                          <CommandShortcut>
                             <Switch checked={enabledTools.includes(tool.id)} className="data-[state=checked]:bg-green-600"/>
                           </CommandShortcut>
                         </CommandItem>
                       ))}
                     </CommandGroup>
-                      <CommandSeparator />
-                    <CommandGroup heading="Integrations">
-                      {mcpServers
-                        .slice()
-                        .sort((a, b) => {
-                          const aConfigured = configuredMCPs.includes(a.name) ? 0 : 1;
-                          const bConfigured = configuredMCPs.includes(b.name) ? 0 : 1;
-                          return aConfigured - bConfigured;
-                        })
-                        .map((mcp) => (
-                          <CommandItem
-                            key={mcp.name}
-                            value={mcp.name}
-                            onSelect={() => handleConnectMCP(mcp)}
-                          >
-                          <Avatar className='size-4 rounded-xs'>
-                            <AvatarImage src={`/svg/${mcp.name.toLowerCase()}.svg`} />
-                            <Wrench className="size-4" />
-                          </Avatar>
-                          <span>{mcp.name}</span>
-                          <CommandShortcut className='flex flex-row items-center'>
-                            {loadingMCPs.includes(mcp.name) ? (
-                              <Loader className="size-4 animate-spin" />
-                            ) : configuredMCPs.includes(mcp.name) ? (
-                              <div className="flex flex-row items-center gap-2">
-                                <Settings className="size-4" />
-                                <Switch checked={enabledMCPs.includes(mcp.name)} className="data-[state=checked]:bg-green-600" />
-                              </div>
-                            ) : (
-                              <div className="flex flex-row items-center gap-1">
-                                <span className="text-xs">Connect</span>
-                                <ArrowRight className="size-4" />
-                              </div>
-                            )}
-                          </CommandShortcut>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
                     <CommandSeparator />
-                    <CommandGroup>
+                    <CommandGroup heading="Integrations">
+                      {Object.entries(mcpState.servers).map(([id, mcp]) => {
+                        const mcpConfig = DEFAULT_MCP_SERVERS[mcp.name]
+                        return (
+                          <CommandItem
+                            key={id}
+                            value={mcp.name}
+                            onSelect={() => {}}
+                          >
+                            {mcpConfig?.icon 
+                              ? <mcpConfig.icon className="size-4" /> 
+                              : <div className="size-5 border rounded-md bg-muted flex items-center justify-center -ml-0.5">{mcp.name.charAt(0).toUpperCase()}</div>
+                            }
+                            <span>{mcp.name}</span>
+                            <CommandShortcut>
+                              <Switch className="data-[state=checked]:bg-green-600" />
+                            </CommandShortcut>
+                          </CommandItem>
+                        )})}
                       <CommandItem onSelect={() => setIntegrationsDialogOpen(true)}>
                         <Plus className="size-4" />
                         <span>Add integrations</span>

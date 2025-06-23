@@ -4,6 +4,7 @@ import * as React from "react"
 import { Slot as SlotPrimitive } from "radix-ui"
 import { cva, VariantProps } from "class-variance-authority"
 import { ChevronsLeft, PanelLeftIcon } from "lucide-react"
+import { useHotkeys } from "react-hotkeys-hook"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -30,8 +31,8 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem" // Why is this here???
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
-const SIDEBAR_RIGHT_KEYBOARD_SHORTCUT = "l"
+const SIDEBAR_KEYBOARD_SHORTCUT = "bracketleft"
+const SIDEBAR_RIGHT_KEYBOARD_SHORTCUT = "bracketright"
 
 // Resizable sidebar settings (all strings to unify unit handling)
 const SIDEBAR_LEFT_WIDTH_DEFAULT = "240px"
@@ -154,28 +155,18 @@ function SidebarProvider({
     return isMobile ? setOpenMobileRight((open) => !open) : setOpenRight((open) => !open)
   }, [isMobile, setOpenRight, setOpenMobileRight])
 
-  // Adds a keyboard shortcut to toggle the left sidebar.
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault()
-        toggleLeftSidebar()
-      }
-      if (
-        event.key === SIDEBAR_RIGHT_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault()
-        toggleRightSidebar()
-      }
-    }
+  // Keyboard shortcuts to toggle sidebars using react-hotkeys-hook
+  useHotkeys(`${SIDEBAR_KEYBOARD_SHORTCUT}`, toggleLeftSidebar, {
+    preventDefault: true,
+    enableOnFormTags: false,
+    enableOnContentEditable: false
+  })
 
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [toggleLeftSidebar, toggleRightSidebar])
+  useHotkeys(`${SIDEBAR_RIGHT_KEYBOARD_SHORTCUT}`, toggleRightSidebar, {
+    preventDefault: true,
+    enableOnFormTags: false,
+    enableOnContentEditable: false
+  })
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.

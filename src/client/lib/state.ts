@@ -18,11 +18,15 @@ interface State {
   integrationsDialogOpen: boolean;
   setIntegrationsDialogOpen: (integrationsDialogOpen: boolean) => void;
 
+  customMcpDialogOpen: boolean;
+  setCustomMcpDialogOpen: (customMcpDialogOpen: boolean) => void;
+
   deployDialogOpen: boolean;
   setDeployDialogOpen: (deployDialogOpen: boolean) => void;
 
   contextItems: any[];
   setContextItems: (contextItems: any[]) => void;
+
 }
 
 export const useStore = create<State>((set) => ({
@@ -44,6 +48,9 @@ export const useStore = create<State>((set) => ({
 
   deployDialogOpen: false,
   setDeployDialogOpen: (deployDialogOpen: boolean) => set({ deployDialogOpen }),
+
+  customMcpDialogOpen: false,
+  setCustomMcpDialogOpen: (customMcpDialogOpen: boolean) => set({ customMcpDialogOpen }),
 
   contextItems: [],
   setContextItems: (contextItems: any[]) => set({ contextItems }),

@@ -30,14 +30,33 @@ export function TeamSwitcher() {
   return (
     <SidebarMenu className="justify-center">
       <SidebarMenuItem className="flex flex-row items-center gap-1">
-        <SidebarMenuButton className="pr-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex flex-row items-center gap-2">
+        <DropdownMenu>
+          <SidebarMenuButton className="pr-1">
+            <DropdownMenuTrigger className="flex flex-row items-center gap-2 cursor-pointer">
               {organization?.imageUrl ? <img src={organization?.imageUrl} alt={organization?.name} className="size-4 rounded-full" /> : <Building2 className="size-4" />}
               <span className="truncate">{user?.firstName}'s Workspace</span>
-              <ChevronDown className="text-muted-foreground/80 size-4" />
+              <ChevronDown className="text-muted-foreground/80 size-4 -ml-1" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="start">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="size-6 p-0 ml-auto hover:bg-zinc-300" 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    leftSidebar.toggleSidebar()
+                  }}
+                >
+                  <PanelLeft className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Toggle sidebar
+                <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
+              </TooltipContent>
+            </Tooltip>
+          </SidebarMenuButton>
+          <DropdownMenuContent className="w-56" align="start" alignOffset={-8}>
             <DropdownMenuItem className="gap-2 p-2 py-1.5">
               <Plus className="size-4" />
               <div>Add team</div>
@@ -56,26 +75,7 @@ export function TeamSwitcher() {
               </SignOutButton>
             </DropdownMenuItem>
           </DropdownMenuContent>
-          </DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="size-6 p-0 ml-auto hover:bg-zinc-300" 
-                onClick={(e) => {
-                  e.stopPropagation()
-                  leftSidebar.toggleSidebar()
-                }}
-              >
-                <PanelLeft className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              Toggle sidebar
-              <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
-            </TooltipContent>
-          </Tooltip>
-        </SidebarMenuButton>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   )

@@ -10,20 +10,8 @@ export const publicRouter = new Hono<{ Bindings: Env }>()
     return c.json({ message: `Hello, ${name}! This is a public route.` });
   })
 
-
-  .get('/auth-callback', async (c) => {
-
-    // TO DO: proper handling of the auth callback
-    const params = c.req.query();
-    console.log(params);
-
-    return c.json({ success: true });
-  })
-
   .get('/webhook', async (c) => {
     const { event } = await c.req.parseBody();
-
-
     console.log(event);
     return c.json({ success: true });
   })

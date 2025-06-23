@@ -8,6 +8,8 @@ import { ShortcutMenu } from '@/components/shortcuts/shortcut-menu';
 import { IntegrationsDialog } from '@/components/chat/integrations-dialog';
 import { Header } from '@/components/header'
 import { DeployDialog } from '@/components/dialog/deploy'
+import { CustomMcpDialog } from '@/components/dialog/custom-mcp'
+import { McpHost } from '@/components/mcphost'
 
 export const Route = createFileRoute('/app/_layout')({
   component: RouteComponent,
@@ -22,7 +24,7 @@ function RouteComponent() {
     <SignedIn>
       <SidebarProvider>
         <AppSidebar  />
-        <SidebarInset >
+        <SidebarInset className='h-svh' >
           <Header />
           <Outlet />
         </SidebarInset>
@@ -32,6 +34,8 @@ function RouteComponent() {
       <ShortcutMenu />
       <IntegrationsDialog />
       <DeployDialog />
+      <CustomMcpDialog />
+      <McpHost />
     </SignedIn>
   )
 }

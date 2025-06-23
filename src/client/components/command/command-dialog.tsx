@@ -1,4 +1,4 @@
-import { Box, Home } from 'lucide-react';
+import { Home, Unplug } from 'lucide-react';
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandItem, CommandGroup } from '@/components/ui/command';
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Kbd } from '@/components/shortcuts/kbd';
@@ -33,7 +33,7 @@ export function CommandComponent() {
             setIntegrationsDialogOpen(true)
             setCommandOpen(false)
           }}>
-            <Box className="size-4" />
+            <Unplug className="size-4" />
             <span>Integrations</span>
           </CommandItem>
         </CommandGroup>

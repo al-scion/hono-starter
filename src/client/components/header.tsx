@@ -9,7 +9,7 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { convexApi, type Id } from "@/lib/api"
 import { useParams, useSearch, useNavigate } from "@tanstack/react-router"
 import { cn } from "@/lib/utils"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { CopyToClipboard } from "./custom/copy"
 import { useStore } from "@/lib/state"
 import { EmojiPicker, EmojiPickerSearch, EmojiPickerContent } from "./custom/emoji-picker"
@@ -54,7 +54,10 @@ export function Header() {
   })
 
   return (
-    <header className="flex flex-row items-center w-full h-12 p-3 border-b">
+    <header className={cn(
+      "sticky top-0 z-50 flex flex-row items-center w-full h-12 p-3 border-b bg-background",
+      // "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    )}>
       <div className="flex items-center gap-2 flex-1">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -115,21 +118,6 @@ export function Header() {
       )}
 
       <div className="flex items-center gap-2 flex-1 justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="blue" className="h-6 px-2 font-normal">
-              Deploy
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className='w-80' align="end">
-            <div className="flex flex-row items-center rounded-md bg-muted text-sm p-2 relative">
-              <span>https://mcp.domain.com/sse</span>
-              <CopyToClipboard text="https://mcp.domain.com/sse" className="ml-auto border-none bg-transparent shadow-none size-4" />
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setDeployDialogOpen(true)}>Redeploy</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <div className="flex items-center gap-0.5">
           <DropdownMenu>

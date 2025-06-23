@@ -25,8 +25,8 @@ export const shortcuts: Shortcut[] = [
     label: 'Close sidebar',
     type: 'General',
     keys: {
-      windows: 'Ctrl+L',
-      mac: 'Command+L',
+      windows: 'bracketright',
+      mac: 'bracketright',
     },
     enabled: true,
   },
@@ -35,8 +35,8 @@ export const shortcuts: Shortcut[] = [
     label: 'Open sidebar',
     type: 'General',
     keys: {
-      windows: 'Ctrl+B',
-      mac: 'Command+B',
+      windows: 'bracketleft',
+      mac: 'bracketleft',
     },
     enabled: true,
   },

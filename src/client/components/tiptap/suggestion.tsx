@@ -1,6 +1,6 @@
 import { ReactRenderer } from '@tiptap/react'
 import tippy from 'tippy.js'
-import { useEffect, useImperativeHandle, useState } from 'react'
+import { useImperativeHandle, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import Mention from '@tiptap/extension-mention'
 import { Heading1, Heading2, Heading3, Minus, Globe, Compass } from 'lucide-react'
@@ -92,8 +92,6 @@ export const MentionSuggestion = Mention.configure({
           component = new ReactRenderer((props: any) => {
             const [selectedIndex, setSelectedIndex] = useState(0)
             
-            useEffect(() => setSelectedIndex(0), [props.items])
-  
             const selectItem = (index: number) => {
               const item = props.items[index]
               if (item) {
@@ -135,6 +133,7 @@ export const MentionSuggestion = Mention.configure({
   
                 return false
               },
+              reset: () => setSelectedIndex(0),
             }))
   
             return (
@@ -186,6 +185,8 @@ export const MentionSuggestion = Mention.configure({
           popup[0].setProps({
             getReferenceClientRect: props.clientRect,
           })
+  
+          (component.ref).reset()
         },
   
         onKeyDown(props: any) {
@@ -230,8 +231,6 @@ export const SlashCommand = Extension.create({
               component = new ReactRenderer((props: any) => {
                 const [selectedIndex, setSelectedIndex] = useState(0)
                 
-                useEffect(() => setSelectedIndex(0), [props.items])
-
                 const selectItem = (index: number) => {
                   const item = props.items[index]
                   if (item) {
@@ -270,6 +269,7 @@ export const SlashCommand = Extension.create({
 
                     return false
                   },
+                  reset: () => setSelectedIndex(0),
                 }))
 
                 return (
@@ -322,6 +322,8 @@ export const SlashCommand = Extension.create({
               popup[0].setProps({
                 getReferenceClientRect: props.clientRect,
               })
+
+              (component.ref).reset()
             },
 
             onKeyDown(props: any) {
