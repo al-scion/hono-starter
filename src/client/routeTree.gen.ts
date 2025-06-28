@@ -16,29 +16,23 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as AuthCallbackImport } from './routes/auth/callback'
 import { Route as AuthLayoutImport } from './routes/auth/_layout'
-import { Route as AppLayoutImport } from './routes/app/_layout'
+import { Route as AuthenticatedLayoutImport } from './routes/_authenticated/_layout'
 import { Route as AuthLayoutSignUpImport } from './routes/auth/_layout.sign-up'
 import { Route as AuthLayoutSignInImport } from './routes/auth/_layout.sign-in'
-import { Route as AppLayoutDashboardImport } from './routes/app/_layout.dashboard'
-import { Route as AppLayoutDocumentDocIdImport } from './routes/app/_layout.document.$docId'
+import { Route as AuthenticatedLayoutDashboardImport } from './routes/_authenticated/_layout.dashboard'
+import { Route as AuthenticatedLayoutDocumentDocIdImport } from './routes/_authenticated/_layout.document.$docId'
+import { Route as AuthenticatedLayoutChannelChannelIdImport } from './routes/_authenticated/_layout.channel.$channelId'
 import { Route as ApiMcpAgentUserIdCallbackSessionIdImport } from './routes/api.mcp.agent.$userId.callback.$sessionId'
 
 // Create Virtual Routes
 
 const AuthImport = createFileRoute('/auth')()
-const AppImport = createFileRoute('/app')()
 
 // Create/Update Routes
 
 const AuthRoute = AuthImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const AppRoute = AppImport.update({
-  id: '/app',
-  path: '/app',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -59,9 +53,9 @@ const AuthLayoutRoute = AuthLayoutImport.update({
   getParentRoute: () => AuthRoute,
 } as any)
 
-const AppLayoutRoute = AppLayoutImport.update({
-  id: '/_layout',
-  getParentRoute: () => AppRoute,
+const AuthenticatedLayoutRoute = AuthenticatedLayoutImport.update({
+  id: '/_authenticated/_layout',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const AuthLayoutSignUpRoute = AuthLayoutSignUpImport.update({
@@ -76,17 +70,26 @@ const AuthLayoutSignInRoute = AuthLayoutSignInImport.update({
   getParentRoute: () => AuthLayoutRoute,
 } as any)
 
-const AppLayoutDashboardRoute = AppLayoutDashboardImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AppLayoutRoute,
-} as any)
+const AuthenticatedLayoutDashboardRoute =
+  AuthenticatedLayoutDashboardImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
 
-const AppLayoutDocumentDocIdRoute = AppLayoutDocumentDocIdImport.update({
-  id: '/document/$docId',
-  path: '/document/$docId',
-  getParentRoute: () => AppLayoutRoute,
-} as any)
+const AuthenticatedLayoutDocumentDocIdRoute =
+  AuthenticatedLayoutDocumentDocIdImport.update({
+    id: '/document/$docId',
+    path: '/document/$docId',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
+
+const AuthenticatedLayoutChannelChannelIdRoute =
+  AuthenticatedLayoutChannelChannelIdImport.update({
+    id: '/channel/$channelId',
+    path: '/channel/$channelId',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
 
 const ApiMcpAgentUserIdCallbackSessionIdRoute =
   ApiMcpAgentUserIdCallbackSessionIdImport.update({
@@ -106,19 +109,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppImport
+    '/_authenticated/_layout': {
+      id: '/_authenticated/_layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedLayoutImport
       parentRoute: typeof rootRoute
-    }
-    '/app/_layout': {
-      id: '/app/_layout'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppLayoutImport
-      parentRoute: typeof AppRoute
     }
     '/auth': {
       id: '/auth'
@@ -141,12 +137,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackImport
       parentRoute: typeof AuthImport
     }
-    '/app/_layout/dashboard': {
-      id: '/app/_layout/dashboard'
+    '/_authenticated/_layout/dashboard': {
+      id: '/_authenticated/_layout/dashboard'
       path: '/dashboard'
-      fullPath: '/app/dashboard'
-      preLoaderRoute: typeof AppLayoutDashboardImport
-      parentRoute: typeof AppLayoutImport
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedLayoutDashboardImport
+      parentRoute: typeof AuthenticatedLayoutImport
     }
     '/auth/_layout/sign-in': {
       id: '/auth/_layout/sign-in'
@@ -162,12 +158,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLayoutSignUpImport
       parentRoute: typeof AuthLayoutImport
     }
-    '/app/_layout/document/$docId': {
-      id: '/app/_layout/document/$docId'
+    '/_authenticated/_layout/channel/$channelId': {
+      id: '/_authenticated/_layout/channel/$channelId'
+      path: '/channel/$channelId'
+      fullPath: '/channel/$channelId'
+      preLoaderRoute: typeof AuthenticatedLayoutChannelChannelIdImport
+      parentRoute: typeof AuthenticatedLayoutImport
+    }
+    '/_authenticated/_layout/document/$docId': {
+      id: '/_authenticated/_layout/document/$docId'
       path: '/document/$docId'
-      fullPath: '/app/document/$docId'
-      preLoaderRoute: typeof AppLayoutDocumentDocIdImport
-      parentRoute: typeof AppLayoutImport
+      fullPath: '/document/$docId'
+      preLoaderRoute: typeof AuthenticatedLayoutDocumentDocIdImport
+      parentRoute: typeof AuthenticatedLayoutImport
     }
     '/api/mcp/agent/$userId/callback/$sessionId': {
       id: '/api/mcp/agent/$userId/callback/$sessionId'
@@ -181,29 +184,21 @@ declare module '@tanstack/react-router' {
 
 // Create and export the route tree
 
-interface AppLayoutRouteChildren {
-  AppLayoutDashboardRoute: typeof AppLayoutDashboardRoute
-  AppLayoutDocumentDocIdRoute: typeof AppLayoutDocumentDocIdRoute
+interface AuthenticatedLayoutRouteChildren {
+  AuthenticatedLayoutDashboardRoute: typeof AuthenticatedLayoutDashboardRoute
+  AuthenticatedLayoutChannelChannelIdRoute: typeof AuthenticatedLayoutChannelChannelIdRoute
+  AuthenticatedLayoutDocumentDocIdRoute: typeof AuthenticatedLayoutDocumentDocIdRoute
 }
 
-const AppLayoutRouteChildren: AppLayoutRouteChildren = {
-  AppLayoutDashboardRoute: AppLayoutDashboardRoute,
-  AppLayoutDocumentDocIdRoute: AppLayoutDocumentDocIdRoute,
+const AuthenticatedLayoutRouteChildren: AuthenticatedLayoutRouteChildren = {
+  AuthenticatedLayoutDashboardRoute: AuthenticatedLayoutDashboardRoute,
+  AuthenticatedLayoutChannelChannelIdRoute:
+    AuthenticatedLayoutChannelChannelIdRoute,
+  AuthenticatedLayoutDocumentDocIdRoute: AuthenticatedLayoutDocumentDocIdRoute,
 }
 
-const AppLayoutRouteWithChildren = AppLayoutRoute._addFileChildren(
-  AppLayoutRouteChildren,
-)
-
-interface AppRouteChildren {
-  AppLayoutRoute: typeof AppLayoutRouteWithChildren
-}
-
-const AppRouteChildren: AppRouteChildren = {
-  AppLayoutRoute: AppLayoutRouteWithChildren,
-}
-
-const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+const AuthenticatedLayoutRouteWithChildren =
+  AuthenticatedLayoutRoute._addFileChildren(AuthenticatedLayoutRouteChildren)
 
 interface AuthLayoutRouteChildren {
   AuthLayoutSignInRoute: typeof AuthLayoutSignInRoute
@@ -233,40 +228,42 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppLayoutRouteWithChildren
+  '': typeof AuthenticatedLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
-  '/app/dashboard': typeof AppLayoutDashboardRoute
+  '/dashboard': typeof AuthenticatedLayoutDashboardRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/auth/sign-up': typeof AuthLayoutSignUpRoute
-  '/app/document/$docId': typeof AppLayoutDocumentDocIdRoute
+  '/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
+  '/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppLayoutRouteWithChildren
+  '': typeof AuthenticatedLayoutRouteWithChildren
   '/auth': typeof AuthLayoutRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
-  '/app/dashboard': typeof AppLayoutDashboardRoute
+  '/dashboard': typeof AuthenticatedLayoutDashboardRoute
   '/auth/sign-in': typeof AuthLayoutSignInRoute
   '/auth/sign-up': typeof AuthLayoutSignUpRoute
-  '/app/document/$docId': typeof AppLayoutDocumentDocIdRoute
+  '/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
+  '/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/app': typeof AppRouteWithChildren
-  '/app/_layout': typeof AppLayoutRouteWithChildren
+  '/_authenticated/_layout': typeof AuthenticatedLayoutRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/auth/_layout': typeof AuthLayoutRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
-  '/app/_layout/dashboard': typeof AppLayoutDashboardRoute
+  '/_authenticated/_layout/dashboard': typeof AuthenticatedLayoutDashboardRoute
   '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute
   '/auth/_layout/sign-up': typeof AuthLayoutSignUpRoute
-  '/app/_layout/document/$docId': typeof AppLayoutDocumentDocIdRoute
+  '/_authenticated/_layout/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
+  '/_authenticated/_layout/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
@@ -274,51 +271,53 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/app'
+    | ''
     | '/auth'
     | '/auth/callback'
-    | '/app/dashboard'
+    | '/dashboard'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/app/document/$docId'
+    | '/channel/$channelId'
+    | '/document/$docId'
     | '/api/mcp/agent/$userId/callback/$sessionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app'
+    | ''
     | '/auth'
     | '/auth/callback'
-    | '/app/dashboard'
+    | '/dashboard'
     | '/auth/sign-in'
     | '/auth/sign-up'
-    | '/app/document/$docId'
+    | '/channel/$channelId'
+    | '/document/$docId'
     | '/api/mcp/agent/$userId/callback/$sessionId'
   id:
     | '__root__'
     | '/'
-    | '/app'
-    | '/app/_layout'
+    | '/_authenticated/_layout'
     | '/auth'
     | '/auth/_layout'
     | '/auth/callback'
-    | '/app/_layout/dashboard'
+    | '/_authenticated/_layout/dashboard'
     | '/auth/_layout/sign-in'
     | '/auth/_layout/sign-up'
-    | '/app/_layout/document/$docId'
+    | '/_authenticated/_layout/channel/$channelId'
+    | '/_authenticated/_layout/document/$docId'
     | '/api/mcp/agent/$userId/callback/$sessionId'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRouteWithChildren
+  AuthenticatedLayoutRoute: typeof AuthenticatedLayoutRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   ApiMcpAgentUserIdCallbackSessionIdRoute: typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRouteWithChildren,
+  AuthenticatedLayoutRoute: AuthenticatedLayoutRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   ApiMcpAgentUserIdCallbackSessionIdRoute:
     ApiMcpAgentUserIdCallbackSessionIdRoute,
@@ -335,7 +334,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/app",
+        "/_authenticated/_layout",
         "/auth",
         "/api/mcp/agent/$userId/callback/$sessionId"
       ]
@@ -343,18 +342,12 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.tsx"
     },
-    "/app": {
-      "filePath": "app",
+    "/_authenticated/_layout": {
+      "filePath": "_authenticated/_layout.tsx",
       "children": [
-        "/app/_layout"
-      ]
-    },
-    "/app/_layout": {
-      "filePath": "app/_layout.tsx",
-      "parent": "/app",
-      "children": [
-        "/app/_layout/dashboard",
-        "/app/_layout/document/$docId"
+        "/_authenticated/_layout/dashboard",
+        "/_authenticated/_layout/channel/$channelId",
+        "/_authenticated/_layout/document/$docId"
       ]
     },
     "/auth": {
@@ -376,9 +369,9 @@ export const routeTree = rootRoute
       "filePath": "auth/callback.tsx",
       "parent": "/auth"
     },
-    "/app/_layout/dashboard": {
-      "filePath": "app/_layout.dashboard.tsx",
-      "parent": "/app/_layout"
+    "/_authenticated/_layout/dashboard": {
+      "filePath": "_authenticated/_layout.dashboard.tsx",
+      "parent": "/_authenticated/_layout"
     },
     "/auth/_layout/sign-in": {
       "filePath": "auth/_layout.sign-in.tsx",
@@ -388,9 +381,13 @@ export const routeTree = rootRoute
       "filePath": "auth/_layout.sign-up.tsx",
       "parent": "/auth/_layout"
     },
-    "/app/_layout/document/$docId": {
-      "filePath": "app/_layout.document.$docId.tsx",
-      "parent": "/app/_layout"
+    "/_authenticated/_layout/channel/$channelId": {
+      "filePath": "_authenticated/_layout.channel.$channelId.tsx",
+      "parent": "/_authenticated/_layout"
+    },
+    "/_authenticated/_layout/document/$docId": {
+      "filePath": "_authenticated/_layout.document.$docId.tsx",
+      "parent": "/_authenticated/_layout"
     },
     "/api/mcp/agent/$userId/callback/$sessionId": {
       "filePath": "api.mcp.agent.$userId.callback.$sessionId.tsx"

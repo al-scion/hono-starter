@@ -1,11 +1,6 @@
 import { forwardRef } from "react";
-import { Minus, Plus } from "lucide-react";
-import {
-  Panel,
-  useViewport,
-  useReactFlow,
-  PanelProps,
-} from "@xyflow/react";
+import { Fullscreen, Minus, Plus } from "lucide-react";
+import { Panel, useReactFlow, PanelProps } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
  
@@ -14,14 +9,13 @@ export const ZoomSlider = forwardRef<
   Omit<PanelProps, "children">
 >(({ className, ...props }, ref) => {
   
-  const { zoom } = useViewport();
   const { zoomTo, zoomIn, zoomOut } = useReactFlow();
  
   return (
     <Panel
       ref={ref}
       className={cn(
-        "flex rounded-md bg-background p-1 text-foreground border shadow-sm",
+        "flex rounded-md bg-background p-0 text-foreground border",
         className,
       )}
       position="bottom-left"
@@ -29,24 +23,24 @@ export const ZoomSlider = forwardRef<
     >
       <Button
         variant="ghost"
-        className="size-5 p-0"
+        className="size-6 p-0"
         onClick={() => zoomOut({ duration: 300 })}
       >
-        <Minus className="size-3" />
-      </Button>
-      <Button
-        className="h-5 w-10 tabular-nums text-[10px] text-muted-foreground"
-        variant="ghost"
-        onClick={() => zoomTo(1, { duration: 300 })}
-      >
-        {Math.round(100 * zoom)}%
+        <Minus className="size-4" />
       </Button>
       <Button
         variant="ghost"
-        className="size-5 p-0"
+        className="size-6 p-0"
         onClick={() => zoomIn({ duration: 300 })}
       >
-        <Plus className="size-3" />
+        <Plus className="size-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        className="size-6 p-0"
+        onClick={() => zoomTo(1, { duration: 300 })}
+      >
+        <Fullscreen className="size-4" />
       </Button>
     </Panel>
   );

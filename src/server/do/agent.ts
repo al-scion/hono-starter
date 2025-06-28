@@ -5,6 +5,10 @@ interface State {
 }
 
 export class Agent extends AIChatAgent<Env, State> {
+
+  async callAgent() {
+    
+  }
   
   // async onRequest(request: Request): Promise<Response> {
   //   return await super.onRequest(request)

@@ -83,6 +83,6 @@ export function DocumentEditor({
   if (editorRef) editorRef.current = editor;
 
   return (
-    <EditorContent editor={editor} className='flex flex-1' />
+    <EditorContent editor={editor} className='flex-1 min-w-0' />
   )
 }

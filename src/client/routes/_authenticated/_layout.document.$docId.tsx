@@ -7,20 +7,18 @@ import { useQuery, useMutation } from '@tanstack/react-query'
 import { useConvexMutation, convexQuery } from '@convex-dev/react-query'
 import { useTiptapSync } from '@convex-dev/prosemirror-sync/tiptap'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
-import { useState } from 'react'
 
-export const Route = createFileRoute('/app/_layout/document/$docId')({
+export const Route = createFileRoute('/_authenticated/_layout/document/$docId')({
   component: RouteComponent,
   validateSearch: z.object({
-    mode: z.enum(['editor', 'canvas']),
+    mode: z.enum(['editor', 'canvas', 'logs', 'evaluation']),
   })
 })
 
 function RouteComponent() {
 
-  const { mode } = useSearch({ from: '/app/_layout/document/$docId' })
-  const { docId } = useParams({ from: '/app/_layout/document/$docId' }) as { docId: Id<'documents'> }
+  const { mode } = useSearch({ from: '/_authenticated/_layout/document/$docId' })
+  const { docId } = useParams({ from: '/_authenticated/_layout/document/$docId' }) as { docId: Id<'documents'> }
   const sync = useTiptapSync(convexApi.prosemirror, docId)
   const document = useQuery(convexQuery(convexApi.document.getDocument, { docId }))
 
@@ -58,9 +56,9 @@ function RouteComponent() {
   
 
   return (
-    <div className='flex flex-1'>
+    <>
       {(mode === 'editor') && <Document sync={sync} document={document.data} updateTitle={updateTitle} />}
       {(mode === 'canvas') && <Canvas document={document.data} />}
-    </div>
+    </>
   )
 }

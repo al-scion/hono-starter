@@ -11,11 +11,13 @@ import {
   type OnEdgesChange,
   applyNodeChanges,
   applyEdgeChanges,
+  BackgroundVariant,
 } from '@xyflow/react'
 import { NodeOperationsProvider } from '@/components/canvas/node'
 import { ConnectionLine } from '@/components/canvas/connection-line'
 import { ZoomSlider } from '@/components/canvas/zoom-slider'
 import { Toolbar } from '@/components/canvas/toolbar'
+import { nodeTypes } from '@/components/canvas/nodes'
 import { useState, useCallback } from 'react'
 
 import { convexApi, Doc } from '@/lib/api';
@@ -66,8 +68,6 @@ export function Canvas({
   )
 
 
-  
-
   const { getNode } = useReactFlow()
   
 
@@ -106,29 +106,30 @@ export function Canvas({
   }, [addNode, getNode])
 
   return (
-    <div className="flex-1">
-      <NodeOperationsProvider addNode={addNode} duplicateNode={duplicateNode}>
-        <ReactFlow
-          proOptions={{hideAttribution: true}}
-          panOnScroll={true}
-          selectionOnDrag={true}
-          panOnDrag={[1,2]}
-          connectionLineComponent={ConnectionLine}
-          onConnect={onConnect}
-          nodes={nodes}
-          edges={edges}
-          viewport={viewport}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={handleEdgesChange}
-          onViewportChange={setViewport}
-          className=''
-        >
-          <Background color='#71717a' />
-          <Toolbar />
-          <ZoomSlider />
-            {children}
-        </ReactFlow>
-      </NodeOperationsProvider>
-    </div>
+    <NodeOperationsProvider addNode={addNode} duplicateNode={duplicateNode}>
+      <ReactFlow
+        proOptions={{hideAttribution: true}}
+        panOnScroll={true}
+        selectionOnDrag={true}
+        panOnDrag={[1,2]}
+        connectionLineComponent={ConnectionLine}
+        onConnect={onConnect}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        viewport={viewport}
+        onNodesChange={handleNodesChange}
+        onEdgesChange={handleEdgesChange}
+        onViewportChange={setViewport}
+        snapToGrid={true}
+        snapGrid={[10, 10]}
+        className=''
+      >
+        <Background variant={BackgroundVariant.Dots} />
+        <Toolbar />
+        <ZoomSlider />
+          {children}
+      </ReactFlow>
+    </NodeOperationsProvider>
   )
 }

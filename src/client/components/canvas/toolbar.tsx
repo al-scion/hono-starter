@@ -3,8 +3,7 @@ import { Panel, useReactFlow } from '@xyflow/react';
 import { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { AudioWaveformIcon, FileIcon, VideoIcon, CodeIcon, ImageIcon, TextIcon } from 'lucide-react';
-
+import { AudioWaveformIcon, FileIcon, CodeIcon, ImageIcon, TextIcon } from 'lucide-react';
 
 const nodeButtons = [
   {
@@ -49,10 +48,8 @@ export const ToolbarInner = () => {
   const handleAddNode = (type: string, options?: Record<string, unknown>) => {
     const viewport = getViewport();
 
-    const centerX =
-      -viewport.x / viewport.zoom + window.innerWidth / 2 / viewport.zoom;
-    const centerY =
-      -viewport.y / viewport.zoom + window.innerHeight / 2 / viewport.zoom;
+    const centerX = -viewport.x / viewport.zoom + window.innerWidth / 2 / viewport.zoom;
+    const centerY = -viewport.y / viewport.zoom + window.innerHeight / 2 / viewport.zoom;
 
     const position = { x: centerX, y: centerY };
     const { data: nodeData, ...rest } = options ?? {};
@@ -69,7 +66,7 @@ export const ToolbarInner = () => {
   return (
     <Panel
       position="top-left"
-      className='m-4 flex flex-col items-center rounded-lg border p-1 backdrop-blur-sm shadow-md gap-1'
+      className='flex flex-col items-center rounded-lg border p-1 gap-1 bg-background shadow'
     >
       {nodeButtons.map((button) => (
         <Tooltip key={button.id}>

@@ -11,10 +11,10 @@ export function RightSidebar({ ...props }: React.ComponentProps<typeof Sidebar>)
       side="right"
       {...props}
     >
-      <div className="flex flex-col flex-1 w-full bg-background">
+      <div className="flex flex-col flex-1 bg-background border rounded-lg">
         <Messages key={chatId} />
       </div>
-      <SidebarRail />
+      <SidebarRail className='[[data-side=right][data-variant=inset]_&]:-left-1.25' />
     </Sidebar>
   )
 }

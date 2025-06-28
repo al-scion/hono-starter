@@ -4,7 +4,7 @@ import { MessageAssistant } from "@/components/tiptap/message-assistant";
 import { MessageUser } from "@/components/tiptap/message-user";
 import { Button } from "@/components/ui/button";
 import { useRef, useState, ChangeEvent } from "react";
-import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Ellipsis, Trash2, PenBox, PanelRight } from "lucide-react";
+import { ArrowUp, AtSign, Paperclip, Check, Globe, Lightbulb, ChevronsUpDown, Unplug, ChevronDown, Plus, Square, CodeXml, Table, X, Ellipsis, Trash2, PenBox } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandList, CommandItem, CommandGroup, CommandShortcut, CommandSeparator, CommandInput, CommandEmpty } from "@/components/ui/command";
 import { useLocalStorage } from "usehooks-ts";
@@ -17,12 +17,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { db } from "@/lib/dexie";
 import { useLiveQuery } from "dexie-react-hooks";
-import { useSidebar } from "../ui/sidebar";
 import { Claude, OpenAI, Google } from "@/lib/icons";
 import { Kbd } from "@/components/shortcuts/kbd";
 import type { Editor as TiptapEditor } from '@tiptap/core'
 import { useHotkeys } from "react-hotkeys-hook";
 import { useMcpStore, DEFAULT_MCP_SERVERS } from "@/components/mcphost";
+import { useChatStore } from "@/components/sidebar/chat";
+import { cn } from "@/lib/utils";
 
 const models = [{
   id: 'openai/gpt-4.1',
@@ -59,14 +60,14 @@ const tools = [{
   icon: CodeXml
 }]
 
-export function Messages() {
+export function Messages({className, ...props}: React.ComponentProps<'div'>) {
   
   const chats = useLiveQuery(() => db.chats.orderBy('createdAt').reverse().toArray())
   const { chatId, setChatId, contextItems, setIntegrationsDialogOpen, initialMessages, setInitialMessages } = useStore()
-  const { toggleSidebar } = useSidebar()
   const editorRef = useRef<TiptapEditor>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { mcpState } = useMcpStore()
+  const { mcpState, addEnabledMcp, removeEnabledMcp, enabledMcp } = useMcpStore()
+  const { toggleOpen } = useChatStore()
   
   const [modelId, setModelId] = useLocalStorage('modelId', models[0].id);
   const selectedModel = models.find(m => m.id === modelId) || models[0];  
@@ -105,12 +106,12 @@ export function Messages() {
   useHotkeys('ctrl+j, meta+j', handleNewChat, {enableOnContentEditable: true, enableOnFormTags: true})
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className={cn("flex flex-col flex-1", className)} {...props}>
 
-      <div className="flex flex-row items-center gap-2 h-12 p-3 border-b">
+      <div className="flex flex-row items-center gap-2 h-10 p-2 border-b">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" className="h-7 px-2 -ml-1 gap-1">
+            <Button variant="ghost" className="h-7 px-2 gap-1">
               {chats?.find(chat => chat.id === chatId)?.title || 'New Chat'}
               <ChevronDown className="size-4" />
             </Button>
@@ -181,12 +182,12 @@ export function Messages() {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" className="size-6 p-0" onClick={() => toggleSidebar()}>
-                <PanelRight className="size-4" />
+              <Button variant="ghost" className="size-6 p-0" onClick={() => toggleOpen()}>
+                <X className="size-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              Toggle sidebar
+              Hide chat
               <Kbd shortcutId="rightSidebarToggle" variant="secondary"/>
             </TooltipContent>
           </Tooltip>
@@ -218,8 +219,8 @@ export function Messages() {
               return <div key={`assistant-${message.id}`} className={`space-y-2 ${messageIndex === messages.length - 1 ? "min-h-[calc(100dvh-20rem)]" : ""}`}>
                 {sources.length > 0 && 
                   <Accordion type="single" collapsible className="w-full border rounded-lg">
-                    <AccordionItem value="item-1" >
-                      <AccordionTrigger >
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger>
                         <Globe className="size-4" />
                         Search
                       </AccordionTrigger>
@@ -261,11 +262,11 @@ export function Messages() {
                       className="w-full border rounded-lg"
                     >
                       <AccordionItem value="reasoning">
-                        <AccordionTrigger>
+                        <AccordionTrigger className="data-[state=open]:border-b data-[state=open]:rounded-b-none">
                           <Lightbulb className="size-4" />
                           Reasoning
                         </AccordionTrigger>
-                        <AccordionContent>
+                        <AccordionContent className="p-2">
                           <MessageAssistant text={part.text} />
                         </AccordionContent>
                       </AccordionItem>
@@ -298,7 +299,7 @@ export function Messages() {
 
 
       {/* Input section */}
-      <div className="p-2 border rounded-lg flex flex-col gap-2 m-3 mt-0 focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-2 animate-in fade-in-0 duration-300 delay-100">
+      <div className="p-2 border rounded-lg flex flex-col gap-2 m-2 mt-0 focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-2 animate-in fade-in-0 duration-300 delay-100">
 
         {contextItems.length > 0 && <div className="flex flex-wrap gap-1 p-2 -mx-2 -mt-2 border-b bg-muted/50 rounded-t-lg">
           {contextItems.map((item, index) => 
@@ -396,11 +397,12 @@ export function Messages() {
                     <CommandGroup heading="Integrations">
                       {Object.entries(mcpState.servers).map(([id, mcp]) => {
                         const mcpConfig = DEFAULT_MCP_SERVERS[mcp.name]
+                        const isEnabled = enabledMcp.has(id)
                         return (
                           <CommandItem
                             key={id}
                             value={mcp.name}
-                            onSelect={() => {}}
+                            onSelect={() => isEnabled ? removeEnabledMcp(id) : addEnabledMcp(id)}
                           >
                             {mcpConfig?.icon 
                               ? <mcpConfig.icon className="size-4" /> 
@@ -408,7 +410,7 @@ export function Messages() {
                             }
                             <span>{mcp.name}</span>
                             <CommandShortcut>
-                              <Switch className="data-[state=checked]:bg-green-600" />
+                              <Switch checked={isEnabled} className="data-[state=checked]:bg-green-600" />
                             </CommandShortcut>
                           </CommandItem>
                         )})}

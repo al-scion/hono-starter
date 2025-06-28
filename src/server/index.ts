@@ -23,7 +23,6 @@ import { mcpRouter } from "./mcp";
 
 // Durable Objects
 export { Agent } from "./do/agent";
-export { MCPHost } from "./do/mcphost";
 
 declare module 'hono' {
   interface ContextVariableMap {

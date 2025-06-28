@@ -56,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="h-12 border-b py-1.5 justify-center">
+      <SidebarHeader className="py-1">
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent>
@@ -84,7 +84,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
         <NavWorkspaces />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="py-1">
         <SidebarMenu>
           {data.navFooter.map((item) => (
             <SidebarMenuItem key={item.title}>
@@ -99,7 +99,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ))}
         </SidebarMenu>
       </SidebarFooter>
-      <SidebarRail />
+      <SidebarRail className="mr-0.5" />
     </Sidebar>
   )
 }

@@ -24,6 +24,9 @@ interface State {
   deployDialogOpen: boolean;
   setDeployDialogOpen: (deployDialogOpen: boolean) => void;
 
+  createChannelDialogOpen: boolean;
+  setCreateChannelDialogOpen: (createChannelDialogOpen: boolean) => void;
+
   contextItems: any[];
   setContextItems: (contextItems: any[]) => void;
 
@@ -48,6 +51,9 @@ export const useStore = create<State>((set) => ({
 
   deployDialogOpen: false,
   setDeployDialogOpen: (deployDialogOpen: boolean) => set({ deployDialogOpen }),
+
+  createChannelDialogOpen: false,
+  setCreateChannelDialogOpen: (createChannelDialogOpen: boolean) => set({ createChannelDialogOpen }),
 
   customMcpDialogOpen: false,
   setCustomMcpDialogOpen: (customMcpDialogOpen: boolean) => set({ customMcpDialogOpen }),

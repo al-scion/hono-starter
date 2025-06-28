@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Doc } from '@/lib/api'
 import { useTiptapSync } from '@convex-dev/prosemirror-sync/tiptap'
 import { Input } from '@/components/ui/input'

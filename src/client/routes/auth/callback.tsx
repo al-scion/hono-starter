@@ -1,16 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { api } from '@/lib/api'
 
 export const Route = createFileRoute('/auth/callback')({
   component: RouteComponent,
-  beforeLoad(ctx) {
-    const state = new URLSearchParams(ctx.search).get('state')
-    const code = new URLSearchParams(ctx.search).get('code')
-    if (!state || !code) {
-      throw new Error('Invalid state or code')
-    }
-    api.mcp.auth.callback.$get({query: {state, code}})
-  },
+  beforeLoad() {},
 })
 
 function RouteComponent() {

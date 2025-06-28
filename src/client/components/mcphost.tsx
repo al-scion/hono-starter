@@ -6,7 +6,6 @@ import { api } from "@/lib/api"
 import { useAgent } from "agents/react";
 import type { MCPServersState } from "agents";
 import { useUser } from "@clerk/clerk-react";
-// import { useAgentChat } from "agents/ai-react";
 
 export const DEFAULT_MCP_SERVERS: Record<string, any> = {
   'Notion': {url: 'https://mcp.notion.com/mcp', icon: Notion},
@@ -36,6 +35,13 @@ interface McpStore {
 
   addMcpServer: (name: string, url: string) => Promise<void>
   removeMcpServer: (id: string) => Promise<void>
+
+  pendingAuthSessions: Set<string>
+  setPendingAuthSessions: (pendingAuthSessions: Set<string>) => void
+
+  enabledMcp: Set<string>
+  addEnabledMcp: (mcp: string) => void
+  removeEnabledMcp: (mcp: string) => void
 }
 
 export const useMcpStore = create<McpStore>(
@@ -52,16 +58,35 @@ export const useMcpStore = create<McpStore>(
     setMcpState: (mcpState) => set({ mcpState }),
     removeMcpServer: async (id: string) => {await api.mcp.removeMcp.$delete({ json: { id } })},
     addMcpServer: async (name, url) => {
+      // Check if there's already an authenticating server with this name
+      const existingServer = Object.entries(get().mcpState.servers).find(([_, server]) => 
+        server.name === name &&
+        server.auth_url && 
+        server.state === 'authenticating'
+      )
+      
+      if (existingServer) {
+        window.open(existingServer[1].auth_url!, '_blank')
+        return
+      }
+      
       const response = await api.mcp.addMcp.$post({ json: { name, url } })
       const { id, authUrl } = await response.json()
       if (authUrl) {
         window.open(authUrl, '_blank')
+        get().setPendingAuthSessions(new Set([...get().pendingAuthSessions, id]))
       }
     },
 
     agentState: undefined,
     setAgentState: (agentState) => set({ agentState }),
 
+    pendingAuthSessions: new Set(),
+    setPendingAuthSessions: (pendingAuthSessions) => set({ pendingAuthSessions }),
+
+    enabledMcp: new Set(),
+    addEnabledMcp: (mcp) => set({ enabledMcp: new Set([...get().enabledMcp, mcp]) }),
+    removeEnabledMcp: (mcp) => set({ enabledMcp: new Set([...get().enabledMcp].filter(m => m !== mcp)) }),
   })
 )
   

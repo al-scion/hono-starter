@@ -24,6 +24,7 @@ export function IntegrationsDialog() {
           {Object.entries(DEFAULT_MCP_SERVERS).map(([name, config]) => {
             const client = Object.values(mcpState.servers).find((server: MCPServer) => server.name === name)
             const clientId = Object.keys(mcpState.servers).find((id: string) => mcpState.servers[id].name === name)
+            const isLoading = client && (client.state === 'authenticating' || client.state === 'connecting' || client.state === 'discovering')
             return (
               <CommandItem 
                 key={name} 
@@ -36,8 +37,8 @@ export function IntegrationsDialog() {
                 <span>{name}</span>
                 <CommandShortcut>
                   {!client && <Button size='sm' className='h-7' onClick={() => addMcpServer(name, config.url)}>Connect</Button>}
-                  {/* {mcpClient && isLoading && <Button size='sm' disabled><Loader className="animate-spin" />Connect</Button>} */}
-                  {client && clientId && <Button size='sm' variant='outline' className='h-7' onClick={() => {removeMcpServer(clientId)}}>Disconnect</Button>}
+                  {client && isLoading && <Button size='sm' className='h-7' disabled><Loader className="animate-spin" />Connect</Button>}
+                  {client && !isLoading && clientId && <Button size='sm' variant='outline' className='h-7' onClick={() => {removeMcpServer(clientId)}}>Disconnect</Button>}
                 </CommandShortcut>
               </CommandItem>
             )

@@ -8,7 +8,7 @@ export const Route = createFileRoute('/auth/_layout')({
 function AuthLayout() {
   const router = useRouter();
   const { userId } = useAuth();
-  if (userId) router.navigate({ to: '/app/dashboard' });
+  if (userId) router.navigate({ to: '/dashboard' });
 
   return (
     <SignedOut>
