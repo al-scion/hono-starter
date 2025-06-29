@@ -12,15 +12,14 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
 import { useTheme } from "next-themes"
-import { SignOutButton } from "@clerk/clerk-react"
-import { useUser } from "@clerk/clerk-react"
-import { useOrganization } from "@clerk/clerk-react"
+import { authClient } from "@/lib/auth-client"
 
 export function TeamSwitcher() {
 
   const { setTheme, theme } = useTheme()
-  const { user } = useUser()
-  const { organization } = useOrganization()
+  const session = authClient.useSession()
+  const userName = session?.data?.user?.name
+  const userImage = session?.data?.user?.image
 
   return (
     <SidebarMenu className="justify-center">
@@ -28,8 +27,8 @@ export function TeamSwitcher() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton className="h-8 px-2 w-fit rounded-md hover:bg-sidebar-accent font-normal">
-              {organization?.imageUrl ? <img src={organization?.imageUrl} alt={organization?.name} className="size-4 rounded-full" /> : <Building2 className="size-4" />}
-              <span className="truncate min-w-0">{user?.firstName}'s Workspace</span>
+              {userImage ? <img src={userImage} alt={userName} className="size-4 rounded-full" /> : <Building2 className="size-4" />}
+              <span className="truncate min-w-0">{userName}'s Workspace</span>
               <div className="text-muted-foreground [&>svg]:size-3.5 -ml-1"><ChevronDown  /></div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -43,12 +42,10 @@ export function TeamSwitcher() {
               {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               <div>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</div>
             </DropdownMenuItem>
-            <SignOutButton>
-              <DropdownMenuItem className="gap-2 p-2 py-1.5">
-                <LogOut className="size-4" />
-                <span>Sign out</span>
-              </DropdownMenuItem>
-            </SignOutButton>
+            <DropdownMenuItem className="gap-2 p-2 py-1.5" onClick={() => authClient.signOut()}>
+              <LogOut className="size-4" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

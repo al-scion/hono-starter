@@ -1,7 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useConvexMutation, convexQuery } from '@convex-dev/react-query'
 import { convexApi, Id } from '@/lib/api'
-import { useUser } from '@clerk/clerk-react'
 
 // Channels hooks
 export function useChannels() {
@@ -9,7 +8,6 @@ export function useChannels() {
 }
 
 export function useCreateChannel() {
-  const { user } = useUser()
   return useMutation({
     mutationFn: useConvexMutation(convexApi.channel.createChannel).withOptimisticUpdate(
       (localStore, args) => {
@@ -20,7 +18,7 @@ export function useCreateChannel() {
             _id: `temp-${Date.now()}` as Id<'channels'>,
             _creationTime: Date.now(),
             name,
-            userId: user?.id ?? '',
+            userId: '',
             type,
           }
           localStore.setQuery(convexApi.channel.getChannels, {}, [
@@ -39,8 +37,6 @@ export function useMessages(channelId: Id<'channels'>) {
 }
 
 export function useSendMessage() {
-  const { user } = useUser()
-  
   return useMutation({
     mutationFn: useConvexMutation(convexApi.message.sendMessage).withOptimisticUpdate(
       (localStore, args) => {
@@ -52,7 +48,7 @@ export function useSendMessage() {
             _id: `temp-${Date.now()}` as Id<'messages'>,
             _creationTime: Date.now(),
             channelId,
-            userId: user?.id ?? '',
+            userId: '',
             text,
             createdAt: Date.now(),
           }
@@ -73,7 +69,6 @@ export function useDocuments() {
 }
 
 export function useCreateDocument() {
-  const { user } = useUser()
   return useMutation({
     mutationFn: useConvexMutation(convexApi.document.createDocument).withOptimisticUpdate(
       (localStore, args) => {
@@ -84,7 +79,7 @@ export function useCreateDocument() {
             _id: `temp-${Date.now()}` as Id<'documents'>,
             _creationTime: Date.now(),
             title: '',
-            userId: user?.id ?? '',
+            userId: '',
             canvas: { edges: [], nodes: [] },
           }
           localStore.setQuery(convexApi.document.getDocuments, {}, [

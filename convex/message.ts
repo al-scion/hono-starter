@@ -8,6 +8,7 @@ export const listMessages = query({
   },
   handler: async (ctx, args) => {
     const { channelId } = args;
+
     return await ctx.db
       .query('messages')
       .withIndex('by_channel_createdAt', (q) => q.eq('channelId', channelId))

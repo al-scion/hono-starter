@@ -5,7 +5,6 @@ import { logger } from "hono/logger";
 import Stripe from 'stripe';
 import { dbClient } from './db';
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
-import { routeAgentRequest } from "agents";
 
 // Model Providers
 import { createProviderRegistry } from "ai";
@@ -53,27 +52,20 @@ const app = new Hono<{ Bindings: Env }>()
     }, {
       separator: '/'
     })
-    c.set('registry', modelRegistry);
-    return next();
-  })
-  .use('*', async (c, next) => {
     const db = dbClient(c.env.DATABASE_URL);
     const stripe = new Stripe(c.env.STRIPE_SECRET_KEY);
     const elevenlabs = new ElevenLabsClient({apiKey: c.env.ELEVENLABS_API_KEY});
+    c.set('registry', modelRegistry);
     c.set('db', db);
     c.set('stripe', stripe);
     c.set('elevenlabs', elevenlabs);
-    await next();
+    return next();
   })
   .route('/api/public', publicRouter)
   .route('/api/test', testRouter)
   .route('/api/user', userRouter)
   .route('/api/chat', chatRouter)
   .route('/api/mcp', mcpRouter)
-  .all('/agents/*', async (c) => {
-    const resp = await routeAgentRequest(c.req.raw, c.env, { cors: true });
-    return resp ?? c.json({ error: "not found" }, 404);
-  })
 
 export type AppType = typeof app;
 export default app;

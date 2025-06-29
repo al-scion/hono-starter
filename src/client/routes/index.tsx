@@ -2,18 +2,14 @@ import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
-import { useAuth } from '@clerk/clerk-react';
-import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Kbd } from "@/components/shortcuts/kbd";
 import { UIMessage } from "@ai-sdk/react";
+
 
 export const Route = createFileRoute('/')({
   component: AppPage,
 })
 
 function AppPage() {
-  const { userId } = useAuth();
   const router = useRouter();
 
   const handleMakeApiRequest = async () => {
@@ -38,24 +34,12 @@ function AppPage() {
       <Button onClick={handleMakeApiRequest}>
         Make API Request
       </Button>
-      <Button onClick={() => router.navigate({ to: '/app/dashboard' })}>
+      <Button onClick={() => router.navigate({ to: '/dashboard' })}>
         Go to Dashboard
       </Button>
       <Button onClick={() => sendTestMessage()}>
         Send test message
       </Button>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button onClick={() => {console.log(userId)}}>
-            Get user data
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent variant="outline">
-          Get user data
-          <Kbd keys="ctrl+p" />
-        </TooltipContent>
-      </Tooltip>
-      <Input className="w-40" />
     </div>
   );
 }

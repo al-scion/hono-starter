@@ -5,7 +5,6 @@ import { api } from "@/lib/api"
 // MCP related imports
 import { useAgent } from "agents/react";
 import type { MCPServersState } from "agents";
-import { useUser } from "@clerk/clerk-react";
 
 export const DEFAULT_MCP_SERVERS: Record<string, any> = {
   'Notion': {url: 'https://mcp.notion.com/mcp', icon: Notion},
@@ -92,12 +91,11 @@ export const useMcpStore = create<McpStore>(
   
 export function McpHost() {
   const { setAgent, setMcpState, setAgentState } = useMcpStore()
-  const { user } = useUser()
 
   const agentConnection = useAgent<any, unknown>({
     prefix: 'api/mcp', // Constructs a url path with /<prefix>/<agent>/<name>
     agent: 'agent', // Name of the durable object
-    name: user?.id,  // Name of the agent instance, defaults to "default"
+    name: 'anonymous',  // Name of the agent instance, defaults to "default"
     onOpen: () => {setAgent(agentConnection)},
     onClose: () => {},
 		onMcpUpdate: setMcpState,

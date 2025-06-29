@@ -1,8 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/auth/callback')({
+export const Route = createFileRoute('/_unauthenticated/callback')({
   component: RouteComponent,
-  beforeLoad() {},
+  beforeLoad: async () => {},
 })
 
 function RouteComponent() {

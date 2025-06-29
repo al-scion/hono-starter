@@ -8,33 +8,20 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { createFileRoute } from '@tanstack/react-router'
-
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as AuthCallbackImport } from './routes/auth/callback'
-import { Route as AuthLayoutImport } from './routes/auth/_layout'
+import { Route as UnauthenticatedCallbackImport } from './routes/_unauthenticated/callback'
 import { Route as AuthenticatedLayoutImport } from './routes/_authenticated/_layout'
-import { Route as AuthLayoutSignUpImport } from './routes/auth/_layout.sign-up'
-import { Route as AuthLayoutSignInImport } from './routes/auth/_layout.sign-in'
+import { Route as UnauthenticatedAuthSignUpImport } from './routes/_unauthenticated/auth.sign-up'
+import { Route as UnauthenticatedAuthSignInImport } from './routes/_unauthenticated/auth.sign-in'
 import { Route as AuthenticatedLayoutDashboardImport } from './routes/_authenticated/_layout.dashboard'
 import { Route as AuthenticatedLayoutDocumentDocIdImport } from './routes/_authenticated/_layout.document.$docId'
 import { Route as AuthenticatedLayoutChannelChannelIdImport } from './routes/_authenticated/_layout.channel.$channelId'
 import { Route as ApiMcpAgentUserIdCallbackSessionIdImport } from './routes/api.mcp.agent.$userId.callback.$sessionId'
 
-// Create Virtual Routes
-
-const AuthImport = createFileRoute('/auth')()
-
 // Create/Update Routes
-
-const AuthRoute = AuthImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -42,15 +29,10 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthCallbackRoute = AuthCallbackImport.update({
-  id: '/callback',
+const UnauthenticatedCallbackRoute = UnauthenticatedCallbackImport.update({
+  id: '/_unauthenticated/callback',
   path: '/callback',
-  getParentRoute: () => AuthRoute,
-} as any)
-
-const AuthLayoutRoute = AuthLayoutImport.update({
-  id: '/_layout',
-  getParentRoute: () => AuthRoute,
+  getParentRoute: () => rootRoute,
 } as any)
 
 const AuthenticatedLayoutRoute = AuthenticatedLayoutImport.update({
@@ -58,16 +40,16 @@ const AuthenticatedLayoutRoute = AuthenticatedLayoutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AuthLayoutSignUpRoute = AuthLayoutSignUpImport.update({
-  id: '/sign-up',
-  path: '/sign-up',
-  getParentRoute: () => AuthLayoutRoute,
+const UnauthenticatedAuthSignUpRoute = UnauthenticatedAuthSignUpImport.update({
+  id: '/_unauthenticated/auth/sign-up',
+  path: '/auth/sign-up',
+  getParentRoute: () => rootRoute,
 } as any)
 
-const AuthLayoutSignInRoute = AuthLayoutSignInImport.update({
-  id: '/sign-in',
-  path: '/sign-in',
-  getParentRoute: () => AuthLayoutRoute,
+const UnauthenticatedAuthSignInRoute = UnauthenticatedAuthSignInImport.update({
+  id: '/_unauthenticated/auth/sign-in',
+  path: '/auth/sign-in',
+  getParentRoute: () => rootRoute,
 } as any)
 
 const AuthenticatedLayoutDashboardRoute =
@@ -116,26 +98,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLayoutImport
       parentRoute: typeof rootRoute
     }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthImport
-      parentRoute: typeof rootRoute
-    }
-    '/auth/_layout': {
-      id: '/auth/_layout'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthLayoutImport
-      parentRoute: typeof AuthRoute
-    }
-    '/auth/callback': {
-      id: '/auth/callback'
+    '/_unauthenticated/callback': {
+      id: '/_unauthenticated/callback'
       path: '/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackImport
-      parentRoute: typeof AuthImport
+      fullPath: '/callback'
+      preLoaderRoute: typeof UnauthenticatedCallbackImport
+      parentRoute: typeof rootRoute
     }
     '/_authenticated/_layout/dashboard': {
       id: '/_authenticated/_layout/dashboard'
@@ -144,19 +112,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLayoutDashboardImport
       parentRoute: typeof AuthenticatedLayoutImport
     }
-    '/auth/_layout/sign-in': {
-      id: '/auth/_layout/sign-in'
-      path: '/sign-in'
+    '/_unauthenticated/auth/sign-in': {
+      id: '/_unauthenticated/auth/sign-in'
+      path: '/auth/sign-in'
       fullPath: '/auth/sign-in'
-      preLoaderRoute: typeof AuthLayoutSignInImport
-      parentRoute: typeof AuthLayoutImport
+      preLoaderRoute: typeof UnauthenticatedAuthSignInImport
+      parentRoute: typeof rootRoute
     }
-    '/auth/_layout/sign-up': {
-      id: '/auth/_layout/sign-up'
-      path: '/sign-up'
+    '/_unauthenticated/auth/sign-up': {
+      id: '/_unauthenticated/auth/sign-up'
+      path: '/auth/sign-up'
       fullPath: '/auth/sign-up'
-      preLoaderRoute: typeof AuthLayoutSignUpImport
-      parentRoute: typeof AuthLayoutImport
+      preLoaderRoute: typeof UnauthenticatedAuthSignUpImport
+      parentRoute: typeof rootRoute
     }
     '/_authenticated/_layout/channel/$channelId': {
       id: '/_authenticated/_layout/channel/$channelId'
@@ -200,40 +168,13 @@ const AuthenticatedLayoutRouteChildren: AuthenticatedLayoutRouteChildren = {
 const AuthenticatedLayoutRouteWithChildren =
   AuthenticatedLayoutRoute._addFileChildren(AuthenticatedLayoutRouteChildren)
 
-interface AuthLayoutRouteChildren {
-  AuthLayoutSignInRoute: typeof AuthLayoutSignInRoute
-  AuthLayoutSignUpRoute: typeof AuthLayoutSignUpRoute
-}
-
-const AuthLayoutRouteChildren: AuthLayoutRouteChildren = {
-  AuthLayoutSignInRoute: AuthLayoutSignInRoute,
-  AuthLayoutSignUpRoute: AuthLayoutSignUpRoute,
-}
-
-const AuthLayoutRouteWithChildren = AuthLayoutRoute._addFileChildren(
-  AuthLayoutRouteChildren,
-)
-
-interface AuthRouteChildren {
-  AuthLayoutRoute: typeof AuthLayoutRouteWithChildren
-  AuthCallbackRoute: typeof AuthCallbackRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthLayoutRoute: AuthLayoutRouteWithChildren,
-  AuthCallbackRoute: AuthCallbackRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthenticatedLayoutRouteWithChildren
-  '/auth': typeof AuthLayoutRouteWithChildren
-  '/auth/callback': typeof AuthCallbackRoute
+  '/callback': typeof UnauthenticatedCallbackRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
-  '/auth/sign-in': typeof AuthLayoutSignInRoute
-  '/auth/sign-up': typeof AuthLayoutSignUpRoute
+  '/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
+  '/auth/sign-up': typeof UnauthenticatedAuthSignUpRoute
   '/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
   '/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
@@ -242,11 +183,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthenticatedLayoutRouteWithChildren
-  '/auth': typeof AuthLayoutRouteWithChildren
-  '/auth/callback': typeof AuthCallbackRoute
+  '/callback': typeof UnauthenticatedCallbackRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
-  '/auth/sign-in': typeof AuthLayoutSignInRoute
-  '/auth/sign-up': typeof AuthLayoutSignUpRoute
+  '/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
+  '/auth/sign-up': typeof UnauthenticatedAuthSignUpRoute
   '/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
   '/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
@@ -256,12 +196,10 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/_authenticated/_layout': typeof AuthenticatedLayoutRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
-  '/auth/_layout': typeof AuthLayoutRouteWithChildren
-  '/auth/callback': typeof AuthCallbackRoute
+  '/_unauthenticated/callback': typeof UnauthenticatedCallbackRoute
   '/_authenticated/_layout/dashboard': typeof AuthenticatedLayoutDashboardRoute
-  '/auth/_layout/sign-in': typeof AuthLayoutSignInRoute
-  '/auth/_layout/sign-up': typeof AuthLayoutSignUpRoute
+  '/_unauthenticated/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
+  '/_unauthenticated/auth/sign-up': typeof UnauthenticatedAuthSignUpRoute
   '/_authenticated/_layout/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
   '/_authenticated/_layout/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
@@ -272,8 +210,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | ''
-    | '/auth'
-    | '/auth/callback'
+    | '/callback'
     | '/dashboard'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -284,8 +221,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | ''
-    | '/auth'
-    | '/auth/callback'
+    | '/callback'
     | '/dashboard'
     | '/auth/sign-in'
     | '/auth/sign-up'
@@ -296,12 +232,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated/_layout'
-    | '/auth'
-    | '/auth/_layout'
-    | '/auth/callback'
+    | '/_unauthenticated/callback'
     | '/_authenticated/_layout/dashboard'
-    | '/auth/_layout/sign-in'
-    | '/auth/_layout/sign-up'
+    | '/_unauthenticated/auth/sign-in'
+    | '/_unauthenticated/auth/sign-up'
     | '/_authenticated/_layout/channel/$channelId'
     | '/_authenticated/_layout/document/$docId'
     | '/api/mcp/agent/$userId/callback/$sessionId'
@@ -311,14 +245,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedLayoutRoute: typeof AuthenticatedLayoutRouteWithChildren
-  AuthRoute: typeof AuthRouteWithChildren
+  UnauthenticatedCallbackRoute: typeof UnauthenticatedCallbackRoute
+  UnauthenticatedAuthSignInRoute: typeof UnauthenticatedAuthSignInRoute
+  UnauthenticatedAuthSignUpRoute: typeof UnauthenticatedAuthSignUpRoute
   ApiMcpAgentUserIdCallbackSessionIdRoute: typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedLayoutRoute: AuthenticatedLayoutRouteWithChildren,
-  AuthRoute: AuthRouteWithChildren,
+  UnauthenticatedCallbackRoute: UnauthenticatedCallbackRoute,
+  UnauthenticatedAuthSignInRoute: UnauthenticatedAuthSignInRoute,
+  UnauthenticatedAuthSignUpRoute: UnauthenticatedAuthSignUpRoute,
   ApiMcpAgentUserIdCallbackSessionIdRoute:
     ApiMcpAgentUserIdCallbackSessionIdRoute,
 }
@@ -335,7 +273,9 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/_authenticated/_layout",
-        "/auth",
+        "/_unauthenticated/callback",
+        "/_unauthenticated/auth/sign-in",
+        "/_unauthenticated/auth/sign-up",
         "/api/mcp/agent/$userId/callback/$sessionId"
       ]
     },
@@ -350,36 +290,18 @@ export const routeTree = rootRoute
         "/_authenticated/_layout/document/$docId"
       ]
     },
-    "/auth": {
-      "filePath": "auth",
-      "children": [
-        "/auth/_layout",
-        "/auth/callback"
-      ]
-    },
-    "/auth/_layout": {
-      "filePath": "auth/_layout.tsx",
-      "parent": "/auth",
-      "children": [
-        "/auth/_layout/sign-in",
-        "/auth/_layout/sign-up"
-      ]
-    },
-    "/auth/callback": {
-      "filePath": "auth/callback.tsx",
-      "parent": "/auth"
+    "/_unauthenticated/callback": {
+      "filePath": "_unauthenticated/callback.tsx"
     },
     "/_authenticated/_layout/dashboard": {
       "filePath": "_authenticated/_layout.dashboard.tsx",
       "parent": "/_authenticated/_layout"
     },
-    "/auth/_layout/sign-in": {
-      "filePath": "auth/_layout.sign-in.tsx",
-      "parent": "/auth/_layout"
+    "/_unauthenticated/auth/sign-in": {
+      "filePath": "_unauthenticated/auth.sign-in.tsx"
     },
-    "/auth/_layout/sign-up": {
-      "filePath": "auth/_layout.sign-up.tsx",
-      "parent": "/auth/_layout"
+    "/_unauthenticated/auth/sign-up": {
+      "filePath": "_unauthenticated/auth.sign-up.tsx"
     },
     "/_authenticated/_layout/channel/$channelId": {
       "filePath": "_authenticated/_layout.channel.$channelId.tsx",

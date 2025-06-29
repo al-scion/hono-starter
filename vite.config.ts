@@ -17,7 +17,7 @@ export default defineConfig({
         plugins: [["babel-plugin-react-compiler"]],
       },
     }),
-    cloudflare({experimental: {headersAndRedirectsDevModeSupport: true}}), 
+    cloudflare(), 
     tailwindcss(),
     devtoolsJson()
   ],

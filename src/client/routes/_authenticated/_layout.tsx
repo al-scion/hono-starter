@@ -1,5 +1,4 @@
-import { createFileRoute, Outlet, useRouter } from '@tanstack/react-router'
-import { SignedIn, useAuth } from '@clerk/clerk-react'
+import { createFileRoute, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { CommandComponent } from '@/components/command/command-dialog';
@@ -10,18 +9,22 @@ import { DeployDialog } from '@/components/dialog/deploy'
 import { CustomMcpDialog } from '@/components/dialog/custom-mcp'
 import { McpHost } from '@/components/mcphost'
 import { Chat } from '@/components/sidebar/chat'
+import { Authenticated } from "convex/react";
+import { authClient } from '@/lib/auth-client';
 
 export const Route = createFileRoute('/_authenticated/_layout')({
   component: RouteComponent,
 })
 
 function RouteComponent() {
+  const auth = authClient.useSession();
   const router = useRouter();
-  const { userId, isLoaded } = useAuth();
-  if (isLoaded && !userId) router.navigate({ to: '/auth/sign-in' });
+  if (!auth.isPending && !auth.data?.session) {
+    router.navigate({ to: "/auth/sign-in" })
+  }
 
   return (
-    <SignedIn>
+    <Authenticated>
       <SidebarProvider>
         <AppSidebar variant='inset' />
         <SidebarInset className='flex-row'>
@@ -40,6 +43,6 @@ function RouteComponent() {
       <DeployDialog />
       <CustomMcpDialog />
       <McpHost />
-    </SignedIn>
+    </Authenticated>
   )
 }

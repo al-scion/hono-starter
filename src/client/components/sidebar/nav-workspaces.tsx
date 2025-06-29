@@ -62,7 +62,7 @@ export function NavWorkspaces() {
           onClick={() => setWorkspaceOpen(!workspaceOpen)}
         >
           <span className="text-xs">Private</span>
-          <ChevronDown className={cn("size-3.5 transition-transform duration-200", !workspaceOpen && "-rotate-90")} />
+          <ChevronDown className={cn("size-3 transition-transform duration-200", !workspaceOpen && "-rotate-90")} />
           <Button
             variant="ghost"
             className="size-5 p-0.75 items-center justify-center ml-auto hidden group-hover/sidebar-label:block hover:bg-zinc-300"
@@ -135,7 +135,7 @@ export function NavWorkspaces() {
           onClick={() => setChannelsOpen(!channelsOpen)}
         >
           <span className="text-xs">Channels</span>
-          <ChevronDown className={cn("size-3.5 transition-transform duration-200", !channelsOpen && "-rotate-90")} />
+          <ChevronDown className={cn("size-3 transition-transform duration-200", !channelsOpen && "-rotate-90")} />
           <Button
             variant="ghost"
             className="size-5 p-0.75 items-center justify-center ml-auto hidden group-hover/sidebar-label:block hover:bg-zinc-300"

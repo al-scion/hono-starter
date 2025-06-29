@@ -17,15 +17,14 @@ import { useChatStore } from "@/components/sidebar/chat"
 import { Input } from "./ui/input"
 import usePresence from "@convex-dev/presence/react";
 import FacePile from "@convex-dev/presence/facepile";
-import { useUser } from "@clerk/clerk-react"
-
+import { authClient } from "@/lib/auth-client"
 
 export function Header({
   className,
   ...props
 }: React.ComponentProps<'header'>) {
+  const { user } = authClient.useSession()?.data || {}
 
-  const { user } = useUser()
   const presenceState = usePresence(convexApi.presence, "my-chat-room", user?.id || "")
   const { toggleSidebar } = useSidebar()
   const { toggleOpen } = useChatStore()
