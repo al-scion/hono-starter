@@ -3,10 +3,9 @@ import { z } from 'zod'
 import { Canvas } from '@/components/canvas/canvas'
 import { Document } from '@/components/tiptap/document'
 import { convexApi, Id } from '@/lib/api'
-import { useQuery, useMutation } from '@tanstack/react-query'
-import { useConvexMutation, convexQuery } from '@convex-dev/react-query'
 import { useTiptapSync } from '@convex-dev/prosemirror-sync/tiptap'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useDocument } from '@/hooks/use-convex'
 
 export const Route = createFileRoute('/_authenticated/_layout/document/$docId')({
   component: RouteComponent,
@@ -20,45 +19,22 @@ function RouteComponent() {
   const { mode } = useSearch({ from: '/_authenticated/_layout/document/$docId' })
   const { docId } = useParams({ from: '/_authenticated/_layout/document/$docId' }) as { docId: Id<'documents'> }
   const sync = useTiptapSync(convexApi.prosemirror, docId)
-  const document = useQuery(convexQuery(convexApi.document.getDocument, { docId }))
-
-  const { mutate: mutateTitle } = useMutation({
-    mutationFn: useConvexMutation(convexApi.document.updateTitle).withOptimisticUpdate(
-      (localStore, args) => {
-        const { docId, title } = args
-        const existingDocs = localStore.getQuery(convexApi.document.getDocuments, {})
-        const currentDocument = localStore.getQuery(convexApi.document.getDocument, { docId })
-        if (existingDocs !== undefined) {
-          const updatedDocs = existingDocs.map((doc) => doc._id === docId ? { ...doc, title } : doc)
-          localStore.setQuery(convexApi.document.getDocuments, {}, updatedDocs)
-        }
-        if (currentDocument) {
-          localStore.setQuery(convexApi.document.getDocument, { docId }, {
-            ...currentDocument,
-            title
-          })
-        }
-      }
-    ),
-  })
-
-  const updateTitle = (title: string) => mutateTitle({ docId, title })
-
   
-  if (sync.isLoading || document.isLoading) return (
+  const { data: document, isLoading } = useDocument(docId)
+
+  if (sync.isLoading || isLoading) return (
     <div className='flex flex-col flex-1 mx-auto w-full max-w-4xl px-8 pt-12 pb-4 h-[calc(100dvh-66px)] overflow-y-auto space-y-4'>
       <Skeleton className='w-full h-12' />
       <Skeleton className='w-full h-18' />
       <Skeleton className='w-full h-40' />
     </div>
   )
-  if (!document.data) return <div>Document not found</div>
-  
+  if (!document) return <div>Document not found</div>
 
   return (
     <>
-      {(mode === 'editor') && <Document sync={sync} document={document.data} updateTitle={updateTitle} />}
-      {(mode === 'canvas') && <Canvas document={document.data} />}
+      {(mode === 'editor') && <Document sync={sync} document={document} />}
+      {(mode === 'canvas') && <Canvas document={document} />}
     </>
   )
 }

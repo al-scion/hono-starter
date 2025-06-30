@@ -35,6 +35,7 @@ export const createDocument = mutation({
     const documentId = await ctx.db.insert('documents', {
       title: '',
       userId: user.subject,
+      emoji: '📄',
       canvas: {
         edges: [],
         nodes: [],

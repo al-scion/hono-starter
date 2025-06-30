@@ -81,7 +81,8 @@ export function Chat({className, ...props}: React.ComponentProps<'div'>) {
       data-state={isOpen ? 'open' : 'closed'}
       style={{
         width: isOpen ? width : '0px',
-        transition: isDragging ? 'none' : 'width 200ms linear',
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: isDragging ? 'none' : 'width 200ms linear, transform 200ms linear',
       } as React.CSSProperties}
       className={cn(
         "flex flex-row relative",
@@ -89,7 +90,8 @@ export function Chat({className, ...props}: React.ComponentProps<'div'>) {
       )}
       {...props}
     >
-      <div 
+      <div
+        data-slot="resize-handle"
         className={cn(
           "absolute left-0 -top-2 h-screen w-2 border-x-3 border-sidebar cursor-col-resize select-none",
           "bg-transparent hover:bg-border transition-opacity duration-200 opacity-0 hover:opacity-100",
@@ -100,8 +102,7 @@ export function Chat({className, ...props}: React.ComponentProps<'div'>) {
         onPointerUp={handlePointerUp}
       />
       <Messages key={chatId} className={cn(
-        "flex flex-col border rounded-lg overflow-hidden bg-background min-w-0 break-words ml-2",
-        !isOpen && "hidden"
+        "flex flex-col border rounded-lg overflow-hidden bg-background min-w-0 break-words ml-2"
       )} />
     </div>
   )

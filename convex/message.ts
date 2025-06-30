@@ -9,10 +9,12 @@ export const listMessages = query({
   handler: async (ctx, args) => {
     const { channelId } = args;
 
-    return await ctx.db
+    const messages = await ctx.db
       .query('messages')
       .withIndex('by_channel_createdAt', (q) => q.eq('channelId', channelId))
       .collect();
+
+    return messages;
   },
 });
 
@@ -32,8 +34,57 @@ export const sendMessage = mutation({
       userId: user.subject,
       text,
       createdAt: Date.now(),
+      reactions: [],
     });
 
     return { success: true, messageId };
   },
-}); 
+});
+
+export const addReaction = mutation({
+  args: {
+    messageId: v.id('messages'),
+    emoji: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { messageId, emoji } = args;
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) throw new Error('Unauthorized');
+
+    const message = await ctx.db.get(messageId);
+    if (!message) return;
+
+    await ctx.db.patch(messageId, {
+      reactions: [
+        ...message.reactions,
+        {
+          emoji,
+          userId: user.subject,
+        }
+      ]
+    });
+
+    return { success: true };
+  },
+});
+
+export const removeReaction = mutation({
+  args: {
+    messageId: v.id('messages'),
+    emoji: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const { messageId, emoji } = args;
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) throw new Error('Unauthorized');
+
+    const message = await ctx.db.get(messageId);
+    if (!message) return;
+
+    await ctx.db.patch(messageId, {
+      reactions: message.reactions.filter(r => !(r.emoji === emoji && r.userId === user.subject))
+    });
+
+    return { success: true };
+  },
+});

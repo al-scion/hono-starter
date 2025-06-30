@@ -73,7 +73,7 @@ const slashCommandItems = [
 
 export const MentionSuggestion = Mention.configure({
   HTMLAttributes: {
-    class: 'mention bg-blue-100 border border-blue-300 text-blue-800 px-0.5 rounded focus:outline-none',
+    class: 'mention bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 px-0.5 rounded focus:outline-none',
   },
   deleteTriggerWithBackspace: true,
   suggestion: {
@@ -142,7 +142,7 @@ export const MentionSuggestion = Mention.configure({
                   props.items.map((item: any, index: number) => (
                     <Button
                       variant="ghost"
-                      className={`flex w-full justify-start h-7 px-2 gap-2 text-sm ${index === selectedIndex && 'bg-accent'}`}
+                      className={`flex w-full justify-start h-7 px-2 gap-2 text-sm [&>svg]:text-foreground ${index === selectedIndex && 'bg-accent'}`}
                       key={item.id}
                       onClick={() => selectItem(index)}
                     >
@@ -278,7 +278,7 @@ export const SlashCommand = Extension.create({
                       props.items.map((item: any, index: number) => (
                         <Button
                           variant="ghost"
-                          className={`flex w-full justify-start h-7 px-2 gap-2 text-sm font-normal ${index === selectedIndex && 'bg-accent'}`}
+                          className={`flex w-full justify-start h-7 px-2 gap-2 text-sm font-normal [&>svg]:text-foreground ${index === selectedIndex && 'bg-accent'}`}
                           key={index}
                           onClick={() => selectItem(index)}
                         >

@@ -16,7 +16,6 @@ export const heartbeat = mutation({
 export const list = query({
   args: { roomToken: v.string() },
   handler: async (ctx, { roomToken }) => {
-    // Avoid adding per-user reads so all subscriptions can share same cache.
     return await presence.list(ctx, roomToken);
   },
 });
@@ -24,7 +23,6 @@ export const list = query({
 export const disconnect = mutation({
   args: { sessionToken: v.string() },
   handler: async (ctx, { sessionToken }) => {
-    // Can't check auth here because it's called over http from sendBeacon.
     return await presence.disconnect(ctx, sessionToken);
   },
 });

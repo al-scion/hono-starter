@@ -6,9 +6,10 @@ export const createChannel = mutation({
     name: v.string(),
     description: v.optional(v.string()),
     type: v.union(v.literal('public'), v.literal('private'), v.literal('direct')),
+    organizationId: v.string(),
   },
   handler: async (ctx, args) => {
-    const { name, description, type } = args
+    const { name, description, type, organizationId } = args
     const user = await ctx.auth.getUserIdentity()
     if (!user) throw new Error('Unauthorized')
 
@@ -16,6 +17,7 @@ export const createChannel = mutation({
       name,
       description,
       type,
+      organizationId,
     })
     await ctx.db.insert('channelMembers', {
       channelId,
@@ -27,10 +29,14 @@ export const createChannel = mutation({
 })
 
 export const getChannels = query({
-  args: {},
-  handler: async (ctx) => {
-    // Optionally filter by membership or visibility
-    return await ctx.db.query('channels').collect()
+  args: {
+    organizationId: v.string(),
+  },
+  handler: async (ctx, { organizationId }) => {
+    return await ctx.db
+      .query('channels')
+      .withIndex('by_organization', (q) => q.eq('organizationId', organizationId))
+      .collect()
   },
 })
 

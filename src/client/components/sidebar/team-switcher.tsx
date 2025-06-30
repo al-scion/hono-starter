@@ -1,4 +1,4 @@
-import { Building2, ChevronDown, LogOut, Moon, Plus, Sun } from "lucide-react"
+import { Check, ChevronDown, LogOut, Moon, Plus, Settings, Sun, User } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,37 +12,85 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
 import { useTheme } from "next-themes"
-import { authClient } from "@/lib/auth-client"
+import { useClerk, useOrganization, useOrganizationList } from "@clerk/clerk-react"
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { CreateOrganization, OrganizationProfile, UserProfile } from "@clerk/clerk-react"
+import { useState } from "react"
+
 
 export function TeamSwitcher() {
 
   const { setTheme, theme } = useTheme()
-  const session = authClient.useSession()
-  const userName = session?.data?.user?.name
-  const userImage = session?.data?.user?.image
+  const { signOut } = useClerk()
+  const { organization } = useOrganization({})
+  const orgList = useOrganizationList({userMemberships: {infinite: true}})
+
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [authDialogType, setAuthDialogType] = useState<'createOrg' | 'orgProfile' | 'userProfile'>('createOrg')
+
+  function AuthDialogs() {
+    return (
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTitle className="sr-only">Create Organization</DialogTitle>
+        <DialogDescription className="sr-only">Create Organization</DialogDescription>
+        <DialogContent className="p-0 w-fit max-w-fit min-w-fit border-none bg-transparent rounded-xl">
+          {authDialogType === 'createOrg' && <CreateOrganization />}
+          {authDialogType === 'orgProfile' && <OrganizationProfile />}
+          {authDialogType === 'userProfile' && <UserProfile />}
+        </DialogContent>
+      </Dialog>
+    )
+  }
 
   return (
     <SidebarMenu className="justify-center">
+      <AuthDialogs />
       <SidebarMenuItem className="flex flex-row items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton className="h-8 px-2 w-fit rounded-md hover:bg-sidebar-accent font-normal">
-              {userImage ? <img src={userImage} alt={userName} className="size-4 rounded-full" /> : <Building2 className="size-4" />}
-              <span className="truncate min-w-0">{userName}'s Workspace</span>
-              <div className="text-muted-foreground [&>svg]:size-3.5 -ml-1"><ChevronDown  /></div>
+              <img src={organization?.imageUrl} alt={organization?.name} className="size-5 rounded-full -ml-0.5" />
+              <span className="truncate min-w-0">{organization?.name}</span>
+              <div className="text-muted-foreground [&>svg]:size-3.5 -ml-1"><ChevronDown /></div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="start">
-            <DropdownMenuItem className="gap-2 p-2 py-1.5">
+            {orgList.userMemberships?.data?.map((org) => (
+              <DropdownMenuItem key={org.organization.id} onClick={() => orgList.setActive?.({ organization: org.organization.id })}>
+                <img src={org.organization.imageUrl} alt={org.organization.name} className="size-5 rounded-full -ml-0.5" />
+                <span className="truncate min-w-0">{org.organization.name || org.organization.slug}</span>
+                {org.organization.id === organization?.id && <Check className="size-4 ml-auto" />}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem 
+              onClick={() => {
+                setDialogOpen(true)
+                setAuthDialogType('createOrg')
+              }}
+            >
               <Plus className="size-4" />
-              <div>Add team</div>
+              <div>New workspace</div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2 py-1.5" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+            <DropdownMenuItem onClick={() => {
+              setDialogOpen(true)
+              setAuthDialogType('orgProfile')
+            }}>
+              <Settings className="size-4" />
+              <div>Workspace settings</div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              setDialogOpen(true)
+              setAuthDialogType('userProfile')
+            }}>
+              <User className="size-4" />
+              <div>Account settings</div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               <div>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</div>
             </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2 p-2 py-1.5" onClick={() => authClient.signOut()}>
+            <DropdownMenuItem onClick={() => signOut()}>
               <LogOut className="size-4" />
               <span>Sign out</span>
             </DropdownMenuItem>

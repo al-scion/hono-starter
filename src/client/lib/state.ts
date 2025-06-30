@@ -1,5 +1,6 @@
 import { UIMessage } from "@ai-sdk/react";
 import { create } from "zustand";
+import usePresence from "@convex-dev/presence/react";
 
 interface State {
   count: number;
@@ -29,6 +30,9 @@ interface State {
 
   contextItems: any[];
   setContextItems: (contextItems: any[]) => void;
+
+  presenceState: ReturnType<typeof usePresence>
+  setPresenceState: (presenceState: ReturnType<typeof usePresence>) => void;
 
 }
 
@@ -60,4 +64,8 @@ export const useStore = create<State>((set) => ({
 
   contextItems: [],
   setContextItems: (contextItems: any[]) => set({ contextItems }),
+
+  presenceState: undefined,
+  setPresenceState: (presenceState: ReturnType<typeof usePresence>) => set({ presenceState }),
+  
 }));

@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as UnauthenticatedCallbackImport } from './routes/_unauthenticated/callback'
+import { Route as AuthenticatedOnboardingImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedLayoutImport } from './routes/_authenticated/_layout'
 import { Route as UnauthenticatedAuthSignUpImport } from './routes/_unauthenticated/auth.sign-up'
 import { Route as UnauthenticatedAuthSignInImport } from './routes/_unauthenticated/auth.sign-in'
@@ -32,6 +33,12 @@ const IndexRoute = IndexImport.update({
 const UnauthenticatedCallbackRoute = UnauthenticatedCallbackImport.update({
   id: '/_unauthenticated/callback',
   path: '/callback',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingImport.update({
+  id: '/_authenticated/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -96,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthenticatedLayoutImport
+      parentRoute: typeof rootRoute
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingImport
       parentRoute: typeof rootRoute
     }
     '/_unauthenticated/callback': {
@@ -171,6 +185,7 @@ const AuthenticatedLayoutRouteWithChildren =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthenticatedLayoutRouteWithChildren
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/callback': typeof UnauthenticatedCallbackRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
   '/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
@@ -183,6 +198,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthenticatedLayoutRouteWithChildren
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/callback': typeof UnauthenticatedCallbackRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
   '/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
@@ -196,6 +212,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/_authenticated/_layout': typeof AuthenticatedLayoutRouteWithChildren
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_unauthenticated/callback': typeof UnauthenticatedCallbackRoute
   '/_authenticated/_layout/dashboard': typeof AuthenticatedLayoutDashboardRoute
   '/_unauthenticated/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
@@ -210,6 +227,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | ''
+    | '/onboarding'
     | '/callback'
     | '/dashboard'
     | '/auth/sign-in'
@@ -221,6 +239,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | ''
+    | '/onboarding'
     | '/callback'
     | '/dashboard'
     | '/auth/sign-in'
@@ -232,6 +251,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated/_layout'
+    | '/_authenticated/onboarding'
     | '/_unauthenticated/callback'
     | '/_authenticated/_layout/dashboard'
     | '/_unauthenticated/auth/sign-in'
@@ -245,6 +265,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedLayoutRoute: typeof AuthenticatedLayoutRouteWithChildren
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   UnauthenticatedCallbackRoute: typeof UnauthenticatedCallbackRoute
   UnauthenticatedAuthSignInRoute: typeof UnauthenticatedAuthSignInRoute
   UnauthenticatedAuthSignUpRoute: typeof UnauthenticatedAuthSignUpRoute
@@ -254,6 +275,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedLayoutRoute: AuthenticatedLayoutRouteWithChildren,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   UnauthenticatedCallbackRoute: UnauthenticatedCallbackRoute,
   UnauthenticatedAuthSignInRoute: UnauthenticatedAuthSignInRoute,
   UnauthenticatedAuthSignUpRoute: UnauthenticatedAuthSignUpRoute,
@@ -273,6 +295,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/_authenticated/_layout",
+        "/_authenticated/onboarding",
         "/_unauthenticated/callback",
         "/_unauthenticated/auth/sign-in",
         "/_unauthenticated/auth/sign-up",
@@ -289,6 +312,9 @@ export const routeTree = rootRoute
         "/_authenticated/_layout/channel/$channelId",
         "/_authenticated/_layout/document/$docId"
       ]
+    },
+    "/_authenticated/onboarding": {
+      "filePath": "_authenticated/onboarding.tsx"
     },
     "/_unauthenticated/callback": {
       "filePath": "_unauthenticated/callback.tsx"

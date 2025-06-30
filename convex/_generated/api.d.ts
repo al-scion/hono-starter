@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as auth from "../auth.js";
 import type * as channel from "../channel.js";
 import type * as document from "../document.js";
 import type * as email from "../email.js";
@@ -16,7 +15,7 @@ import type * as http from "../http.js";
 import type * as message from "../message.js";
 import type * as presence from "../presence.js";
 import type * as prosemirror from "../prosemirror.js";
-import type * as util from "../util.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -33,7 +32,6 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
   channel: typeof channel;
   document: typeof document;
   email: typeof email;
@@ -41,7 +39,7 @@ declare const fullApi: ApiFromModules<{
   message: typeof message;
   presence: typeof presence;
   prosemirror: typeof prosemirror;
-  util: typeof util;
+  users: typeof users;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
@@ -235,291 +233,6 @@ export declare const components: {
           to: string;
         },
         string
-      >;
-    };
-  };
-  betterAuth: {
-    lib: {
-      create: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          input:
-            | {
-                createdAt: number;
-                email: string;
-                emailVerified: boolean;
-                image?: string;
-                name: string;
-                table: string;
-                twoFactorEnabled?: boolean;
-                updatedAt: number;
-                userId: string;
-              }
-            | {
-                createdAt: number;
-                expiresAt: number;
-                ipAddress?: string;
-                table: string;
-                token: string;
-                updatedAt: number;
-                userAgent?: string;
-                userId: string;
-              }
-            | {
-                accessToken?: string;
-                accessTokenExpiresAt?: number;
-                accountId: string;
-                createdAt: number;
-                idToken?: string;
-                password?: string;
-                providerId: string;
-                refreshToken?: string;
-                refreshTokenExpiresAt?: number;
-                scope?: string;
-                table: string;
-                updatedAt: number;
-                userId: string;
-              }
-            | {
-                backupCodes: string;
-                secret: string;
-                table: string;
-                userId: string;
-              }
-            | {
-                createdAt?: number;
-                expiresAt: number;
-                identifier: string;
-                table: string;
-                updatedAt?: number;
-                value: string;
-              }
-            | {
-                createdAt: number;
-                id?: string;
-                privateKey: string;
-                publicKey: string;
-                table: string;
-              };
-        },
-        any
-      >;
-      deleteAllForUser: FunctionReference<
-        "action",
-        "internal",
-        { table: string; userId: string },
-        any
-      >;
-      deleteAllForUserPage: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          paginationOpts?: {
-            cursor: string | null;
-            endCursor?: string | null;
-            id?: number;
-            maximumBytesRead?: number;
-            maximumRowsRead?: number;
-            numItems: number;
-          };
-          table: string;
-          userId: string;
-        },
-        any
-      >;
-      deleteBy: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          field: string;
-          table: string;
-          unique?: boolean;
-          value:
-            | string
-            | number
-            | boolean
-            | Array<string>
-            | Array<number>
-            | null;
-        },
-        any
-      >;
-      deleteOldVerifications: FunctionReference<
-        "action",
-        "internal",
-        { currentTimestamp: number },
-        any
-      >;
-      deleteOldVerificationsPage: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          currentTimestamp: number;
-          paginationOpts?: {
-            cursor: string | null;
-            endCursor?: string | null;
-            id?: number;
-            maximumBytesRead?: number;
-            maximumRowsRead?: number;
-            numItems: number;
-          };
-        },
-        any
-      >;
-      getAccountByAccountIdAndProviderId: FunctionReference<
-        "query",
-        "internal",
-        { accountId: string; providerId: string },
-        any
-      >;
-      getAccountsByUserId: FunctionReference<
-        "query",
-        "internal",
-        { limit?: number; userId: string },
-        any
-      >;
-      getBy: FunctionReference<
-        "query",
-        "internal",
-        {
-          field: string;
-          table: string;
-          unique?: boolean;
-          value:
-            | string
-            | number
-            | boolean
-            | Array<string>
-            | Array<number>
-            | null;
-        },
-        any
-      >;
-      getByQuery: FunctionReference<
-        "query",
-        "internal",
-        {
-          field: string;
-          table: string;
-          unique?: boolean;
-          value:
-            | string
-            | number
-            | boolean
-            | Array<string>
-            | Array<number>
-            | null;
-        },
-        any
-      >;
-      getCurrentSession: FunctionReference<"query", "internal", {}, any>;
-      getJwks: FunctionReference<"query", "internal", { limit?: number }, any>;
-      listVerificationsByIdentifier: FunctionReference<
-        "query",
-        "internal",
-        {
-          identifier: string;
-          limit?: number;
-          sortBy?: { direction: "asc" | "desc"; field: string };
-        },
-        any
-      >;
-      update: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          input:
-            | {
-                table: "account";
-                value: Record<string, any>;
-                where: {
-                  field: string;
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                };
-              }
-            | {
-                table: "session";
-                value: Record<string, any>;
-                where: {
-                  field: string;
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                };
-              }
-            | {
-                table: "verification";
-                value: Record<string, any>;
-                where: {
-                  field: string;
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                };
-              }
-            | {
-                table: "user";
-                value: Record<string, any>;
-                where: {
-                  field: string;
-                  value:
-                    | string
-                    | number
-                    | boolean
-                    | Array<string>
-                    | Array<number>
-                    | null;
-                };
-              };
-        },
-        any
-      >;
-      updateTwoFactor: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          update: { backupCodes?: string; secret?: string; userId?: string };
-          userId: string;
-        },
-        any
-      >;
-      updateUserProviderAccounts: FunctionReference<
-        "mutation",
-        "internal",
-        {
-          providerId: string;
-          update: {
-            accessToken?: string;
-            accessTokenExpiresAt?: number;
-            accountId?: string;
-            createdAt?: number;
-            idToken?: string;
-            password?: string;
-            providerId?: string;
-            refreshToken?: string;
-            refreshTokenExpiresAt?: number;
-            scope?: string;
-            updatedAt?: number;
-            userId?: string;
-          };
-          userId: string;
-        },
-        any
       >;
     };
   };

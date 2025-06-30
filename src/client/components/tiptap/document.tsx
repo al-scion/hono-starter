@@ -4,19 +4,19 @@ import { useTiptapSync } from '@convex-dev/prosemirror-sync/tiptap'
 import { Input } from '@/components/ui/input'
 import { DocumentEditor } from '@/components/tiptap/document-editor'
 import { Editor as TiptapEditor } from '@tiptap/core'
+import { useMutateTitle } from '@/hooks/use-convex'
 
 export function Document({
   sync,
   document,
-  updateTitle,
 }:{
   sync: ReturnType<typeof useTiptapSync>
   document: Doc<'documents'>
-  updateTitle: (title: string) => void
 }){
   
   const editorRef = useRef<TiptapEditor>(null)
   const titleInputRef = useRef<HTMLInputElement | null>(null)
+  const { mutate: mutateTitle } = useMutateTitle()
 
   return (
     <div className='flex flex-col flex-1 mx-auto w-full max-w-3xl px-8 pt-12 pb-4 overflow-y-auto space-y-4'>
@@ -24,7 +24,7 @@ export function Document({
       <Input
         ref={titleInputRef}
         value={document.title}
-        onChange={(e) => updateTitle(e.target.value)}
+        onChange={(e) => mutateTitle({ docId: document._id, title: e.target.value })}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'Tab') {
             e.preventDefault()

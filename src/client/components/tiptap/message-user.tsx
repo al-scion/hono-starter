@@ -3,7 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link';
 import Mention from '@tiptap/extension-mention'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { authClient } from "@/lib/auth-client"
+import { useUser } from "@clerk/clerk-react"
 import { User } from 'lucide-react';
 
 interface MessageUserProps {
@@ -12,7 +12,8 @@ interface MessageUserProps {
 }
 
 export function MessageUser({ metadata }: MessageUserProps) {
-  const avatarUrl = authClient.useSession()?.data?.user?.image || undefined
+  const { user } = useUser()
+  const avatarUrl = user?.imageUrl || undefined
 
   const editor = useEditor({
     extensions: [
