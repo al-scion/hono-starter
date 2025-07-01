@@ -1,6 +1,7 @@
 import { UIMessage } from "@ai-sdk/react";
 import { create } from "zustand";
 import usePresence from "@convex-dev/presence/react";
+import { ImperativePanelHandle } from "react-resizable-panels";
 
 interface State {
   count: number;
@@ -33,6 +34,18 @@ interface State {
 
   presenceState: ReturnType<typeof usePresence>
   setPresenceState: (presenceState: ReturnType<typeof usePresence>) => void;
+
+  leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null;
+  setLeftSidebarRef: (leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => void;
+  isLeftSidebarCollapsed: boolean;
+  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) => void;
+  toggleLeftSidebarCollapse: () => void;
+
+  rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null;
+  setRightSidebarRef: (rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => void;
+  isRightSidebarCollapsed: boolean;
+  setIsRightSidebarCollapsed: (isRightSidebarCollapsed: boolean) => void;
+  toggleRightSidebarCollapse: () => void;
 
 }
 
@@ -67,5 +80,48 @@ export const useStore = create<State>((set) => ({
 
   presenceState: undefined,
   setPresenceState: (presenceState: ReturnType<typeof usePresence>) => set({ presenceState }),
-  
+
+  leftSidebarRef: null,
+  setLeftSidebarRef: (leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => {
+    set({ leftSidebarRef });
+    if (leftSidebarRef?.current) {
+      setTimeout(() => {
+        set({ isLeftSidebarCollapsed: leftSidebarRef.current?.isCollapsed() ?? false });
+      }, 0);
+    }
+  },
+  isLeftSidebarCollapsed: false,
+  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) => set({ isLeftSidebarCollapsed }),
+  toggleLeftSidebarCollapse: () => {
+    const state = useStore.getState();
+    if (state.leftSidebarRef) {
+      if (state.leftSidebarRef.current?.isCollapsed()) {
+        state.leftSidebarRef.current?.expand();
+      } else {
+        state.leftSidebarRef.current?.collapse();
+      }
+    }
+  },
+
+  rightSidebarRef: null,
+  setRightSidebarRef: (rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => {
+    set({ rightSidebarRef });
+    if (rightSidebarRef?.current) {
+      setTimeout(() => {
+        set({ isRightSidebarCollapsed: rightSidebarRef.current?.isCollapsed() ?? false });
+      }, 0);
+    }
+  },
+  isRightSidebarCollapsed: false,
+  setIsRightSidebarCollapsed: (isRightSidebarCollapsed: boolean) => set({ isRightSidebarCollapsed }),
+  toggleRightSidebarCollapse: () => {
+    const state = useStore.getState();
+    if (state.rightSidebarRef) {
+      if (state.rightSidebarRef.current?.isCollapsed()) {
+        state.rightSidebarRef.current?.expand();
+      } else {
+        state.rightSidebarRef.current?.collapse();
+      }
+    }
+  },
 }));

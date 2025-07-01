@@ -1,8 +1,6 @@
-import * as React from "react"
 import {
-  Blocks,
+  Home,
   Search,
-  Settings,
   Unplug,
 } from "lucide-react"
 import { NavWorkspaces } from "@/components/sidebar/nav-workspaces"
@@ -11,8 +9,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarFooter,
-  SidebarRail,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -21,42 +17,36 @@ import {
 import { useStore } from "@/lib/state"
 import { useLocation, useRouter } from "@tanstack/react-router"
 
-const data = {
-  navHeader: [
-    {
-      title: "Search",
-      url: "#",
-      icon: Search,
-      onClickHandler: () => useStore.setState({ commandOpen: true }),
-    },
-    {
-      title: "Integrations",
-      url: "#",
-      icon: Unplug,
-      onClickHandler: () => useStore.setState({ integrationsDialogOpen: true })
-    },
-  ],
-  navFooter: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
-    {
-      title: "Templates",
-      url: "#",
-      icon: Blocks,
-    },
-  ],
-}
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar() {
   const router = useRouter()
   const location = useLocation()
+
+  const data = {
+    navHeader: [
+      {
+        title: "Dashboard",
+        url: "/dashboard",
+        icon: Home,
+        onClickHandler: () => router.navigate({ to: "/dashboard" })
+      },
+      {
+        title: "Search",
+        url: "#",
+        icon: Search,
+        onClickHandler: () => useStore.setState({ commandOpen: true }),
+      },
+      {
+        title: "Integrations",
+        url: "#",
+        icon: Unplug,
+        onClickHandler: () => useStore.setState({ integrationsDialogOpen: true })
+      },
+    ],
+  }
   
   return (
-    <Sidebar {...props}>
-      <SidebarHeader className="py-1">
+    <Sidebar collapsible="none" className="w-full -mr-1 group">
+      <SidebarHeader>
         <TeamSwitcher />
       </SidebarHeader>
       <SidebarContent className="gap-0">
@@ -66,14 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton 
                   isActive={location.pathname === item.url}
-                  onClick={() => {
-                    if (item.onClickHandler) {
-                      item.onClickHandler();
-                    } else {
-                      router.navigate({ to: item.url });
-                    }
-                  }}
-                  className='data-[active=true]:bg-background data-[active=true]:border-border'
+                  onClick={item.onClickHandler}
                 >
                   <item.icon />
                   <span>{item.title}</span>
@@ -84,22 +67,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
         <NavWorkspaces />
       </SidebarContent>
-      {/* <SidebarFooter className="py-1">
-        <SidebarMenu>
-          {data.navFooter.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton 
-                isActive={location.pathname === item.url} 
-                onClick={() => {router.navigate({to: item.url})}}
-              >
-                <item.icon />
-                <span>{item.title}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarFooter> */}
-      <SidebarRail className="-mr-0.25" />
     </Sidebar>
   )
 }

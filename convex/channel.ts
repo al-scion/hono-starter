@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "./_generated/server";
 
 export const createChannel = mutation({
   args: {
@@ -64,5 +65,61 @@ export const joinChannel = mutation({
     })
 
     return { success: true }
+  },
+})
+
+export const createDefaultChannel = internalMutation({
+  args: {
+    organizationId: v.string(),
+    createdBy: v.string(),
+  },
+  handler: async (ctx, { organizationId, createdBy }) => {
+    const channelId = await ctx.db.insert('channels', {
+      name: 'general',
+      type: 'public',
+      organizationId,
+    })
+
+    // Add the organization creator as an admin of the channel
+    await ctx.db.insert('channelMembers', {
+      channelId,
+      userId: createdBy,
+      role: 'admin',
+    })
+
+    return channelId
+  },
+})
+
+export const handleOrganizationDeleted = internalMutation({
+  args: { organizationId: v.string() },
+  async handler(ctx, { organizationId }) {
+    // fetch all channels for the org in one round-trip
+    const channels = await ctx.db
+      .query('channels')
+      .withIndex('by_organization', q => q.eq('organizationId', organizationId))
+      .collect()
+
+    // run channel clean-up in parallel
+    await Promise.all(
+      channels.map(async (channel) => {
+        // delete members
+        const members = await ctx.db
+          .query('channelMembers')
+          .withIndex('by_channel', q => q.eq('channelId', channel._id))
+          .collect()
+        await Promise.all(members.map(m => ctx.db.delete(m._id)))
+
+        // delete messages
+        const messages = await ctx.db
+          .query('messages')
+          .withIndex('by_channel', q => q.eq('channelId', channel._id))
+          .collect()
+        await Promise.all(messages.map(msg => ctx.db.delete(msg._id)))
+
+        // finally delete the channel itself
+        await ctx.db.delete(channel._id)
+      })
+    )
   },
 })

@@ -36,6 +36,13 @@ http.route({
           clerkUserId: event.data.id!,
         });
         break;
+      case "organization.created":
+        await ctx.runMutation(internal.channel.createDefaultChannel, {
+          createdBy: event.data.created_by!,
+          organizationId: event.data.id!,
+        })
+        break;
+      case "organization.deleted":
       default:
         console.log("Ignored Clerk webhook event", event.type);
     }

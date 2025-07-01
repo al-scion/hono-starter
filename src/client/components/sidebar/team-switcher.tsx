@@ -1,4 +1,4 @@
-import { Check, ChevronDown, LogOut, Moon, Plus, Settings, Sun, User } from "lucide-react"
+import { Briefcase, Check, ChevronDown, LogOut, Moon, PanelLeft, Plus, Sun, User } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,10 @@ import { useClerk, useOrganization, useOrganizationList } from "@clerk/clerk-rea
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { CreateOrganization, OrganizationProfile, UserProfile } from "@clerk/clerk-react"
 import { useState } from "react"
+import { Button } from "../ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
+import { Kbd } from "@/components/shortcuts/kbd"
+import { useStore } from "@/lib/state"
 
 
 export function TeamSwitcher() {
@@ -24,6 +28,7 @@ export function TeamSwitcher() {
   const { signOut } = useClerk()
   const { organization } = useOrganization({})
   const orgList = useOrganizationList({userMemberships: {infinite: true}})
+  const { toggleLeftSidebarCollapse } = useStore()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [authDialogType, setAuthDialogType] = useState<'createOrg' | 'orgProfile' | 'userProfile'>('createOrg')
@@ -76,7 +81,7 @@ export function TeamSwitcher() {
               setDialogOpen(true)
               setAuthDialogType('orgProfile')
             }}>
-              <Settings className="size-4" />
+              <Briefcase className="size-4" />
               <div>Workspace settings</div>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => {
@@ -86,6 +91,7 @@ export function TeamSwitcher() {
               <User className="size-4" />
               <div>Account settings</div>
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
               <div>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</div>
@@ -96,6 +102,21 @@ export function TeamSwitcher() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              className='size-6 p-0 ml-auto hover:bg-sidebar-accent opacity-0 group-hover:opacity-100'
+              onClick={toggleLeftSidebarCollapse}
+            >
+              <PanelLeft className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Toggle sidebar
+            <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
+          </TooltipContent>
+        </Tooltip>
       </SidebarMenuItem>
     </SidebarMenu>
   )

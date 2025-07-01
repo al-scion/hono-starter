@@ -36,6 +36,7 @@ export default defineSchema({
   .index('by_name', ['name'])
   .index('by_type', ['type'])
   .index('by_organization', ['organizationId']),
+  
 
   channelMembers: defineTable({
     channelId: v.id('channels'),

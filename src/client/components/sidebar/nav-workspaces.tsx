@@ -1,4 +1,4 @@
-import { ChevronRight, Ellipsis, Plus, Trash2, ChevronDown, Hash, Lock, Settings, UserPlus } from "lucide-react"
+import { ChevronRight, Ellipsis, Plus, Trash2, ChevronDown, Hash, Lock, Settings, UserPlus, Copy, Inbox } from "lucide-react"
 import React, { useState } from "react"
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar"
 import { Button } from "../ui/button"
@@ -55,6 +55,7 @@ export function NavWorkspaces() {
               e.stopPropagation()
               if (isCreatingDocument) return
               createDocument({})
+              setWorkspaceOpen(true)
             }}
           >
             <Plus className="size-4"/>
@@ -88,6 +89,14 @@ export function NavWorkspaces() {
                             e.stopPropagation()
                             deleteDocument({ docId: document._id })
                           }}>
+                            <Copy className="size-4" />
+                            Duplicate
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation()
+                            deleteDocument({ docId: document._id })
+                          }}>
                             <Trash2 className="size-4" />
                             Delete
                           </DropdownMenuItem>
@@ -96,7 +105,7 @@ export function NavWorkspaces() {
                       <Button
                         asChild
                         variant="ghost"
-                        className="absolute left-1 z-50 size-6 p-1 hidden group-hover/workspace-item:block bg-sidebar-accent hover:bg-zinc-300"
+                        className="absolute left-1 z-50 size-6 p-1 hidden group-hover/workspace-item:block bg-sidebar-accent"
                         onClick={(e) => {
                           e.stopPropagation()
                           toggleWorkspace(document._id)
@@ -107,6 +116,14 @@ export function NavWorkspaces() {
                         </span>
                       </Button>
                     </SidebarMenuButton>
+                    {isOpen && (
+                      <div className="ml-4 mt-[1px] border-l pl-1">
+                        <SidebarMenuButton>
+                          <Inbox className="size-4" />
+                          Conversations
+                        </SidebarMenuButton>
+                      </div>
+                    )}
                   </SidebarMenuItem>
                 </React.Fragment>
               )
@@ -185,7 +202,7 @@ export function NavWorkspaces() {
           className="px-2 pr-1 relative gap-0.5 group/sidebar-label hover:bg-sidebar-accent cursor-pointer mb-[1px] select-none"
           onClick={() => setDirectMessagesOpen(!directMessagesOpen)}
         >
-          <span className="text-xs">Direct Messages</span>
+          <span className="text-xs">Direct messages</span>
           <ChevronDown className={cn("size-3 transition-transform duration-200", !directMessagesOpen && "-rotate-90")} />
           <Button
             variant="ghost"
@@ -208,7 +225,7 @@ export function NavWorkspaces() {
                   // onClick={() => router.navigate({ to: '/channel/$channelId', params: { channelId: channel._id } })}
                 >
                   <div className='relative -ml-0.5'>
-                    <img src={member.publicUserData?.imageUrl} alt={member.publicUserData?.firstName || ''} className="size-5 rounded" />
+                    <img src={member.publicUserData?.imageUrl} alt={member.publicUserData?.firstName || ''} className="size-5 rounded-full" />
                     {presenceState?.find((presence) => presence.userId === member.publicUserData?.userId) && <span className="border-sidebar border-2 absolute -end-1 -bottom-1 size-3 rounded-full bg-green-600" />}
                   </div>
                   <span className="truncate">{member.publicUserData?.firstName} {member.publicUserData?.lastName}</span>

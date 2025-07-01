@@ -16,7 +16,7 @@ export function BreadcrumbComponent() {
     if (!params?.docId) return null
     const docId = params.docId as Id<'documents'>
     const document = documents?.find((doc) => doc._id === params.docId)
-
+    
     return (
       <Breadcrumb>
         <BreadcrumbList className="gap-0">
@@ -39,7 +39,7 @@ export function BreadcrumbComponent() {
                   <PopoverTrigger asChild>
                     <span className="size-7 min-w-7 min-h-7 flex items-center justify-center border rounded-md cursor-pointer">{document?.emoji}</span>
                   </PopoverTrigger>
-                  <PopoverContent className="p-0 max-h-64 overflow-y-auto" align="start" alignOffset={-7} sideOffset={8}>
+                  <PopoverContent className="p-0 max-h-64 overflow-y-auto" align="start" alignOffset={-7} sideOffset={10}>
                     <EmojiPicker onEmojiSelect={(emoji) => mutateEmoji({ docId, emoji: emoji.emoji })}>
                       <EmojiPickerSearch />
                       <EmojiPickerContent />

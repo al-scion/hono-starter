@@ -8,7 +8,7 @@ export function AgentTabs() {
   const params = useParams({ from: '/_authenticated/_layout/document/$docId', shouldThrow: false })
   const search = useSearch({ from: '/_authenticated/_layout/document/$docId', shouldThrow: false }) 
   const docId = params?.docId || null
-  const routeOptions = ['editor', 'canvas', 'logs', 'evaluation']
+  const routeOptions = ['editor', 'canvas', 'evaluation', 'deploy', 'logs']
 
   if (!search?.mode || !docId) return null
 

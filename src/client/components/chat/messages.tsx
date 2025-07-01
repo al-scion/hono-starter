@@ -22,7 +22,6 @@ import { Kbd } from "@/components/shortcuts/kbd";
 import type { Editor as TiptapEditor } from '@tiptap/core'
 import { useHotkeys } from "react-hotkeys-hook";
 import { useMcpStore, DEFAULT_MCP_SERVERS } from "@/components/mcphost";
-import { useChatStore } from "@/components/sidebar/chat";
 import { cn } from "@/lib/utils";
 
 const models = [{
@@ -63,11 +62,10 @@ const tools = [{
 export function Messages({className, ...props}: React.ComponentProps<'div'>) {
   
   const chats = useLiveQuery(() => db.chats.orderBy('createdAt').reverse().toArray())
-  const { chatId, setChatId, contextItems, setIntegrationsDialogOpen, initialMessages, setInitialMessages } = useStore()
+  const { chatId, setChatId, contextItems, setIntegrationsDialogOpen, initialMessages, setInitialMessages, toggleRightSidebarCollapse } = useStore()
   const editorRef = useRef<TiptapEditor>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { mcpState, addEnabledMcp, removeEnabledMcp, enabledMcp } = useMcpStore()
-  const { toggleOpen } = useChatStore()
   
   const [modelId, setModelId] = useLocalStorage('modelId', models[0].id);
   const selectedModel = models.find(m => m.id === modelId) || models[0];  
@@ -107,7 +105,6 @@ export function Messages({className, ...props}: React.ComponentProps<'div'>) {
 
   return (
     <div className={cn("flex flex-col flex-1", className)} {...props}>
-
       <div className="flex flex-row items-center gap-2 h-10 p-2 border-b">
         <Popover>
           <PopoverTrigger asChild>
@@ -182,7 +179,7 @@ export function Messages({className, ...props}: React.ComponentProps<'div'>) {
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" className="size-6 p-0" onClick={() => toggleOpen()}>
+              <Button variant="ghost" className="size-6 p-0" onClick={toggleRightSidebarCollapse}>
                 <X className="size-4" />
               </Button>
             </TooltipTrigger>
@@ -195,7 +192,7 @@ export function Messages({className, ...props}: React.ComponentProps<'div'>) {
       </div>
 
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4 px-3 text-sm" style={{ overflow: 'auto' }}>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto py-4 px-3 text-sm">
         <div ref={contentRef} className="space-y-3">
           {messages.map((message, messageIndex) => {
 

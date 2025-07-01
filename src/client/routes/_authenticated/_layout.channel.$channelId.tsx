@@ -44,7 +44,7 @@ function RouteComponent() {
   }
 
   return (
-    <div className='flex flex-col h-full'>
+    <div className='flex flex-col flex-1 h-full'>
       <div className='flex-1 overflow-y-auto py-4 min-w-0 break-words'>
         <div className='space-y-2'>
           {messages?.map((msg) => {

@@ -8,7 +8,6 @@ export const presence = new Presence(components.presence);
 export const heartbeat = mutation({
   args: { roomId: v.string(), userId: v.string(), sessionId: v.string(), interval: v.number() },
   handler: async (ctx, { roomId, userId, sessionId, interval }) => {
-    // TODO: Add your auth checks here.
     return await presence.heartbeat(ctx, roomId, userId, sessionId, interval);
   },
 });
@@ -16,7 +15,7 @@ export const heartbeat = mutation({
 export const list = query({
   args: { roomToken: v.string() },
   handler: async (ctx, { roomToken }) => {
-    return await presence.list(ctx, roomToken);
+    return await presence.list(ctx, roomToken, 1000);
   },
 });
 

@@ -1,22 +1,20 @@
 import { Button } from "@/components/ui/button"
-import { useSidebar } from "@/components/ui/sidebar"
 import { Box, Ellipsis, KeyRound, PanelLeft, PanelRight } from "lucide-react"
 import { Kbd } from "@/components/shortcuts/kbd"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { cn } from "@/lib/utils"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
-import { useChatStore } from "@/components/sidebar/chat"
 import { BreadcrumbComponent } from "./breadcrumb"
 import { Facepile } from "./facepile"
 import { AgentTabs } from "./agent-tabs"
+import { useStore } from "@/lib/state"
 
 export function Header({
   className,
   ...props
 }: React.ComponentProps<'header'>) {
 
-  const { toggleSidebar } = useSidebar()
-  const { toggleOpen } = useChatStore()
+  const { toggleLeftSidebarCollapse, toggleRightSidebarCollapse } = useStore();
 
   return (
     <header className={cn(
@@ -28,21 +26,6 @@ export function Header({
     >
       {/* Left section */}
       <div className="flex items-center gap-1 flex-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              className='size-6 p-0'
-              onClick={() => toggleSidebar()}
-            >
-              <PanelLeft className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            Toggle sidebar
-            <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
-          </TooltipContent>
-        </Tooltip>
         <BreadcrumbComponent />
       </div>
 
@@ -76,7 +59,7 @@ export function Header({
             <Button 
               variant="ghost" 
               className={`size-6 p-0`}
-              onClick={() => toggleOpen()}
+              onClick={toggleRightSidebarCollapse}
             >
               <PanelRight className="size-4" />
             </Button>
