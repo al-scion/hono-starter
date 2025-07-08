@@ -1,15 +1,12 @@
-import { AIChatAgent } from "agents/ai-chat-agent";
+import { AIChatAgent } from 'agents/ai-chat-agent';
 
 interface State {
-  counter: number
+  counter: number;
 }
 
 export class Agent extends AIChatAgent<Env, State> {
+  async callAgent() {}
 
-  async callAgent() {
-    
-  }
-  
   // async onRequest(request: Request): Promise<Response> {
   //   return await super.onRequest(request)
   // }

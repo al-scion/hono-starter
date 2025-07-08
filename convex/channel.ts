@@ -1,33 +1,40 @@
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
+import { v } from 'convex/values';
+import { internalMutation, mutation, query } from './_generated/server';
 
 export const createChannel = mutation({
   args: {
     name: v.string(),
     description: v.optional(v.string()),
-    type: v.union(v.literal('public'), v.literal('private'), v.literal('direct')),
+    type: v.union(
+      v.literal('public'),
+      v.literal('private'),
+      v.literal('direct')
+    ),
     organizationId: v.string(),
   },
   handler: async (ctx, args) => {
-    const { name, description, type, organizationId } = args
-    const user = await ctx.auth.getUserIdentity()
-    if (!user) throw new Error('Unauthorized')
+    const { name, description, type, organizationId } = args;
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) {
+      throw new Error('Unauthorized');
+    }
 
     const channelId = await ctx.db.insert('channels', {
       name,
       description,
       type,
       organizationId,
-    })
-    await ctx.db.insert('channelMembers', {
+    });
+
+    ctx.db.insert('channelMembers', {
       channelId,
-      userId: user.subject,
+      memberId: user.subject,
       role: 'admin',
-    })
-    return channelId
+    });
+
+    return channelId;
   },
-})
+});
 
 export const getChannels = query({
   args: {
@@ -36,37 +43,32 @@ export const getChannels = query({
   handler: async (ctx, { organizationId }) => {
     return await ctx.db
       .query('channels')
-      .withIndex('by_organization', (q) => q.eq('organizationId', organizationId))
-      .collect()
+      .withIndex('by_organization', (q) =>
+        q.eq('organizationId', organizationId)
+      )
+      .collect();
   },
-})
+});
 
 export const joinChannel = mutation({
   args: {
     channelId: v.id('channels'),
   },
   handler: async (ctx, { channelId }) => {
-    const user = await ctx.auth.getUserIdentity()
-    if (!user) throw new Error('Unauthorized')
-
-    // Check if already a member
-    const existing = await ctx.db
-      .query('channelMembers')
-      .withIndex('by_channel', (q) => q.eq('channelId', channelId))
-      .filter((q) => q.eq(q.field('userId'), user.subject))
-      .first()
-
-    if (existing) return { success: true }
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) {
+      throw new Error('Unauthorized');
+    }
 
     await ctx.db.insert('channelMembers', {
       channelId,
-      userId: user.subject,
+      memberId: user.subject,
       role: 'member',
-    })
+    });
 
-    return { success: true }
+    return { success: true };
   },
-})
+});
 
 export const createDefaultChannel = internalMutation({
   args: {
@@ -78,18 +80,18 @@ export const createDefaultChannel = internalMutation({
       name: 'general',
       type: 'public',
       organizationId,
-    })
+    });
 
-    // Add the organization creator as an admin of the channel
-    await ctx.db.insert('channelMembers', {
-      channelId,
-      userId: createdBy,
-      role: 'admin',
-    })
-
-    return channelId
+    return channelId;
   },
-})
+});
+
+export const deleteChannel = mutation({
+  args: { channelId: v.id('channels') },
+  handler: async (ctx, { channelId }) => {
+    await ctx.db.delete(channelId);
+  },
+});
 
 export const handleOrganizationDeleted = internalMutation({
   args: { organizationId: v.string() },
@@ -97,29 +99,24 @@ export const handleOrganizationDeleted = internalMutation({
     // fetch all channels for the org in one round-trip
     const channels = await ctx.db
       .query('channels')
-      .withIndex('by_organization', q => q.eq('organizationId', organizationId))
-      .collect()
+      .withIndex('by_organization', (q) =>
+        q.eq('organizationId', organizationId)
+      )
+      .collect();
 
     // run channel clean-up in parallel
     await Promise.all(
       channels.map(async (channel) => {
-        // delete members
-        const members = await ctx.db
-          .query('channelMembers')
-          .withIndex('by_channel', q => q.eq('channelId', channel._id))
-          .collect()
-        await Promise.all(members.map(m => ctx.db.delete(m._id)))
-
         // delete messages
         const messages = await ctx.db
           .query('messages')
-          .withIndex('by_channel', q => q.eq('channelId', channel._id))
-          .collect()
-        await Promise.all(messages.map(msg => ctx.db.delete(msg._id)))
+          .withIndex('by_channel', (q) => q.eq('channelId', channel._id))
+          .collect();
+        await Promise.all(messages.map((msg) => ctx.db.delete(msg._id)));
 
         // finally delete the channel itself
-        await ctx.db.delete(channel._id)
+        await ctx.db.delete(channel._id);
       })
-    )
+    );
   },
-})
+});

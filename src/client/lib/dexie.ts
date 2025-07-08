@@ -1,14 +1,14 @@
-import DexieDb, { type Table } from 'dexie';
 import type { UIMessage } from '@ai-sdk/react';
+import DexieDb, { type Table } from 'dexie';
 
 export interface Chat {
-  id: string,
-  title: string,
-  createdAt: Date,
+  id: string;
+  title: string;
+  createdAt: Date;
 }
 
 export interface Message extends UIMessage {
-  chatId: string,
+  chatId: string;
 }
 
 export class Database extends DexieDb {

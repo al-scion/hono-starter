@@ -1,61 +1,92 @@
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Id } from "@/lib/api";
-import { useDocuments, useMutateEmoji, useMutateTitle } from "@/hooks/use-convex";
-import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { EmojiPicker, EmojiPickerSearch, EmojiPickerContent } from "@/components/custom/emoji-picker";
-import { Input } from "@/components/ui/input";
-import { useParams } from "@tanstack/react-router";
+import { useParams } from '@tanstack/react-router';
+import {
+  EmojiPicker,
+  EmojiPickerContent,
+  EmojiPickerSearch,
+} from '@/components/custom/emoji-picker';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  useAgents,
+  useMutateEmoji,
+  useMutateName,
+} from '@/hooks/use-convex';
+import { Loader } from 'lucide-react';
 
 export function BreadcrumbComponent() {
+  const { data: agents } = useAgents();
+  const { mutate: mutateEmoji } = useMutateEmoji();
+  const { mutate: mutateName } = useMutateName();
+  const params = useParams({ from: '/_authenticated/_layout/agent/$agentId' });
+  const agent = agents?.find((doc) => doc._id === params.agentId)!;
 
-    const { data: documents } = useDocuments()
-    const { mutate: mutateEmoji } = useMutateEmoji()
-    const { mutate: mutateTitle } = useMutateTitle()
-    const params = useParams({ from: '/_authenticated/_layout/document/$docId', shouldThrow: false })
-    if (!params?.docId) return null
-    const docId = params.docId as Id<'documents'>
-    const document = documents?.find((doc) => doc._id === params.docId)
-    
-    return (
-      <Breadcrumb>
-        <BreadcrumbList className="gap-0">
-          <BreadcrumbItem>
-            <Button variant="ghost" className="h-6 px-1 gap-1 text-foreground">
-              Agents
-            </Button>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" className="h-6 px-1 gap-1 text-foreground">
-                  <span className="text-base leading-none">{document?.emoji}</span>
-                  <span>{document?.title || 'New document'}</span>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="p-1.5 flex flex-row items-center gap-1.5">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <span className="size-7 min-w-7 min-h-7 flex items-center justify-center border rounded-md cursor-pointer">{document?.emoji}</span>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0 max-h-64 overflow-y-auto" align="start" alignOffset={-7} sideOffset={10}>
-                    <EmojiPicker onEmojiSelect={(emoji) => mutateEmoji({ docId, emoji: emoji.emoji })}>
-                      <EmojiPickerSearch />
-                      <EmojiPickerContent />
-                    </EmojiPicker>
-                  </PopoverContent>
-                </Popover>
-                <Input
-                  value={document?.title}
-                  className='shadow-none h-7 px-2'
-                  placeholder="New document"
-                  onChange={(e) => mutateTitle({ docId, title: e.target.value })}
-                />  
-              </PopoverContent>
-            </Popover>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    )
-  }
+  return (
+    <Breadcrumb>
+      <BreadcrumbList className="-space-x-1.5">
+        {/* <BreadcrumbItem>
+          <Button className="h-7 gap-1 px-2 text-foreground" variant="ghost">
+            Agents
+          </Button>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator /> */}
+        <BreadcrumbItem>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                className="h-7 gap-1.5 px-2 text-foreground"
+                variant="ghost"
+              >
+                {agent.emoji && <span className="text-base leading-none">{agent.emoji}</span>}
+                <span>{agent.name || 'New agent'}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              className="flex flex-row items-center gap-1.5 p-1.5"
+            >
+              <Popover>
+                <PopoverTrigger asChild>
+                  <span className="flex size-7 min-h-7 min-w-7 cursor-pointer items-center justify-center rounded-md border">
+                    {agent.emoji || <Loader className="size-4 text-muted-foreground" />}
+                  </span>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="start"
+                  alignOffset={-7}
+                  className="max-h-64 overflow-y-auto p-0"
+                  sideOffset={10}
+                >
+                  <EmojiPicker
+                    onEmojiSelect={(emoji) =>
+                      mutateEmoji({ agentId: params.agentId, emoji: emoji.emoji })
+                    }
+                  >
+                    <EmojiPickerSearch />
+                    <EmojiPickerContent />
+                  </EmojiPicker>
+                </PopoverContent>
+              </Popover>
+              <Input
+                className="h-7 px-2 shadow-none"
+                onChange={(e) => mutateName({ agentId: params.agentId, name: e.target.value })}
+                placeholder="New agent"
+                value={agent.name}
+              />
+            </PopoverContent>
+          </Popover>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
+}

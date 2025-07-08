@@ -1,34 +1,43 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useParams, useSearch, useNavigate } from "@tanstack/react-router"
-import { cn } from "@/lib/utils"
-import { type Id } from "@/lib/api"
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 export function AgentTabs() {
-  const navigate = useNavigate()
-  const params = useParams({ from: '/_authenticated/_layout/document/$docId', shouldThrow: false })
-  const search = useSearch({ from: '/_authenticated/_layout/document/$docId', shouldThrow: false }) 
-  const docId = params?.docId || null
-  const routeOptions = ['editor', 'canvas', 'evaluation', 'deploy', 'logs']
+  const navigate = useNavigate();
+  const params = useParams({ from: '/_authenticated/_layout/agent/$agentId' });
+  const search = useSearch({ from: '/_authenticated/_layout/agent/$agentId' });
+  const agentId = params.agentId;
+  const routeOptions = ['editor', 'evaluation', 'deploy', 'logs'];
 
-  if (!search?.mode || !docId) return null
+  if (!(search?.mode && agentId)) {
+    return null;
+  }
 
   return (
     <Tabs value={search.mode}>
-      <TabsList className="h-7 p-0 rounded-md">
+      <TabsList className="h-7 rounded-md border p-0">
         {routeOptions.map((option) => (
           <TabsTrigger
-            key={option}
-            value={option}
             className={cn(
-              "rounded-md px-0.5 text-muted-foreground shadow-none font-normal", 
-              "data-[state=active]:border-border data-[state=active]:shadow-xs data-[state=active]:text-foreground",
+              'rounded-[5px] px-0.5 font-normal text-muted-foreground shadow-none h-6.5',
+              'data-[state=active]:text-foreground data-[state=active]:shadow-xs data-[state=active]:ring data-[state=active]:ring-border'
             )}
-            onClick={() => navigate({ to: '/document/$docId', params: { docId: docId as Id<'documents'> }, search: { mode: option as any } })}
+            key={option}
+            onClick={() =>
+              navigate({
+                to: '/agent/$agentId',
+                params: { agentId },
+                search: { mode: option as any },
+              })
+            }
+            value={option}
           >
-            <span className={`h-6 px-1.5 flex items-center rounded-sm`}>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+            <span className={'flex h-6 items-center rounded-sm px-1.5'}>
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </span>
           </TabsTrigger>
         ))}
       </TabsList>
     </Tabs>
-  )
+  );
 }

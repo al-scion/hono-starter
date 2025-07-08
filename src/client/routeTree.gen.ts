@@ -17,9 +17,10 @@ import { Route as AuthenticatedOnboardingImport } from './routes/_authenticated/
 import { Route as AuthenticatedLayoutImport } from './routes/_authenticated/_layout'
 import { Route as UnauthenticatedAuthSignUpImport } from './routes/_unauthenticated/auth.sign-up'
 import { Route as UnauthenticatedAuthSignInImport } from './routes/_unauthenticated/auth.sign-in'
+import { Route as AuthenticatedLayoutDirectMessageImport } from './routes/_authenticated/_layout.direct-message'
 import { Route as AuthenticatedLayoutDashboardImport } from './routes/_authenticated/_layout.dashboard'
-import { Route as AuthenticatedLayoutDocumentDocIdImport } from './routes/_authenticated/_layout.document.$docId'
 import { Route as AuthenticatedLayoutChannelChannelIdImport } from './routes/_authenticated/_layout.channel.$channelId'
+import { Route as AuthenticatedLayoutAgentAgentIdImport } from './routes/_authenticated/_layout.agent.$agentId'
 import { Route as ApiMcpAgentUserIdCallbackSessionIdImport } from './routes/api.mcp.agent.$userId.callback.$sessionId'
 
 // Create/Update Routes
@@ -59,6 +60,13 @@ const UnauthenticatedAuthSignInRoute = UnauthenticatedAuthSignInImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AuthenticatedLayoutDirectMessageRoute =
+  AuthenticatedLayoutDirectMessageImport.update({
+    id: '/direct-message',
+    path: '/direct-message',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
+
 const AuthenticatedLayoutDashboardRoute =
   AuthenticatedLayoutDashboardImport.update({
     id: '/dashboard',
@@ -66,17 +74,17 @@ const AuthenticatedLayoutDashboardRoute =
     getParentRoute: () => AuthenticatedLayoutRoute,
   } as any)
 
-const AuthenticatedLayoutDocumentDocIdRoute =
-  AuthenticatedLayoutDocumentDocIdImport.update({
-    id: '/document/$docId',
-    path: '/document/$docId',
-    getParentRoute: () => AuthenticatedLayoutRoute,
-  } as any)
-
 const AuthenticatedLayoutChannelChannelIdRoute =
   AuthenticatedLayoutChannelChannelIdImport.update({
     id: '/channel/$channelId',
     path: '/channel/$channelId',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
+
+const AuthenticatedLayoutAgentAgentIdRoute =
+  AuthenticatedLayoutAgentAgentIdImport.update({
+    id: '/agent/$agentId',
+    path: '/agent/$agentId',
     getParentRoute: () => AuthenticatedLayoutRoute,
   } as any)
 
@@ -126,6 +134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLayoutDashboardImport
       parentRoute: typeof AuthenticatedLayoutImport
     }
+    '/_authenticated/_layout/direct-message': {
+      id: '/_authenticated/_layout/direct-message'
+      path: '/direct-message'
+      fullPath: '/direct-message'
+      preLoaderRoute: typeof AuthenticatedLayoutDirectMessageImport
+      parentRoute: typeof AuthenticatedLayoutImport
+    }
     '/_unauthenticated/auth/sign-in': {
       id: '/_unauthenticated/auth/sign-in'
       path: '/auth/sign-in'
@@ -140,18 +155,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UnauthenticatedAuthSignUpImport
       parentRoute: typeof rootRoute
     }
+    '/_authenticated/_layout/agent/$agentId': {
+      id: '/_authenticated/_layout/agent/$agentId'
+      path: '/agent/$agentId'
+      fullPath: '/agent/$agentId'
+      preLoaderRoute: typeof AuthenticatedLayoutAgentAgentIdImport
+      parentRoute: typeof AuthenticatedLayoutImport
+    }
     '/_authenticated/_layout/channel/$channelId': {
       id: '/_authenticated/_layout/channel/$channelId'
       path: '/channel/$channelId'
       fullPath: '/channel/$channelId'
       preLoaderRoute: typeof AuthenticatedLayoutChannelChannelIdImport
-      parentRoute: typeof AuthenticatedLayoutImport
-    }
-    '/_authenticated/_layout/document/$docId': {
-      id: '/_authenticated/_layout/document/$docId'
-      path: '/document/$docId'
-      fullPath: '/document/$docId'
-      preLoaderRoute: typeof AuthenticatedLayoutDocumentDocIdImport
       parentRoute: typeof AuthenticatedLayoutImport
     }
     '/api/mcp/agent/$userId/callback/$sessionId': {
@@ -168,15 +183,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedLayoutRouteChildren {
   AuthenticatedLayoutDashboardRoute: typeof AuthenticatedLayoutDashboardRoute
+  AuthenticatedLayoutDirectMessageRoute: typeof AuthenticatedLayoutDirectMessageRoute
+  AuthenticatedLayoutAgentAgentIdRoute: typeof AuthenticatedLayoutAgentAgentIdRoute
   AuthenticatedLayoutChannelChannelIdRoute: typeof AuthenticatedLayoutChannelChannelIdRoute
-  AuthenticatedLayoutDocumentDocIdRoute: typeof AuthenticatedLayoutDocumentDocIdRoute
 }
 
 const AuthenticatedLayoutRouteChildren: AuthenticatedLayoutRouteChildren = {
   AuthenticatedLayoutDashboardRoute: AuthenticatedLayoutDashboardRoute,
+  AuthenticatedLayoutDirectMessageRoute: AuthenticatedLayoutDirectMessageRoute,
+  AuthenticatedLayoutAgentAgentIdRoute: AuthenticatedLayoutAgentAgentIdRoute,
   AuthenticatedLayoutChannelChannelIdRoute:
     AuthenticatedLayoutChannelChannelIdRoute,
-  AuthenticatedLayoutDocumentDocIdRoute: AuthenticatedLayoutDocumentDocIdRoute,
 }
 
 const AuthenticatedLayoutRouteWithChildren =
@@ -188,10 +205,11 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/callback': typeof UnauthenticatedCallbackRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/direct-message': typeof AuthenticatedLayoutDirectMessageRoute
   '/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
   '/auth/sign-up': typeof UnauthenticatedAuthSignUpRoute
+  '/agent/$agentId': typeof AuthenticatedLayoutAgentAgentIdRoute
   '/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
-  '/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
@@ -201,10 +219,11 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/callback': typeof UnauthenticatedCallbackRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/direct-message': typeof AuthenticatedLayoutDirectMessageRoute
   '/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
   '/auth/sign-up': typeof UnauthenticatedAuthSignUpRoute
+  '/agent/$agentId': typeof AuthenticatedLayoutAgentAgentIdRoute
   '/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
-  '/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
@@ -215,10 +234,11 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_unauthenticated/callback': typeof UnauthenticatedCallbackRoute
   '/_authenticated/_layout/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/_authenticated/_layout/direct-message': typeof AuthenticatedLayoutDirectMessageRoute
   '/_unauthenticated/auth/sign-in': typeof UnauthenticatedAuthSignInRoute
   '/_unauthenticated/auth/sign-up': typeof UnauthenticatedAuthSignUpRoute
+  '/_authenticated/_layout/agent/$agentId': typeof AuthenticatedLayoutAgentAgentIdRoute
   '/_authenticated/_layout/channel/$channelId': typeof AuthenticatedLayoutChannelChannelIdRoute
-  '/_authenticated/_layout/document/$docId': typeof AuthenticatedLayoutDocumentDocIdRoute
   '/api/mcp/agent/$userId/callback/$sessionId': typeof ApiMcpAgentUserIdCallbackSessionIdRoute
 }
 
@@ -230,10 +250,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/callback'
     | '/dashboard'
+    | '/direct-message'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/agent/$agentId'
     | '/channel/$channelId'
-    | '/document/$docId'
     | '/api/mcp/agent/$userId/callback/$sessionId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -242,10 +263,11 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/callback'
     | '/dashboard'
+    | '/direct-message'
     | '/auth/sign-in'
     | '/auth/sign-up'
+    | '/agent/$agentId'
     | '/channel/$channelId'
-    | '/document/$docId'
     | '/api/mcp/agent/$userId/callback/$sessionId'
   id:
     | '__root__'
@@ -254,10 +276,11 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_unauthenticated/callback'
     | '/_authenticated/_layout/dashboard'
+    | '/_authenticated/_layout/direct-message'
     | '/_unauthenticated/auth/sign-in'
     | '/_unauthenticated/auth/sign-up'
+    | '/_authenticated/_layout/agent/$agentId'
     | '/_authenticated/_layout/channel/$channelId'
-    | '/_authenticated/_layout/document/$docId'
     | '/api/mcp/agent/$userId/callback/$sessionId'
   fileRoutesById: FileRoutesById
 }
@@ -309,8 +332,9 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/_layout.tsx",
       "children": [
         "/_authenticated/_layout/dashboard",
-        "/_authenticated/_layout/channel/$channelId",
-        "/_authenticated/_layout/document/$docId"
+        "/_authenticated/_layout/direct-message",
+        "/_authenticated/_layout/agent/$agentId",
+        "/_authenticated/_layout/channel/$channelId"
       ]
     },
     "/_authenticated/onboarding": {
@@ -323,18 +347,22 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/_layout.dashboard.tsx",
       "parent": "/_authenticated/_layout"
     },
+    "/_authenticated/_layout/direct-message": {
+      "filePath": "_authenticated/_layout.direct-message.tsx",
+      "parent": "/_authenticated/_layout"
+    },
     "/_unauthenticated/auth/sign-in": {
       "filePath": "_unauthenticated/auth.sign-in.tsx"
     },
     "/_unauthenticated/auth/sign-up": {
       "filePath": "_unauthenticated/auth.sign-up.tsx"
     },
-    "/_authenticated/_layout/channel/$channelId": {
-      "filePath": "_authenticated/_layout.channel.$channelId.tsx",
+    "/_authenticated/_layout/agent/$agentId": {
+      "filePath": "_authenticated/_layout.agent.$agentId.tsx",
       "parent": "/_authenticated/_layout"
     },
-    "/_authenticated/_layout/document/$docId": {
-      "filePath": "_authenticated/_layout.document.$docId.tsx",
+    "/_authenticated/_layout/channel/$channelId": {
+      "filePath": "_authenticated/_layout.channel.$channelId.tsx",
       "parent": "/_authenticated/_layout"
     },
     "/api/mcp/agent/$userId/callback/$sessionId": {

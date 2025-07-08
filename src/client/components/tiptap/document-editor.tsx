@@ -1,38 +1,41 @@
-import { useEditor, EditorContent } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Highlight from '@tiptap/extension-highlight'
-import Typography from '@tiptap/extension-typography'
-import TaskList from '@tiptap/extension-task-list'
-import TaskItem from '@tiptap/extension-task-item'
-import Placeholder from '@tiptap/extension-placeholder'
-import Details from '@tiptap-pro/extension-details'
-import DetailsContent from '@tiptap-pro/extension-details-content'
-import DetailsSummary from '@tiptap-pro/extension-details-summary'
-import { useTiptapSync } from '@convex-dev/prosemirror-sync/tiptap'
-import { MentionSuggestion, SlashCommand } from './suggestion'
+import Highlight from '@tiptap/extension-highlight';
+import Placeholder from '@tiptap/extension-placeholder';
+import TaskItem from '@tiptap/extension-task-item';
+import TaskList from '@tiptap/extension-task-list';
+import Typography from '@tiptap/extension-typography';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Details from '@tiptap-pro/extension-details';
+import DetailsContent from '@tiptap-pro/extension-details-content';
+import DetailsSummary from '@tiptap-pro/extension-details-summary';
+import CharacterCount from '@tiptap/extension-character-count'
+import { MentionSuggestion, SlashCommand } from './suggestion';
+import { useMutateSystem } from '@/hooks/use-convex';
+import { useDebounceCallback } from 'usehooks-ts'
 
-export function DocumentEditor({ 
-  sync,
-  titleInputRef,
+import type { Editor } from '@tiptap/core';
+import { useEffect, type RefObject } from 'react';
+import type { Doc } from '@/lib/api';
+  
+export function DocumentEditor({
   editorRef,
-}: { 
-  sync: ReturnType<typeof useTiptapSync>;
-  titleInputRef: React.RefObject<HTMLInputElement | null>;
-  editorRef: any;
+  agent,
+}: {
+  editorRef: RefObject<Editor | null>;
+  agent: Doc<'agents'>;
 }) {
 
-  if (!sync.extension) throw new Error("Sync extension not found");
-  if (!sync.initialContent) throw new Error("Document not found");
+  const { mutate: mutateSystem } = useMutateSystem();
+  const debouncedUpdate = useDebounceCallback(mutateSystem, 500);
 
   const editor = useEditor({
-    content: sync.initialContent,
+    content: agent.system ? JSON.parse(agent.system) : undefined,
     extensions: [
-      sync.extension,
       StarterKit.configure({
         code: {
           HTMLAttributes: {
             class: 'bg-muted p-1 rounded-md text-xs',
-          }
+          },
         },
         heading: {
           levels: [1, 2, 3],
@@ -54,7 +57,6 @@ export function DocumentEditor({
         codeBlock: {},
         horizontalRule: {},
         hardBreak: {},
-
       }),
       Highlight,
       Typography,
@@ -66,23 +68,32 @@ export function DocumentEditor({
       Placeholder.configure({ placeholder: 'Write something...' }),
       MentionSuggestion,
       SlashCommand,
+      CharacterCount,
     ],
     editorProps: {
       attributes: {
-        class: "focus-visible:outline-none flex-1 h-full",
+        class: 'focus-visible:outline-none flex-1 h-full',
       },
-      handleKeyDown: (_, event) => {
-        if ((event.key === 'ArrowUp') && editor?.state.selection.$anchor.pos === 1) {
-          event.preventDefault()
-          titleInputRef.current?.focus()
-        }
-      }
+      handleKeyDown: () => {},
     },
-  })
+    onCreate(props) {
+      editorRef.current = props.editor;
+    },
+    onUpdate(props) {
+      debouncedUpdate({
+        agentId: agent._id,
+        system: JSON.stringify(props.editor.state.doc.toJSON()),
+      });
+    },
+  }, [agent._id]);
 
-  if (editorRef) editorRef.current = editor;
+  useEffect(() => {
+    if (editor && !editor.isFocused) {
+      editor.commands.setContent(agent.system ? JSON.parse(agent.system) : undefined);
+    }
+  }, [agent.system]);
 
   return (
-    <EditorContent editor={editor} className='flex-1 min-w-0' />
-  )
+    <EditorContent editor={editor} className='flex flex-col flex-1' />
+  );
 }

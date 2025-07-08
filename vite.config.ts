@@ -1,10 +1,10 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { cloudflare } from "@cloudflare/vite-plugin";
-import tailwindcss from "@tailwindcss/vite"
-import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
+import { cloudflare } from '@cloudflare/vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
+import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import { defineConfig } from 'vite';
 import devtoolsJson from 'vite-plugin-devtools-json';
-import path from "path";
 
 export default defineConfig({
   plugins: [
@@ -14,16 +14,16 @@ export default defineConfig({
     }),
     react({
       babel: {
-        plugins: [["babel-plugin-react-compiler"]],
+        plugins: [['babel-plugin-react-compiler']],
       },
     }),
-    cloudflare(), 
+    cloudflare(),
     tailwindcss(),
-    devtoolsJson()
+    devtoolsJson(),
   ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src/client"),
+      '@': path.resolve(__dirname, './src/client'),
     },
   },
 });

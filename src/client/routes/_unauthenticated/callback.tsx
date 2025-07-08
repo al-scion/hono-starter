@@ -1,23 +1,20 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_unauthenticated/callback')({
   component: RouteComponent,
   beforeLoad: async () => {},
-})
+});
 
 function RouteComponent() {
-
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-muted">
-      <div className="flex flex-col items-center gap-8 border shadow-lg p-12 rounded-xl bg-background">
-        <span className="text-3xl font-medium">
-          Authentication successful
-        </span>
-        <div className='w-full border-b' />
+      <div className="flex flex-col items-center gap-8 rounded-xl border bg-background p-12 shadow-lg">
+        <span className="font-medium text-3xl">Authentication successful</span>
+        <div className="w-full border-b" />
         <span className="text-md text-muted-foreground">
           You can close this window now
         </span>
       </div>
     </div>
-  )
+  );
 }

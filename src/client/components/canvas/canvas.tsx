@@ -1,55 +1,57 @@
 import {
-  ReactFlow,
-  useNodesState,
-  useEdgesState,
-  useReactFlow,
+  applyEdgeChanges,
+  applyNodeChanges,
   Background,
+  BackgroundVariant,
   type Edge,
   type Node,
-  type Viewport,
-  type OnNodesChange,
   type OnEdgesChange,
-  applyNodeChanges,
-  applyEdgeChanges,
-  BackgroundVariant,
-} from '@xyflow/react'
-import { NodeOperationsProvider } from '@/components/canvas/node'
-import { ConnectionLine } from '@/components/canvas/connection-line'
-import { ZoomSlider } from '@/components/canvas/zoom-slider'
-import { Toolbar } from '@/components/canvas/toolbar'
-import { nodeTypes } from '@/components/canvas/nodes'
-import { useState, useCallback } from 'react'
-
-import { convexApi, Doc } from '@/lib/api';
+  type OnNodesChange,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+  useReactFlow,
+  type Viewport,
+} from '@xyflow/react';
 import { useMutation } from 'convex/react';
+import { useCallback, useState } from 'react';
+import { ConnectionLine } from '@/components/canvas/connection-line';
+import { NodeOperationsProvider } from '@/components/canvas/node';
+import { nodeTypes } from '@/components/canvas/nodes';
+import { Toolbar } from '@/components/canvas/toolbar';
+import { ZoomSlider } from '@/components/canvas/zoom-slider';
+import { convexApi, type Doc } from '@/lib/api';
 
 export function Canvas({
-  document,
+  agent,
   children,
-}:{
-  document: Doc<'documents'>
-  children?: React.ReactNode
+}: {
+  agent: Doc<'agent'>;
+  children?: React.ReactNode;
 }) {
+  const updateCanvas = useMutation(convexApi.agent.updateCanvas);
 
-  const updateCanvas = useMutation(convexApi.document.updateCanvas)
-  
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(document.canvas.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(document.canvas.edges);
-  const [viewport, setViewport] = useState<Viewport>({x: 0, y: 0, zoom: 1})
+  const [nodes, setNodes, _onNodesChange] = useNodesState<Node>(
+    agent.canvas.nodes
+  );
+  const [edges, setEdges, _onEdgesChange] = useEdgesState<Edge>(
+    agent.canvas.edges
+  );
+  const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
 
   const handleNodesChange = useCallback<OnNodesChange>(
     (changes) => {
       setNodes((current) => {
         const updatedNodes = applyNodeChanges(changes, current);
         updateCanvas({
-          docId: document._id,
+          agentId: agent._id,
           nodes: updatedNodes,
-          edges: edges
+          edges,
         });
         return updatedNodes;
       });
     },
-    [document._id, edges, updateCanvas]
+    [agent._id, edges, updateCanvas, setNodes]
   );
 
   const handleEdgesChange = useCallback<OnEdgesChange>(
@@ -57,79 +59,80 @@ export function Canvas({
       setEdges((current) => {
         const updatedEdges = applyEdgeChanges(changes, current);
         updateCanvas({
-          docId: document._id,
-          nodes: nodes,
-          edges: updatedEdges
+          agentId: agent._id,
+          nodes,
+          edges: updatedEdges,
         });
         return updatedEdges;
       });
     },
-    [document._id, nodes, updateCanvas]
-  )
+    [agent._id, nodes, updateCanvas, setEdges]
+  );
 
+  const { getNode } = useReactFlow();
 
-  const { getNode } = useReactFlow()
-  
+  const onConnect = useCallback((_params: any) => {}, []);
 
-  const onConnect = useCallback((params: any) => {
-    console.log(params)
-  }, [])
+  const addNode = useCallback(
+    (type: string, options?: Record<string, unknown>) => {
+      const newNode: Node = {
+        id: crypto.randomUUID(),
+        type,
+        data: {},
+        position: { x: 0, y: 0 },
+        draggable: true,
+        ...options,
+      };
+      setNodes((nodes: Node[]) => nodes.concat(newNode));
+      return newNode.id;
+    },
+    [setNodes]
+  );
 
-  const addNode = useCallback((
-    type: string,
-    options?: Record<string, unknown>
-  ) => {
-    const newNode: Node = {
-      id: crypto.randomUUID(),
-      type,
-      data: {},
-      position: { x: 0, y: 0 },
-      draggable: true,
-      ...options,
-    }
-    setNodes((nodes: Node[]) => nodes.concat(newNode))
-    return newNode.id
-  }, [])
-
-  const duplicateNode = useCallback((nodeId: string) => {
-    const node = getNode(nodeId)
-    if (!node || !node.type) {return}
-    addNode(node.type, {
-      ...node,
-      id: crypto.randomUUID(),
-      selected: true,
-      position: {
-        x: node.position.x + 100,
-        y: node.position.y + 100,
-      },
-    })
-  }, [addNode, getNode])
+  const duplicateNode = useCallback(
+    (nodeId: string) => {
+      const node = getNode(nodeId);
+      if (!node?.type) {
+        return;
+      }
+      addNode(node.type, {
+        ...node,
+        id: crypto.randomUUID(),
+        selected: true,
+        position: {
+          x: node.position.x + 100,
+          y: node.position.y + 100,
+        },
+      });
+    },
+    [addNode, getNode]
+  );
 
   return (
     <NodeOperationsProvider addNode={addNode} duplicateNode={duplicateNode}>
       <ReactFlow
-        proOptions={{hideAttribution: true}}
-        panOnScroll={true}
-        selectionOnDrag={true}
-        panOnDrag={[1,2]}
+        className=""
         connectionLineComponent={ConnectionLine}
-        onConnect={onConnect}
-        nodes={nodes}
         edges={edges}
+        nodes={nodes}
         nodeTypes={nodeTypes}
-        viewport={viewport}
-        onNodesChange={handleNodesChange}
+        onConnect={onConnect}
         onEdgesChange={handleEdgesChange}
+        onNodesChange={handleNodesChange}
         onViewportChange={setViewport}
-        snapToGrid={true}
+        panOnDrag={[1, 2]}
+        panOnScroll={true}
+        proOptions={{ hideAttribution: true }}
+        selectionOnDrag={true}
         snapGrid={[10, 10]}
-        className=''
+        snapToGrid={true}
+        viewport={viewport}
       >
         <Background variant={BackgroundVariant.Dots} />
         <Toolbar />
         <ZoomSlider />
-          {children}
+        {children}
       </ReactFlow>
     </NodeOperationsProvider>
-  )
+  );
 }

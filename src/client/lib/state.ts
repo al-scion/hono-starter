@@ -1,7 +1,7 @@
-import { UIMessage } from "@ai-sdk/react";
-import { create } from "zustand";
-import usePresence from "@convex-dev/presence/react";
-import { ImperativePanelHandle } from "react-resizable-panels";
+import type { UIMessage } from '@ai-sdk/react';
+import type usePresence from '@convex-dev/presence/react';
+import type { ImperativePanelHandle } from 'react-resizable-panels';
+import { create } from 'zustand';
 
 interface State {
   count: number;
@@ -32,21 +32,24 @@ interface State {
   contextItems: any[];
   setContextItems: (contextItems: any[]) => void;
 
-  presenceState: ReturnType<typeof usePresence>
+  presenceState: ReturnType<typeof usePresence>;
   setPresenceState: (presenceState: ReturnType<typeof usePresence>) => void;
 
   leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null;
-  setLeftSidebarRef: (leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => void;
+  setLeftSidebarRef: (
+    leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null
+  ) => void;
   isLeftSidebarCollapsed: boolean;
   setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) => void;
   toggleLeftSidebarCollapse: () => void;
 
   rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null;
-  setRightSidebarRef: (rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => void;
+  setRightSidebarRef: (
+    rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null
+  ) => void;
   isRightSidebarCollapsed: boolean;
   setIsRightSidebarCollapsed: (isRightSidebarCollapsed: boolean) => void;
   toggleRightSidebarCollapse: () => void;
-
 }
 
 export const useStore = create<State>((set) => ({
@@ -58,40 +61,51 @@ export const useStore = create<State>((set) => ({
   chatId: crypto.randomUUID(),
   setChatId: (chatId: string) => set({ chatId }),
   initialMessages: [],
-  setInitialMessages: (initialMessages: UIMessage[]) => set({ initialMessages }),
+  setInitialMessages: (initialMessages: UIMessage[]) =>
+    set({ initialMessages }),
 
   commandOpen: false,
   setCommandOpen: (commandOpen: boolean) => set({ commandOpen }),
 
   integrationsDialogOpen: false,
-  setIntegrationsDialogOpen: (integrationsDialogOpen: boolean) => set({ integrationsDialogOpen }),
+  setIntegrationsDialogOpen: (integrationsDialogOpen: boolean) =>
+    set({ integrationsDialogOpen }),
 
   deployDialogOpen: false,
   setDeployDialogOpen: (deployDialogOpen: boolean) => set({ deployDialogOpen }),
 
   createChannelDialogOpen: false,
-  setCreateChannelDialogOpen: (createChannelDialogOpen: boolean) => set({ createChannelDialogOpen }),
+  setCreateChannelDialogOpen: (createChannelDialogOpen: boolean) =>
+    set({ createChannelDialogOpen }),
 
   customMcpDialogOpen: false,
-  setCustomMcpDialogOpen: (customMcpDialogOpen: boolean) => set({ customMcpDialogOpen }),
+  setCustomMcpDialogOpen: (customMcpDialogOpen: boolean) =>
+    set({ customMcpDialogOpen }),
 
   contextItems: [],
   setContextItems: (contextItems: any[]) => set({ contextItems }),
 
   presenceState: undefined,
-  setPresenceState: (presenceState: ReturnType<typeof usePresence>) => set({ presenceState }),
+  setPresenceState: (presenceState: ReturnType<typeof usePresence>) =>
+    set({ presenceState }),
 
   leftSidebarRef: null,
-  setLeftSidebarRef: (leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => {
+  setLeftSidebarRef: (
+    leftSidebarRef: React.RefObject<ImperativePanelHandle | null> | null
+  ) => {
     set({ leftSidebarRef });
     if (leftSidebarRef?.current) {
       setTimeout(() => {
-        set({ isLeftSidebarCollapsed: leftSidebarRef.current?.isCollapsed() ?? false });
+        set({
+          isLeftSidebarCollapsed:
+            leftSidebarRef.current?.isCollapsed() ?? false,
+        });
       }, 0);
     }
   },
   isLeftSidebarCollapsed: false,
-  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) => set({ isLeftSidebarCollapsed }),
+  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) =>
+    set({ isLeftSidebarCollapsed }),
   toggleLeftSidebarCollapse: () => {
     const state = useStore.getState();
     if (state.leftSidebarRef) {
@@ -104,16 +118,22 @@ export const useStore = create<State>((set) => ({
   },
 
   rightSidebarRef: null,
-  setRightSidebarRef: (rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null) => {
+  setRightSidebarRef: (
+    rightSidebarRef: React.RefObject<ImperativePanelHandle | null> | null
+  ) => {
     set({ rightSidebarRef });
     if (rightSidebarRef?.current) {
       setTimeout(() => {
-        set({ isRightSidebarCollapsed: rightSidebarRef.current?.isCollapsed() ?? false });
+        set({
+          isRightSidebarCollapsed:
+            rightSidebarRef.current?.isCollapsed() ?? false,
+        });
       }, 0);
     }
   },
   isRightSidebarCollapsed: false,
-  setIsRightSidebarCollapsed: (isRightSidebarCollapsed: boolean) => set({ isRightSidebarCollapsed }),
+  setIsRightSidebarCollapsed: (isRightSidebarCollapsed: boolean) =>
+    set({ isRightSidebarCollapsed }),
   toggleRightSidebarCollapse: () => {
     const state = useStore.getState();
     if (state.rightSidebarRef) {

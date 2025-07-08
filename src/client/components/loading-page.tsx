@@ -1,9 +1,9 @@
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react';
 
 export function LoadingPage() {
   return (
-    <div className='flex flex-col items-center justify-center h-screen'>
-      <Loader2 className='text-muted-foreground animate-spin' />
+    <div className="flex h-screen flex-col items-center justify-center">
+      <Loader2 className="animate-spin text-muted-foreground" />
     </div>
-  )
+  );
 }

@@ -1,40 +1,37 @@
-import { 
-  Handle, 
-  Position, 
-  type NodeProps
-} from '@xyflow/react';
+import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { Textarea } from '@/components/ui/textarea';
 
 const TextNode = ({ data, selected }: NodeProps) => {
   const nodeData = data as { content?: string };
-  
+
   return (
-    <div className={`min-w-[200px] bg-white border rounded-lg shadow-sm p-3 ${selected ? 'ring-2 ring-blue-500' : ''}`}>
+    <div
+      className={`min-w-[200px] rounded-lg border bg-white p-3 shadow-sm ${selected ? 'ring-2 ring-blue-500' : ''}`}
+    >
       {/* Input handle - where connections come in */}
       <Handle
-        type="target"
+        className="!bg-gray-400 h-3 w-3 border-2 border-white"
         position={Position.Top}
-        className="w-3 h-3 !bg-gray-400 border-2 border-white"
+        type="target"
       />
 
       <Handle
-        type="source"
+        className="!bg-gray-400 h-3 w-3 border-2 border-white"
         position={Position.Bottom}
-        className="w-3 h-3 !bg-gray-400 border-2 border-white"
+        type="source"
       />
-      
+
       {/* Text input */}
       <Textarea
-        value={nodeData?.content || ''}
+        className="min-h-[80px] resize-none border-0 p-0 shadow-none focus-visible:ring-0"
         placeholder="Enter text..."
-        className="min-h-[80px] resize-none border-0 p-0 focus-visible:ring-0 shadow-none"
         readOnly
+        value={nodeData?.content || ''}
       />
-      
     </div>
   );
 };
 
 export const nodeTypes = {
   text: TextNode,
-}; 
+};

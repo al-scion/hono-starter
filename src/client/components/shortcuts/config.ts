@@ -40,4 +40,4 @@ export const shortcuts: Shortcut[] = [
     },
     enabled: true,
   },
-]
+];

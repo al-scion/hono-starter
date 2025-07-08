@@ -1,50 +1,74 @@
-import { Briefcase, Check, ChevronDown, LogOut, Moon, PanelLeft, Plus, Sun, User } from "lucide-react"
+import {
+  CreateOrganization,
+  OrganizationProfile,
+  UserProfile,
+  useClerk,
+  useOrganization,
+  useOrganizationList,
+} from '@clerk/clerk-react';
+import {
+  Briefcase,
+  Check,
+  ChevronDown,
+  LogOut,
+  Moon,
+  PanelLeft,
+  Plus,
+  Sun,
+  User,
+  UserPlus,
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useState } from 'react';
+import { Kbd } from '@/components/shortcuts/kbd';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 import {
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
-} from "@/components/ui/sidebar"
-import { useTheme } from "next-themes"
-import { useClerk, useOrganization, useOrganizationList } from "@clerk/clerk-react"
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
-import { CreateOrganization, OrganizationProfile, UserProfile } from "@clerk/clerk-react"
-import { useState } from "react"
-import { Button } from "../ui/button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
-import { Kbd } from "@/components/shortcuts/kbd"
-import { useStore } from "@/lib/state"
-
+  SidebarMenuItem,
+} from '@/components/ui/sidebar';
+import { useStore } from '@/lib/state';
+import { Button } from '../ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 export function TeamSwitcher() {
+  const { setTheme, theme } = useTheme();
+  const { signOut } = useClerk();
+  const { organization } = useOrganization({});
+  const orgList = useOrganizationList({ userMemberships: { infinite: true } });
+  const { toggleLeftSidebarCollapse } = useStore();
 
-  const { setTheme, theme } = useTheme()
-  const { signOut } = useClerk()
-  const { organization } = useOrganization({})
-  const orgList = useOrganizationList({userMemberships: {infinite: true}})
-  const { toggleLeftSidebarCollapse } = useStore()
-
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [authDialogType, setAuthDialogType] = useState<'createOrg' | 'orgProfile' | 'userProfile'>('createOrg')
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [authDialogType, setAuthDialogType] = useState<
+    'createOrg' | 'orgProfile' | 'userProfile'
+  >('createOrg');
 
   function AuthDialogs() {
     return (
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
         <DialogTitle className="sr-only">Create Organization</DialogTitle>
-        <DialogDescription className="sr-only">Create Organization</DialogDescription>
-        <DialogContent className="p-0 w-fit max-w-fit min-w-fit border-none bg-transparent rounded-xl">
+        <DialogDescription className="sr-only">
+          Create Organization
+        </DialogDescription>
+        <DialogContent className="w-fit min-w-fit max-w-fit rounded-xl border-none bg-transparent p-0">
           {authDialogType === 'createOrg' && <CreateOrganization />}
           {authDialogType === 'orgProfile' && <OrganizationProfile />}
           {authDialogType === 'userProfile' && <UserProfile />}
         </DialogContent>
       </Dialog>
-    )
+    );
   }
 
   return (
@@ -53,47 +77,85 @@ export function TeamSwitcher() {
       <SidebarMenuItem className="flex flex-row items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton className="h-8 px-2 w-fit rounded-md hover:bg-sidebar-accent font-normal">
-              <img src={organization?.imageUrl} alt={organization?.name} className="size-5 rounded-full -ml-0.5" />
-              <span className="truncate min-w-0">{organization?.name}</span>
-              <div className="text-muted-foreground [&>svg]:size-3.5 -ml-1"><ChevronDown /></div>
+            <SidebarMenuButton className="h-8 w-fit rounded-md px-2 font-normal hover:bg-sidebar-accent">
+              <img
+                alt={organization?.name}
+                className="-ml-0.5 size-5 rounded-full"
+                src={organization?.imageUrl}
+              />
+              <span className="min-w-0 truncate">{organization?.name}</span>
+              <div className="-ml-1 text-muted-foreground [&>svg]:size-3.5">
+                <ChevronDown />
+              </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="start">
+          <DropdownMenuContent align="start" className="w-56">
             {orgList.userMemberships?.data?.map((org) => (
-              <DropdownMenuItem key={org.organization.id} onClick={() => orgList.setActive?.({ organization: org.organization.id })}>
-                <img src={org.organization.imageUrl} alt={org.organization.name} className="size-5 rounded-full -ml-0.5" />
-                <span className="truncate min-w-0">{org.organization.name || org.organization.slug}</span>
-                {org.organization.id === organization?.id && <Check className="size-4 ml-auto" />}
+              <DropdownMenuItem
+                key={org.organization.id}
+                onClick={() =>
+                  orgList.setActive?.({ organization: org.organization.id })
+                }
+              >
+                <img
+                  alt={org.organization.name}
+                  className="-ml-0.5 size-5 rounded-full"
+                  src={org.organization.imageUrl}
+                />
+                <span className="min-w-0 truncate">
+                  {org.organization.name || org.organization.slug}
+                </span>
+                {org.organization.id === organization?.id && (
+                  <Check className="ml-auto size-4" />
+                )}
               </DropdownMenuItem>
             ))}
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => {
-                setDialogOpen(true)
-                setAuthDialogType('createOrg')
+                setDialogOpen(true);
+                setAuthDialogType('createOrg');
               }}
             >
               <Plus className="size-4" />
               <div>New workspace</div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => {
-              setDialogOpen(true)
-              setAuthDialogType('orgProfile')
-            }}>
+            <DropdownMenuItem
+              onClick={() => {
+                setDialogOpen(true);
+                setAuthDialogType('orgProfile');
+              }}
+            >
+              <UserPlus className="size-4" />
+              <div>Invite members</div>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setDialogOpen(true);
+                setAuthDialogType('orgProfile');
+              }}
+            >
               <Briefcase className="size-4" />
               <div>Workspace settings</div>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => {
-              setDialogOpen(true)
-              setAuthDialogType('userProfile')
-            }}>
+            <DropdownMenuItem
+              onClick={() => {
+                setDialogOpen(true);
+                setAuthDialogType('userProfile');
+              }}
+            >
               <User className="size-4" />
               <div>Account settings</div>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            <DropdownMenuItem
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            >
+              {theme === 'dark' ? (
+                <Sun className="size-4" />
+              ) : (
+                <Moon className="size-4" />
+              )}
               <div>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</div>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => signOut()}>
@@ -104,20 +166,20 @@ export function TeamSwitcher() {
         </DropdownMenu>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              className='size-6 p-0 ml-auto hover:bg-sidebar-accent opacity-0 group-hover:opacity-100'
+            <Button
+              className="ml-auto size-6 p-0 opacity-0 hover:bg-sidebar-accent group-hover:opacity-100"
               onClick={toggleLeftSidebarCollapse}
+              variant="ghost"
             >
               <PanelLeft className="size-4" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>
             Toggle sidebar
-            <Kbd shortcutId="leftSidebarToggle" variant="secondary"/>
+            <Kbd shortcutId="leftSidebarToggle" variant="secondary" />
           </TooltipContent>
         </Tooltip>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
