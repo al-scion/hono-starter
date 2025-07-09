@@ -9,22 +9,14 @@ import {
 } from 'lucide-react';
 import { type ChangeEvent, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { useStore } from '@/lib/state';
 import { cn } from '@/lib/utils';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { Id } from '@/lib/api';
 import { useDeleteDraft, useDraft, useSaveDraft, useSendAIMessage, useSendMessage } from '@/hooks/use-convex';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  EmojiPicker,
-  EmojiPickerContent,
-  EmojiPickerSearch,
-} from '@/components/custom/emoji-picker';
+import { EmojiPicker, EmojiPickerContent, EmojiPickerSearch } from '@/components/custom/emoji-picker';
+import { TooltipButton } from '../custom/tooltip-button';
 
 import { Paragraph } from '@tiptap/extension-paragraph';
 import Document from '@tiptap/extension-document';
@@ -37,9 +29,11 @@ import { MentionSuggestion } from '@/components/tiptap/suggestion';
 export function ChatInput({ 
   className, 
   channelId,
+  threadId,
   ...props 
 }: React.ComponentProps<'div'> & {
   channelId: Id<'channels'>;
+  threadId?: Id<'messages'>;
 }) {
 
   const { contextItems } = useStore();
@@ -77,9 +71,7 @@ export function ChatInput({
     onBlur(props) {
       saveDraft({ channelId, text: JSON.stringify(props.editor.state.doc.toJSON()) });
     },
-    onCreate(props) {
-      props.editor.commands.focus('end');
-    },
+    onCreate(props) {},
   }, [channelId, draft?.text])!;
 
   const isEmpty = !editor.getText().trim();
@@ -87,7 +79,7 @@ export function ChatInput({
   const handleSend = () => {
     if (isEmpty) return;
     const message = editor.getText();
-    sendMessage({ channelId, text: message });
+    sendMessage({ channelId, text: message, threadId });
     editor.commands.clearContent();
     deleteDraft({ channelId });
   }
@@ -137,63 +129,47 @@ export function ChatInput({
       />
       <div className="flex flex-row gap-2">
         <div className="flex h-6 flex-1 items-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                className="size-6 p-0"
-                onClick={() => fileInputRef.current?.click()}
-                variant="ghost"
-              >
-                <Paperclip className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Attach files</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                className="size-6 p-0"
-                onClick={() => {editor?.chain().insertContent('@').focus().run()}}
-                variant="ghost"
-              >
-                <AtSign className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Add context</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <Popover>
-              <TooltipTrigger asChild>
-                <PopoverTrigger asChild>
-                  <Button
-                    className="size-6 p-0"
-                    variant="ghost"
-                  >
-                    <Smile className="size-4" />
-                  </Button>
-                </PopoverTrigger>
-              </TooltipTrigger>
-              <PopoverContent alignOffset={-7} className="max-h-64 overflow-y-auto p-0 w-fit">
-                <EmojiPicker onEmojiSelect={(emoji) => editor.chain().insertContent(emoji.emoji).focus().run()}>
-                  <EmojiPickerSearch />
-                  <EmojiPickerContent />
-                </EmojiPicker>
-              </PopoverContent>
-              </Popover>
-            <TooltipContent>Add emojis</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                className="size-6 p-0"
-                onClick={() => {send({ channelId, text: "Write me an essay with 30 short sentences"})}}
-                variant="ghost"
-              >
-                <Baseline className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Format text</TooltipContent>
-          </Tooltip>
+          <TooltipButton
+            className="size-6 p-0"
+            onClick={() => fileInputRef.current?.click()}
+            variant="ghost"
+            tooltip="Attach files"
+          >
+            <Paperclip className="size-4" />
+          </TooltipButton>
+          <TooltipButton
+            className="size-6 p-0"
+            onClick={() => {editor?.chain().insertContent('@').focus().run()}}
+            variant="ghost"
+            tooltip="Add context"
+          >
+            <AtSign className="size-4" />
+          </TooltipButton>
+          <Popover>
+              <PopoverTrigger asChild>
+                <TooltipButton
+                  className="size-6 p-0"
+                  variant="ghost"
+                  tooltip="Add emojis"
+                >
+                  <Smile className="size-4" />
+                </TooltipButton>
+              </PopoverTrigger>
+            <PopoverContent alignOffset={-7} className="max-h-64 overflow-y-auto p-0 w-fit">
+              <EmojiPicker onEmojiSelect={(emoji) => editor.chain().insertContent(emoji.emoji).focus().run()}>
+                <EmojiPickerSearch />
+                <EmojiPickerContent />
+              </EmojiPicker>
+            </PopoverContent>
+          </Popover>
+          <TooltipButton
+            className="size-6 p-0"
+            onClick={() => {send({ channelId, text: "Write me an essay with 30 short sentences"})}}
+            variant="ghost"
+            tooltip="Format text"
+          >
+            <Baseline className="size-4" />
+          </TooltipButton>
         </div>
 
         <Button 

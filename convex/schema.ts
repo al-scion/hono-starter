@@ -43,20 +43,14 @@ export default defineSchema({
     author: author,
     text: v.string(),
     status: v.union(v.literal('pending'), v.literal('completed')),
-    threadId: v.optional(v.id('messageThreads')), // If null, this is at the channel root level
+
+    // Thread related fields 
+    threadId: v.optional(v.id('messages')),
+    path: v.optional(v.string()), // A materialized path of the message in the thread
+
   })
   .index('by_channel', ['channelId'])
   .index('by_thread', ['threadId']),
-
-  messageThreads: defineTable({
-    channelId: v.id('channels'),
-    rootMessageId: v.id('messages'),
-    parentMessageId: v.id('messages'),
-    path: v.string(), // Materialized path of the thread (e.g. "root_id/child_id/grandchild_id")
-    name: v.optional(v.string()),
-  })
-  .index('by_channel', ['channelId'])
-  .index('by_root_message', ['rootMessageId']),
 
 
   messageReactions: defineTable({

@@ -104,8 +104,7 @@ export const useStore = create<State>((set) => ({
     }
   },
   isLeftSidebarCollapsed: false,
-  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) =>
-    set({ isLeftSidebarCollapsed }),
+  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) => set({ isLeftSidebarCollapsed }),
   toggleLeftSidebarCollapse: () => {
     const state = useStore.getState();
     if (state.leftSidebarRef) {
@@ -132,8 +131,7 @@ export const useStore = create<State>((set) => ({
     }
   },
   isRightSidebarCollapsed: false,
-  setIsRightSidebarCollapsed: (isRightSidebarCollapsed: boolean) =>
-    set({ isRightSidebarCollapsed }),
+  setIsRightSidebarCollapsed: (isRightSidebarCollapsed: boolean) => set({ isRightSidebarCollapsed }),
   toggleRightSidebarCollapse: () => {
     const state = useStore.getState();
     if (state.rightSidebarRef) {

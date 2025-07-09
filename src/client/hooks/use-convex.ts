@@ -26,7 +26,7 @@ export function useCreateChannel() {
       router.navigate({
         to: '/channel/$channelId',
         params: { channelId: data },
-        search: { threadId: undefined, threadParent: undefined },
+        search: { thread: undefined },
       });
     },
   });
@@ -51,7 +51,7 @@ export function useMessages(channelId: Id<'channels'>) {
   return useQuery(convexQuery(convexApi.message.listMessages, { channelId }));
 }
 
-export function useThreadMessages(threadId: Id<'messageThreads'>) {
+export function useThreadMessages(threadId: Id<'messages'>) {
   return useQuery(convexQuery(convexApi.message.listThreadMessages, { threadId }));
 }
 
@@ -68,10 +68,11 @@ export function useSendMessage() {
 
   return useMutation({
     mutationFn: useConvexMutation(convexApi.message.sendMessage).withOptimisticUpdate((localStore, args) => {
-      const { channelId, text } = args;
+      const { channelId, text, threadId } = args;
 
       const tempId = `temp-${Date.now()}` as Id<'messages'>;
       const existingMessages = localStore.getQuery(convexApi.message.listMessages, { channelId });
+      const existingThreadMessages = threadId ? localStore.getQuery(convexApi.message.listThreadMessages, { threadId }) : [];
 
       if (existingMessages !== undefined) {
         const optimisticMessage = {
@@ -79,15 +80,14 @@ export function useSendMessage() {
           _creationTime: Date.now(),
           channelId,
           text,
+          threadId,
           author: { type: 'user' as const, id: user!.id },
           status: 'pending' as const,
         };
 
         localStore.setQuery(convexApi.message.listReactions, { messageId: tempId }, []);
-        localStore.setQuery(convexApi.message.listMessages, { channelId }, [
-          ...(existingMessages ?? []),
-          optimisticMessage,
-        ]);
+        localStore.setQuery(convexApi.message.listMessages, { channelId }, [...existingMessages, optimisticMessage]);
+        threadId && localStore.setQuery(convexApi.message.listThreadMessages, { threadId }, [...(existingThreadMessages ?? []), optimisticMessage]);
       }
     }),
   });

@@ -11,6 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarProvider,
 } from '@/components/ui/sidebar';
 import { useStore } from '@/lib/state';
 import { useUser } from '@clerk/clerk-react';
@@ -50,38 +51,40 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar className="-mr-1 group w-full" collapsible="none">
-      <SidebarHeader>
-        <TeamSwitcher />
-      </SidebarHeader>
-      <SidebarContent className="gap-0">
-        <SidebarGroup>
+    <SidebarProvider className='h-svh'>
+      <Sidebar className="-mr-1 group w-full" collapsible="none">
+        <SidebarHeader>
+          <TeamSwitcher />
+        </SidebarHeader>
+        <SidebarContent className="gap-0">
+          <SidebarGroup>
+            <SidebarMenu>
+              {data.navHeader.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    isActive={location.pathname === item.url}
+                    onClick={item.onClickHandler}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+          <NavWorkspaces />
+        </SidebarContent>
+        <SidebarFooter>
           <SidebarMenu>
-            {data.navHeader.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  isActive={location.pathname === item.url}
-                  onClick={item.onClickHandler}
-                >
-                  <item.icon />
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            <SidebarMenuItem>
+              <SidebarMenuButton>
+                <img src={user?.imageUrl} alt={user?.fullName || ''} className='size-5 rounded-full' />
+                <span>{user?.emailAddresses[0].emailAddress}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
-        </SidebarGroup>
-        <NavWorkspaces />
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <img src={user?.imageUrl} alt={user?.fullName || ''} className='size-5 rounded-full' />
-              <span>{user?.emailAddresses[0].emailAddress}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+        </SidebarFooter>
+      </Sidebar>
+    </SidebarProvider>
   );
 }

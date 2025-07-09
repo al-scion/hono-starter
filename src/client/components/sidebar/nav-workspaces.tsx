@@ -217,15 +217,11 @@ export function NavWorkspaces() {
                     router.navigate({
                       to: '/channel/$channelId',
                       params: { channelId: channel._id },
-                      search: { threadId: undefined, threadParent: undefined }
+                      search: { thread: undefined }
                     })
                   }
                 >
-                  {channel.type === 'public' ? (
-                    <Hash className="size-4" />
-                  ) : (
-                    <Lock className="size-4" />
-                  )}
+                  <Hash className="size-4" />
                   <span className="truncate">{channel.name}</span>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

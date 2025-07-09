@@ -26,7 +26,7 @@ export const listMessages = query({
 
 export const listThreadMessages = query({
   args: {
-    threadId: v.id('messageThreads'),
+    threadId: v.id('messages'),
   },
   handler: async (ctx, args) => {
     const { threadId } = args;
@@ -45,6 +45,7 @@ export const sendMessage = mutation({
   args: {
     channelId: v.id('channels'),
     text: v.string(),
+    threadId: v.optional(v.id('messages')),
   },
   handler: async (ctx, args) => {
     const { channelId, text } = args;
@@ -58,6 +59,7 @@ export const sendMessage = mutation({
       author: { type: 'user', id: user.subject },
       text,
       status: 'completed',
+      threadId: args.threadId,
     });
 
     return messageId;

@@ -1,4 +1,4 @@
-import { createFileRoute, useParams, useSearch } from '@tanstack/react-router';
+import { createFileRoute, useParams } from '@tanstack/react-router';
 import { useMessages } from '@/hooks/use-convex';
 import type { Id } from '@/lib/api';
 import { ChannelHeader } from '@/components/header/channel-header';
@@ -15,8 +15,7 @@ export const Route = createFileRoute(
     })
   },
   validateSearch: (search) => ({
-    thread: search.thread as Id<'messageThreads'> | undefined,
-    threadParent: search.threadParent as Id<'messages'> | undefined
+    thread: search.thread as Id<'messages'> | undefined,
   })
 });
 
@@ -24,12 +23,13 @@ function RouteComponent() {
 
   const { channelId } = useParams({ from: '/_authenticated/_layout/channel/$channelId' });
   const { data: messages } = useMessages(channelId);
+  const messagesToDisplay = messages?.filter((msg) => !msg.threadId);
 
   return (
     <div className="flex flex-col flex-1 h-full">
       <ChannelHeader className="sticky top-0" />
       <div className="flex flex-col flex-1 overflow-auto py-4">
-        {messages?.map((msg) => (
+        {messagesToDisplay?.map((msg) => (
           <ChatMessage key={msg._id} msg={msg} />
         ))}
       </div>

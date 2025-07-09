@@ -13,11 +13,10 @@ import { McpHost } from '@/components/mcphost';
 import { ShortcutMenu } from '@/components/shortcuts/shortcut-menu';
 import { AppSidebar } from '@/components/sidebar/app-sidebar';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { convexApi } from '@/lib/api';
 import { useStore } from '@/lib/state';
 import { cn } from '@/lib/utils';
-import { Thread } from '@/components/chat/thread';
+import { RightSidebar } from '@/components/sidebar/right-sidebar';
 
 export const Route = createFileRoute('/_authenticated/_layout')({
   component: RouteComponent,
@@ -41,6 +40,7 @@ function RouteComponent() {
   const org = useOrganization();
   const orgList = useOrganizationList({ userMemberships: { infinite: true } });
   const orgIds = orgList?.userMemberships.data?.map((org) => org.organization.id) ?? [];
+
 
   const {
     setLeftSidebarRef,
@@ -67,7 +67,6 @@ function RouteComponent() {
   );
 
   useHotkeys('bracketleft', toggleLeftSidebarCollapse);
-  useHotkeys('bracketright', toggleRightSidebarCollapse);
 
   useEffect(() => {
     if (user.isLoaded && !user.user) {
@@ -83,7 +82,6 @@ function RouteComponent() {
 
   return (
     <Authenticated>
-      <SidebarProvider>
         <ResizablePanelGroup
           autoSaveId="sidebar-layout"
           className="bg-sidebar"
@@ -133,10 +131,9 @@ function RouteComponent() {
             onExpand={() => setIsRightSidebarCollapsed(false)}
             ref={rightSidebarRef}
           >
-            <Thread />
+            <RightSidebar />
           </ResizablePanel>
         </ResizablePanelGroup>
-      </SidebarProvider>
       <CommandComponent />
       <ShortcutMenu />
       <IntegrationsDialog />

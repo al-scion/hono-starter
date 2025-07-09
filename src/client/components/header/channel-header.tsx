@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { Id } from "@/lib/api";
 import { useParams } from "@tanstack/react-router";
 import { useChannels } from "@/hooks/use-convex";
-import { Ellipsis, Hash, Lock } from "lucide-react";
+import { Ellipsis, Hash } from "lucide-react";
 
 export function ChannelHeader({
   className,
@@ -29,8 +29,7 @@ export function ChannelHeader({
         <BreadcrumbList className="-space-x-1.5">
           <BreadcrumbItem>
             <Button className="h-7 gap-1 px-2 text-foreground [&>svg]:text-foreground" variant="ghost">
-              {channel.type === 'public' && <Hash className="size-4" />}
-              {channel.type === 'private' && <Lock className="size-4" />}
+              <Hash className="size-4" />
               {channel.name || 'New channel'}
             </Button>
           </BreadcrumbItem>

@@ -5,15 +5,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, PenSquare, SmilePlus, Trash2, ChevronRight, MessageCircleMore } from "lucide-react";
 import type { Doc, Id } from "@/lib/api";
 import { useUser, useOrganization } from "@clerk/clerk-react";
-import { useAddReaction, useReactions, useRemoveReaction } from "@/hooks/use-convex";
+import { useAddReaction, useMessages, useReactions, useRemoveReaction, useThreadMessages } from "@/hooks/use-convex";
 import { useMemo } from "react";
 import { TooltipButton } from "@/components/custom/tooltip-button";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 
 export function ChatMessage({
   msg,
+  isThread
 }: {
   msg: Doc<'messages'>;
+  isThread?: boolean;
 }) {
 
   const { memberships } = useOrganization({ memberships: { infinite: true } });
@@ -26,11 +28,14 @@ export function ChatMessage({
   const { mutate: removeReaction } = useRemoveReaction();
   const { data: reactions } = useReactions(msg._id);
 
-  const handleReply = () => {
+  const { data: threadMessages } = useThreadMessages(msg._id);
+  const threadUser = threadMessages?.map((msg) => msg.author);
+
+  const handleShowThread = () => {
     navigate({
       to: '/channel/$channelId',
       params: { channelId },
-      search: { ...search, threadParent: msg._id }
+      search: { ...search, thread: msg._id }
     });
   }
 
@@ -101,16 +106,18 @@ export function ChatMessage({
             </Button>
           ))}
         </div>}
-        <div className={cn(
-          "flex flex-row items-center p-1.5 gap-2 rounded-lg max-w-100",
+        {!isThread && threadMessages && threadMessages.length > 0 && <div className={cn(
+          "flex flex-row items-center p-1.5 gap-2 rounded-lg w-[75%]",
           "hover:bg-background border border-transparent hover:border-border",
           "group/thread-item cursor-pointer",
           // msg.threadId && "bg-muted"
-        )}>
+        )}
+        onClick={handleShowThread}
+        >
           <img src={user?.imageUrl} alt="message image" className="size-5 rounded" />
-          <span className="text-sm text-blue-800 hover:underline">2 replies</span>
+          <span className="text-sm text-blue-800 hover:underline">{threadMessages.length} replies</span>
           <ChevronRight className="size-3.5 ml-auto text-muted-foreground hidden group-hover/thread-item:block" />
-        </div>
+        </div>}
       </div>
       <div className={cn(
         '-translate-y-1/2 absolute top-0 right-2',
@@ -134,7 +141,7 @@ export function ChatMessage({
         <Button className="h-6 w-6" size="icon" variant="ghost">
           <SmilePlus className="size-4" />
         </Button>
-        <TooltipButton className="h-6 w-6" size="icon" variant="ghost" tooltip="Reply in thread" onClick={handleReply}>
+        <TooltipButton className="h-6 w-6" size="icon" variant="ghost" tooltip="Reply in thread" onClick={handleShowThread}>
           <MessageCircleMore className="size-4" />
         </TooltipButton>
         <DropdownMenu>
