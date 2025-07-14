@@ -1,5 +1,5 @@
-import type { AnthropicProviderOptions } from '@ai-sdk/anthropic';
-import type { GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
+// import type { AnthropicProviderOptions } from '@ai-sdk/anthropic';
+// import type { GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
 import { zValidator } from '@hono/zod-validator';
 import {
   convertToModelMessages,
@@ -31,7 +31,7 @@ export const chatRouter = new Hono<{ Bindings: Env }>()
 
       const enabledTools = c.req.header('enabled-tools');
       const enableReasoning = enabledTools?.includes('reasoning');
-      const enableWebSearch = enabledTools?.includes('web-search');
+      // const enableWebSearch = enabledTools?.includes('web-search');
 
       // Convert UIMessages to ModelMessages for the AI SDK
       const modelMessages = convertToModelMessages(messages);

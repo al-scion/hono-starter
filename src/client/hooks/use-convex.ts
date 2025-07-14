@@ -1,9 +1,29 @@
 import { useOrganization, useUser } from '@clerk/clerk-react';
-import { convexQuery, useConvexMutation, useConvexAction } from '@convex-dev/react-query';
+import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { convexApi, type Id } from '@/lib/api';
-// import { useAction } from 'convex/react';
+import { useTiptapSync } from "@convex-dev/prosemirror-sync/tiptap";
+import { create } from 'zustand';
+
+
+const isValidConvexId = (id: string | undefined): id is Id<any> => {
+  return !!id && !id.startsWith('temp');
+}
+
+interface ConvexStore {
+  syncInstances: Record<string, ReturnType<typeof useTiptapSync>>;
+  addSyncInstance: (id: string, instance: ReturnType<typeof useTiptapSync>) => void;
+  removeSyncInstance: (id: string) => void;
+  clearSyncInstances: () => void;
+}
+
+export const useConvexStore = create<ConvexStore>((set, get) => ({
+  syncInstances: {},
+  addSyncInstance: (id, instance) => set({ syncInstances: { ...get().syncInstances, [id]: instance } }),
+  removeSyncInstance: (id) => set(({ syncInstances: { [id]: _, ...rest } }) => ({ syncInstances: rest })),
+  clearSyncInstances: () => set({ syncInstances: {} }),
+}));
 
 // Channels hooks
 export function useChannels() {
@@ -16,6 +36,18 @@ export function useChannels() {
       organizationId: organization.id,
     })
   );
+}
+
+export function useChannel(channelId: Id<'channels'>) {
+  const { data: channels } = useChannels();
+  const syncInstance = useTiptapSync(convexApi.prosemirror, channelId);
+  const { addSyncInstance } = useConvexStore();
+  addSyncInstance(channelId, syncInstance);
+
+  return useQuery({
+    ...convexQuery(convexApi.channel.getChannel, { channelId }),
+    initialData: channels?.find((channel) => channel._id === channelId),
+  });
 }
 
 export function useCreateChannel() {
@@ -51,16 +83,18 @@ export function useMessages(channelId: Id<'channels'>) {
   return useQuery(convexQuery(convexApi.message.listMessages, { channelId }));
 }
 
-export function useThreadMessages(threadId: Id<'messages'>) {
-  return useQuery(convexQuery(convexApi.message.listThreadMessages, { threadId }));
+export function useThreadMessages(threadId: Id<'messages'> | undefined) {
+  return useQuery({
+    ...convexQuery(convexApi.message.listThreadMessages, { threadId: threadId! }),
+    enabled: isValidConvexId(threadId),
+  });
 }
 
 export function useReactions(messageId: Id<'messages'>) {
-  return useQuery(convexQuery(convexApi.message.listReactions, { messageId }));
-}
-
-export function useSendAIMessage() {
-  return useConvexAction(convexApi.message.sendAIMessage)
+  return useQuery({
+    ...convexQuery(convexApi.message.listReactions, { messageId }),
+    enabled: isValidConvexId(messageId),
+  });
 }
 
 export function useSendMessage() {
@@ -145,6 +179,7 @@ export function useAgent(agentId: Id<'agents'>) {
   return useQuery({
     ...convexQuery(convexApi.agent.getAgent, { agentId }),
     initialData: agents?.find((agent) => agent._id === agentId),
+    enabled: agentId !== 'temp'
   });
 }
 
@@ -276,14 +311,62 @@ export function useDeleteAgent() {
   });
 }
 
-export function useDraft(channelId: Id<'channels'>) {
-  return useQuery(convexQuery(convexApi.draft.getDrafts, { channelId }));
+export function useGenerateUploadUrl() {
+  return useMutation({mutationFn: useConvexMutation(convexApi.files.generateUploadUrl)}
+)}
+
+export function useCreateFileRecord() {
+  return useMutation({mutationFn: useConvexMutation(convexApi.files.createFileRecord)}
+)}
+
+export function useUploadFile() {
+  const { mutateAsync: generateUploadUrl } = useGenerateUploadUrl();
+  const { mutateAsync: createFileRecord } = useCreateFileRecord();
+  return async (file: File): Promise<string> => {
+    const uploadUrl = await generateUploadUrl({});
+    const response = await fetch(uploadUrl, {
+      method: "POST",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.status}`);
+    }
+    const { storageId } = await response.json() as any;
+    createFileRecord({ storageId, name: file.name });
+    return storageId;
+  };
 }
 
-export function useSaveDraft() {
-  return useMutation({mutationFn: useConvexMutation(convexApi.draft.saveDraft)}
-)}
 
-export function useDeleteDraft() {
-  return useMutation({mutationFn: useConvexMutation(convexApi.draft.deleteDraft)}
-)}
+// Tiptap sync hook
+export function useSyncDocument(id: string) {
+  return useTiptapSync(convexApi.prosemirror, id)
+}
+
+export function useCreateDocument() {
+  return useMutation({
+    mutationFn: useConvexMutation(convexApi.prosemirror.createDocument),
+  });
+}
+
+export function useTypingStates(fieldId: string) {
+  return useQuery(convexQuery(convexApi.typing.getTypingStats, { fieldId }));
+}
+
+
+
+export function useSetTypingState() {
+  return useMutation({
+    mutationFn: useConvexMutation(convexApi.typing.setTypingState),
+  });
+}
+
+export function useRemoveTypingState() {
+  return useMutation({
+    mutationFn: useConvexMutation(convexApi.typing.removeTypingState),
+    onError: (error) => {
+      console.error('Failed to remove typing state:', error);
+    },
+  });
+}

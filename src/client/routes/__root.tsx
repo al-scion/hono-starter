@@ -9,7 +9,7 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <div className="fixed inset-0 flex">
+    <div className="fixed inset-0 flex flex-col">
       <Outlet />
     </div>
   );

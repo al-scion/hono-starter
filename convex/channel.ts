@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { internalMutation, mutation, query } from './_generated/server';
+import { prosemirrorSync } from './prosemirror';
 
 export const createChannel = mutation({
   args: {
@@ -26,6 +27,8 @@ export const createChannel = mutation({
       organizationId,
     });
 
+    prosemirrorSync.create(ctx, channelId, {})
+
     ctx.db.insert('channelMembers', {
       channelId,
       memberId: user.subject,
@@ -47,6 +50,13 @@ export const getChannels = query({
         q.eq('organizationId', organizationId)
       )
       .collect();
+  },
+});
+
+export const getChannel = query({
+  args: { channelId: v.id('channels') },
+  handler: async (ctx, { channelId }) => {
+    return await ctx.db.get(channelId);
   },
 });
 
@@ -73,9 +83,8 @@ export const joinChannel = mutation({
 export const createDefaultChannel = internalMutation({
   args: {
     organizationId: v.string(),
-    createdBy: v.string(),
   },
-  handler: async (ctx, { organizationId, createdBy }) => {
+  handler: async (ctx, { organizationId }) => {
     const channelId = await ctx.db.insert('channels', {
       name: 'general',
       type: 'public',

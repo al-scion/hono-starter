@@ -37,7 +37,7 @@ export function CreateChannelDialog() {
       },
       {
         onSuccess: (channelId) => {
-          router.navigate({ to: '/channel/$channelId', params: { channelId } });
+          router.navigate({ to: '/channel/$channelId', params: { channelId }, search: { thread: undefined } });
           setCreateChannelDialogOpen(false);
         },
       }

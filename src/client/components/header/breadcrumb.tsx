@@ -8,7 +8,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
-  BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,16 +43,18 @@ export function BreadcrumbComponent() {
           <Popover>
             <PopoverTrigger asChild>
               <Button
-                className="h-7 gap-1.5 px-2 text-foreground"
+                className="h-7 gap-1 px-2 text-foreground [&>svg]:text-foreground"
                 variant="ghost"
               >
                 {agent.emoji && <span className="text-base leading-none">{agent.emoji}</span>}
+                <Loader className="size-4" />
                 <span>{agent.name || 'New agent'}</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent
               align="start"
               className="flex flex-row items-center gap-1.5 p-1.5"
+              alignOffset={-6}
             >
               <Popover>
                 <PopoverTrigger asChild>

@@ -26,7 +26,7 @@ export function Canvas({
   agent,
   children,
 }: {
-  agent: Doc<'agent'>;
+  agent: Doc<'agents'>;
   children?: React.ReactNode;
 }) {
   const updateCanvas = useMutation(convexApi.agent.updateCanvas);

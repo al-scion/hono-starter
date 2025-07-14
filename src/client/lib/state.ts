@@ -104,7 +104,7 @@ export const useStore = create<State>((set) => ({
     }
   },
   isLeftSidebarCollapsed: false,
-  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) => set({ isLeftSidebarCollapsed }),
+  setIsLeftSidebarCollapsed: (isLeftSidebarCollapsed: boolean) =>set({ isLeftSidebarCollapsed }),
   toggleLeftSidebarCollapse: () => {
     const state = useStore.getState();
     if (state.leftSidebarRef) {

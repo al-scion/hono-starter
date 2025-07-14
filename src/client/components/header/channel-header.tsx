@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbSeparator } from "../ui/breadcrumb";
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem } from "../ui/breadcrumb";
 import { Button } from "../ui/button";
 import { Id } from "@/lib/api";
 import { useParams } from "@tanstack/react-router";

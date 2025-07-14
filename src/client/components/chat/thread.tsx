@@ -1,5 +1,5 @@
-import { useParams, useSearch, useLocation, useNavigate } from '@tanstack/react-router';
-import { useChannels, useMessages, useThreadMessages } from '@/hooks/use-convex';
+import { useParams, useSearch, useNavigate } from '@tanstack/react-router';
+import { useMessages, useThreadMessages } from '@/hooks/use-convex';
 import { ChatInput } from '@/components/chat/input';
 import { ChatMessage } from '@/components/chat/message';
 import { Button } from '@/components/ui/button';
@@ -8,12 +8,11 @@ import { TooltipButton } from '../custom/tooltip-button';
 
 export function Thread() {
 
-  const location = useLocation()
   const navigate = useNavigate();
   const { channelId } = useParams({ from: '/_authenticated/_layout/channel/$channelId' });
   const { thread } = useSearch({ from: '/_authenticated/_layout/channel/$channelId'});
   const { data: messages } = useMessages(channelId);
-  const { data: threadMessages } = useThreadMessages(thread || '' as any);
+  const { data: threadMessages } = useThreadMessages(thread);
 
   const parentMessage = messages?.find((msg) => msg._id === thread);
 
@@ -41,10 +40,10 @@ export function Thread() {
       </div>
       <div className="flex flex-col flex-1 overflow-auto py-4">
         {parentMessage && <ChatMessage msg={parentMessage} isThread />}
-        <div className="flex flex-row items-center gap-2 p-4">
+        {threadMessages && threadMessages.length > 0 && <div className="flex flex-row items-center gap-2 p-4">
           <span className="text-xs text-muted-foreground">{threadMessages?.length} replies</span>
           <div className="flex-1 border-b" />
-        </div>
+        </div>}
         {threadMessages?.map((msg) => (
           <ChatMessage key={msg._id} msg={msg} />
         ))}

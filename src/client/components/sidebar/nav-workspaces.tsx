@@ -8,7 +8,6 @@ import {
   Hash,
   Inbox,
   Loader,
-  Lock,
   Plus,
   Settings,
   Trash2,
@@ -106,7 +105,7 @@ export function NavWorkspaces() {
                 <React.Fragment key={agent._id}>
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      className="group/workspace-item relative pr-1"
+                      className="group/workspace-item relative"
                       isActive={location.pathname.includes(agent._id)}
                       onClick={() =>
                         router.navigate({
@@ -121,7 +120,14 @@ export function NavWorkspaces() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
-                            className="ml-auto size-6 p-1 opacity-0 group-hover/workspace-item:opacity-100 data-[state=open]:opacity-100"
+                            className={cn(
+                              "absolute right-1 top-1/2 -translate-y-1/2",
+                              "opacity-0 group-hover/workspace-item:opacity-100 data-[state=open]:opacity-100",
+                              "bg-sidebar-accent hover:bg-sidebar-accent",
+                              "group-data-[active=false]/workspace-item:bg-sidebar",
+                              "group-data-[active=false]/workspace-item:group-hover/workspace-item:bg-sidebar-accent",
+                              "transition-none mask-l-from-6 h-6 w-12 p-1 pl-7"
+                            )}
                             variant="ghost"
                           >
                             <Ellipsis className="size-4" />
@@ -150,14 +156,14 @@ export function NavWorkspaces() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                       <Button
-                        className="absolute left-1 z-50 hidden size-6 bg-sidebar-accent p-1 group-hover/workspace-item:block"
+                        className="absolute left-1 z-50 hidden size-6 p-0 bg-sidebar-accent group-hover/workspace-item:flex [&>svg]:text-foreground"
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleWorkspace(agent._id);
                         }}
                         variant="ghost"
                       >
-                        <ChevronRight className={`size-4 transition-transform duration-200 ${isOpen && 'rotate-90'}`} />
+                        <ChevronRight className={`size-3.5 transition-transform duration-200 ${isOpen && 'rotate-90'}`} />
                       </Button>
                     </SidebarMenuButton>
                     {isOpen && (
@@ -226,8 +232,12 @@ export function NavWorkspaces() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        className="ml-auto size-6 p-1 opacity-0 group-hover/workspace-item:opacity-100 data-[state=open]:opacity-100"
+                        className={cn(
+                          "absolute right-1 top-1/2 -translate-y-1/2 bg-sidebar-accent",
+                          "opacity-0 group-hover/workspace-item:opacity-100 data-[state=open]:opacity-100"
+                        )}
                         variant="ghost"
+                        size="icon"
                       >
                         <Ellipsis className="size-4" />
                       </Button>
@@ -323,8 +333,12 @@ export function NavWorkspaces() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        className="ml-auto size-6 p-1 opacity-0 group-hover/workspace-item:opacity-100 data-[state=open]:opacity-100"
+                        className={cn(
+                          "absolute right-1 top-1/2 -translate-y-1/2 bg-sidebar-accent",
+                          "opacity-0 group-hover/workspace-item:opacity-100 data-[state=open]:opacity-100"
+                        )}
                         variant="ghost"
+                        size="icon"
                       >
                         <Ellipsis className="size-4" />
                       </Button>

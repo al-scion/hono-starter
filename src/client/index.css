@@ -129,43 +129,103 @@
   }
 }
 
-.ProseMirror p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  float: left;
-  color: oklch(0.71 0.01 286); /* zinc-400 */
-  pointer-events: none;
-  height: 0;
-}
-
-/* Tiptap Heading Styles */
-.ProseMirror .heading-base {
-  @apply font-bold leading-tight;
-}
-
-.ProseMirror h1.heading-base {
-  @apply text-3xl mb-4;
-}
-
-.ProseMirror h2.heading-base {
-  @apply text-2xl mb-3;
-}
-
-.ProseMirror h3.heading-base {
-  @apply text-xl mb-2;
-}
-
 .tiptap {
   :first-child {
     margin-top: 0;
   }
-  ul, 
-  ol {
-    padding: 0 1rem;
-    margin: 1.25rem 1rem 1.25rem 0.4rem;
+
+  p { 
+    @apply my-1
+  }
+
+  
+  
+  /* Placeholder styles */
+  p.is-editor-empty:first-child::before,
+  h1.is-empty::before,
+  h2.is-empty::before,
+  h3.is-empty::before,
+  h4.is-empty::before,
+  h5.is-empty::before,
+  h6.is-empty::before,
+  p.is-empty::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: oklch(0.71 0.01 286); /* zinc-400 */
+    pointer-events: none;
+    height: 0;
+  }
+
+  code {
+    @apply bg-muted p-0.5 rounded;
+  }
+  
+  /* Heading styles */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold leading-tight;
+  }
+  
+  h1 {
+    @apply text-3xl mb-4;
+  }
+  
+  h2 {
+    @apply text-2xl mb-3;
+  }
+  
+  h3 {
+    @apply text-xl mb-2;
+  }
+
+  h4 {
+    @apply text-lg mb-1;
+  }
+
+  h5 {
+    @apply text-base mb-0.5;
+  }
+
+  hr {
+    @apply my-4;
+  }
+
+  blockquote {
+    @apply border-l-[3px] border-foreground pl-2 my-2;
+  }
+  
+  /* List styles */
+  ul, ol {
+    @apply pl-4;
+
+    li, li p {
+      @apply ml-1;
+    }
     
-    li p {
-      margin-top: 0.25em;
-      margin-bottom: 0.25em;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+  
+  /* Task list specific styles */
+  ul[data-type="taskList"] {
+    @apply list-none px-0;
+
+    li {
+      @apply flex items-center;
+
+      > label {
+        @apply flex items-center justify-center size-4;
+      }
+    }
+
+    input[type="checkbox"] {
+      @apply cursor-pointer;
     }
   }
+
 }

@@ -1,5 +1,6 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { prosemirrorSync } from './prosemirror';
 
 export const getAgent = query({
   args: {
@@ -48,6 +49,8 @@ export const createAgent = mutation({
         nodes: [],
       },
     });
+
+    prosemirrorSync.create(ctx, `system_${agentId}`, {});
 
     return agentId;
   },

@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, PenSquare, SmilePlus, Trash2, ChevronRight, MessageCircleMore } from "lucide-react";
 import type { Doc, Id } from "@/lib/api";
 import { useUser, useOrganization } from "@clerk/clerk-react";
-import { useAddReaction, useMessages, useReactions, useRemoveReaction, useThreadMessages } from "@/hooks/use-convex";
+import { useAddReaction, useReactions, useRemoveReaction, useThreadMessages } from "@/hooks/use-convex";
 import { useMemo } from "react";
 import { TooltipButton } from "@/components/custom/tooltip-button";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
@@ -29,7 +29,7 @@ export function ChatMessage({
   const { data: reactions } = useReactions(msg._id);
 
   const { data: threadMessages } = useThreadMessages(msg._id);
-  const threadUser = threadMessages?.map((msg) => msg.author);
+  // const threadUser = threadMessages?.map((msg) => msg.author);
 
   const handleShowThread = () => {
     navigate({
@@ -124,24 +124,24 @@ export function ChatMessage({
         'flex flex-row gap-0.5 rounded-lg border bg-background p-1 shadow',
         'opacity-0 group-hover/message:opacity-100 group-has-data-[state=open]/message:opacity-100'
       )}>
-        <Button
+        <TooltipButton
           onClick={() => handleReaction(msg._id, '✅')}
           size="icon"
           variant="ghost"
         >
           ✅
-        </Button>
-        <Button
+        </TooltipButton>
+        <TooltipButton
           onClick={() => handleReaction(msg._id, '🙌')}
           size="icon"
           variant="ghost"
         >
           🙌
-        </Button>
-        <Button className="h-6 w-6" size="icon" variant="ghost">
+        </TooltipButton>
+        <TooltipButton className="h-6 w-6" size="icon" variant="ghost" tooltip="Add reaction">
           <SmilePlus className="size-4" />
-        </Button>
-        <TooltipButton className="h-6 w-6" size="icon" variant="ghost" tooltip="Reply in thread" onClick={handleShowThread}>
+        </TooltipButton>
+        <TooltipButton className={cn("h-6 w-6", isThread && "hidden")} size="icon" variant="ghost" tooltip="Reply in thread" onClick={handleShowThread}>
           <MessageCircleMore className="size-4" />
         </TooltipButton>
         <DropdownMenu>

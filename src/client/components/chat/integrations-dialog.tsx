@@ -11,7 +11,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { useStore } from '@/lib/state';
-import { Button } from '../ui/button';
+import { TooltipButton } from '../custom/tooltip-button';
 
 export function IntegrationsDialog() {
   const {
@@ -32,13 +32,17 @@ export function IntegrationsDialog() {
           placeholder="Search"
           wrapperClassName="border m-2 rounded-md"
         />
-        <Button
+        <TooltipButton
           className="-translate-y-1/2 absolute top-1/2 right-5 size-6 p-0"
-          onClick={() => setCustomMcpDialogOpen(true)}
+          onClick={() => {
+            setCustomMcpDialogOpen(true);
+            setIntegrationsDialogOpen(false);
+          }}
           variant="ghost"
+          tooltip="Custom MCP server"
         >
           <Plus className="size-4" />
-        </Button>
+        </TooltipButton>
       </div>
       <CommandList>
         <CommandEmpty>No results found</CommandEmpty>
@@ -68,22 +72,22 @@ export function IntegrationsDialog() {
                 <span>{name}</span>
                 <CommandShortcut>
                   {!client && (
-                    <Button
+                    <TooltipButton
                       className="h-7"
                       onClick={() => addMcpServer(name, config.url)}
                       size="sm"
                     >
                       Connect
-                    </Button>
+                    </TooltipButton>
                   )}
                   {client && isLoading && (
-                    <Button className="h-7" disabled size="sm">
+                    <TooltipButton className="h-7" disabled size="sm">
                       <Loader className="animate-spin" />
                       Connect
-                    </Button>
+                    </TooltipButton>
                   )}
                   {client && !isLoading && clientId && (
-                    <Button
+                    <TooltipButton
                       className="h-7"
                       onClick={() => {
                         removeMcpServer(clientId);
@@ -92,7 +96,7 @@ export function IntegrationsDialog() {
                       variant="outline"
                     >
                       Disconnect
-                    </Button>
+                    </TooltipButton>
                   )}
                 </CommandShortcut>
               </CommandItem>

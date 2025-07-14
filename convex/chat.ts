@@ -1,8 +1,10 @@
-import { httpAction, query } from "./_generated/server";
-import { internal, components } from "./_generated/api";
+import { mutation, query, action, httpAction } from "./_generated/server";
+import { components } from "./_generated/api";
 import { PersistentTextStreaming, StreamId, StreamIdValidator } from "@convex-dev/persistent-text-streaming";
+import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
+import { v } from "convex/values";
+import { api } from "./_generated/api";
 
 export const streamingComponent = new PersistentTextStreaming(
   components.persistentTextStreaming
@@ -20,34 +22,20 @@ export const getStreamBody = query({
   },
 });
 
-export const streamChat = httpAction(async (ctx, request) => {
-  const body = (await request.json()) as {
-    streamId: string;
-  };
+export const genText = action({
+  args: {
+    agentId: v.id('agents'),
+    messageId: v.id('messages'),
+    prompt: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const agent = await ctx.runQuery(api.agent.getAgent, { agentId: args.agentId });
+    const message = await ctx.runQuery(api.message.getMessage, { messageId: args.messageId });
+    const response = streamText({
+      model: openai('gpt-4o'),
+      prompt: args.prompt,
+      system: agent?.system,
+    })
 
-  // Start streaming and persisting at the same time while
-  // we immediately return a streaming response to the client
-  const response = await streamingComponent.stream(
-    ctx,
-    request,
-    body.streamId as StreamId,
-    async (ctx, request, streamId, append) => {
-
-      const stream = await streamText({
-        model: openai("gpt-4o-mini"),
-        system: "You are a helpful assistant that can answer questions and help with tasks. Please provide your response in markdown format.",
-        messages: [
-          { role: "user", content: "Hello, how are you?" },
-        ],
-      });
-
-      stream.toUIMessageStreamResponse({
-        sendReasoning: false,
-        sendSources: false,
-      })
-
-    }
-  );
-
-  return response;
-});
+  }
+}) 

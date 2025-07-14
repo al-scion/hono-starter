@@ -11,11 +11,13 @@
 import type * as agent from "../agent.js";
 import type * as channel from "../channel.js";
 import type * as chat from "../chat.js";
-import type * as draft from "../draft.js";
 import type * as email from "../email.js";
+import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as message from "../message.js";
 import type * as presence from "../presence.js";
+import type * as prosemirror from "../prosemirror.js";
+import type * as typing from "../typing.js";
 
 import type {
   ApiFromModules,
@@ -35,11 +37,13 @@ declare const fullApi: ApiFromModules<{
   agent: typeof agent;
   channel: typeof channel;
   chat: typeof chat;
-  draft: typeof draft;
   email: typeof email;
+  files: typeof files;
   http: typeof http;
   message: typeof message;
   presence: typeof presence;
+  prosemirror: typeof prosemirror;
+  typing: typeof typing;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
@@ -192,6 +196,82 @@ export declare const components: {
           streamId: string;
         },
         any
+      >;
+    };
+  };
+  prosemirrorSync: {
+    lib: {
+      deleteDocument: FunctionReference<
+        "mutation",
+        "internal",
+        { id: string },
+        null
+      >;
+      deleteSnapshots: FunctionReference<
+        "mutation",
+        "internal",
+        { afterVersion?: number; beforeVersion?: number; id: string },
+        null
+      >;
+      deleteSteps: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          afterVersion?: number;
+          beforeTs: number;
+          deleteNewerThanLatestSnapshot?: boolean;
+          id: string;
+        },
+        null
+      >;
+      getSnapshot: FunctionReference<
+        "query",
+        "internal",
+        { id: string; version?: number },
+        { content: null } | { content: string; version: number }
+      >;
+      getSteps: FunctionReference<
+        "query",
+        "internal",
+        { id: string; version: number },
+        {
+          clientIds: Array<string | number>;
+          steps: Array<string>;
+          version: number;
+        }
+      >;
+      latestVersion: FunctionReference<
+        "query",
+        "internal",
+        { id: string },
+        null | number
+      >;
+      submitSnapshot: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          content: string;
+          id: string;
+          pruneSnapshots?: boolean;
+          version: number;
+        },
+        null
+      >;
+      submitSteps: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          clientId: string | number;
+          id: string;
+          steps: Array<string>;
+          version: number;
+        },
+        | {
+            clientIds: Array<string | number>;
+            status: "needs-rebase";
+            steps: Array<string>;
+          }
+        | { status: "synced" }
       >;
     };
   };

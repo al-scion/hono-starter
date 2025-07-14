@@ -42,15 +42,25 @@ export default defineSchema({
     channelId: v.id('channels'),
     author: author,
     text: v.string(),
-    status: v.union(v.literal('pending'), v.literal('completed')),
+    status: v.optional(v.union(v.literal('pending'), v.literal('streaming'), v.literal('completed'))),
 
     // Thread related fields 
     threadId: v.optional(v.id('messages')),
     path: v.optional(v.string()), // A materialized path of the message in the thread
 
+    // Other fields
+    files: v.optional(v.array(v.id('_storage'))),
+
   })
   .index('by_channel', ['channelId'])
   .index('by_thread', ['threadId']),
+
+  files: defineTable({
+    storageId: v.id('_storage'),
+    name: v.string(),
+  })
+  .index('by_storage', ['storageId'])
+  .index('by_name', ['name']),
 
 
   messageReactions: defineTable({
@@ -62,15 +72,6 @@ export default defineSchema({
   .index('by_author', ['author.id'])
   .index('by_author_message_emoji', ['author.id', 'messageId', 'emoji']),
 
-  drafts: defineTable({
-    userId: v.string(),
-    channelId: v.id('channels'),
-    text: v.string(),
-  })
-  .index('by_user', ['userId'])
-  .index('by_channel', ['channelId'])
-  .index('by_user_channel', ['userId', 'channelId']),
-
   channelMembers: defineTable({
     channelId: v.id('channels'),
     memberId: v.string(),
@@ -79,5 +80,14 @@ export default defineSchema({
   })
   .index('by_channel', ['channelId'])
   .index('by_member', ['memberId']),
+
+  typingStates: defineTable({
+    userId: v.string(),
+    fieldId: v.string(),
+    lastUpdated: v.number()
+  })
+  .index('by_user_field', ['userId', 'fieldId'])
+  .index('by_field', ['fieldId'])
+  .index('by_user', ['userId']),
 
 });

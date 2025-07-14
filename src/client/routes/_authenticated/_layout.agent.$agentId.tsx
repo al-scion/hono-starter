@@ -118,8 +118,10 @@ function RouteComponent() {
     <div className='h-full overflow-auto flex flex-col'>
       <Header className="sticky top-0" />
       <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel className='p-2 pr-1' minSize={25}>
-          <Agent agent={agent} />
+        <ResizablePanel minSize={25}>
+          <div className="p-2 pr-1 gap-2 flex flex-col h-full">
+            <Agent agent={agent} />
+          </div>
         </ResizablePanel>
         <ResizableHandle className='bg-background hover:bg-border hover:ring-[0.5px] hover:ring-border' />
         <ResizablePanel minSize={25}>

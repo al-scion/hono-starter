@@ -2,28 +2,48 @@ import {
   ArrowUp,
   AtSign,
   Baseline,
+  Bold,
+  CodeXml,
+  Italic,
+  List,
+  ListChecks,
+  ListOrdered,
+  Loader2,
   Paperclip,
+  Quote,
   Smile,
+  Strikethrough,
   Table,
+  TextQuote,
+  Underline,
   X,
 } from 'lucide-react';
-import { type ChangeEvent, useRef } from 'react';
+import { type ChangeEvent, useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { useStore } from '@/lib/state';
-import { cn } from '@/lib/utils';
+import { cn, prettyFileType } from '@/lib/utils';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { Id } from '@/lib/api';
-import { useDeleteDraft, useDraft, useSaveDraft, useSendAIMessage, useSendMessage } from '@/hooks/use-convex';
+import { useSendMessage, useUploadFile, useCreateDocument, useSyncDocument, useSetTypingState, useTypingStates, useRemoveTypingState } from '@/hooks/use-convex';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EmojiPicker, EmojiPickerContent, EmojiPickerSearch } from '@/components/custom/emoji-picker';
 import { TooltipButton } from '../custom/tooltip-button';
+import prettyBytes from 'pretty-bytes';
+import { useLocalStorage } from 'usehooks-ts';
 
 import { Paragraph } from '@tiptap/extension-paragraph';
 import Document from '@tiptap/extension-document';
 import Text from '@tiptap/extension-text';
 import Placeholder from '@tiptap/extension-placeholder';
 import HardBreak from '@tiptap/extension-hard-break';
+import BoldExtension from '@tiptap/extension-bold';
+import UnderlineExtension from '@tiptap/extension-underline';
+import StrikeExtension from '@tiptap/extension-strike';
+import ItalicExtension from '@tiptap/extension-italic'
+import CharacterCount from '@tiptap/extension-character-count'
 import { MentionSuggestion } from '@/components/tiptap/suggestion';
+import { useUser } from '@clerk/clerk-react';
+// import { useDebounceCallback } from 'usehooks-ts';
+import { useInterval } from 'usehooks-ts';
 
 
 export function ChatInput({ 
@@ -36,146 +56,298 @@ export function ChatInput({
   threadId?: Id<'messages'>;
 }) {
 
-  const { contextItems } = useStore();
+  const { user } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const sendRef = useRef<() => void>(() => {});
+  const [files, setFiles] = useState<{
+    status: 'uploading' | 'completed', 
+    file: File,
+    fileId?: string,
+  }[]>([]);
+
+  const [showFormatMenu, setShowFormatMenu] = useLocalStorage('showFormatMenu', true);
+  // const [isTyping, setIsTyping] = useState(false);
+
+  const inputId = threadId || channelId;
+  const sync = useSyncDocument(inputId);
+  const { mutate: createDocument } = useCreateDocument();
+  
+  const { mutate: setTypingState } = useSetTypingState();
+  const { data: typingStates } = useTypingStates(inputId);
+  const { mutate: removeTypingState } = useRemoveTypingState();
+  const [activeTypingUsers, setActiveTypingUsers] = useState<string[]>([]);
+  
+  useInterval(() => {
+    setActiveTypingUsers(typingStates?.filter(state => Date.now() - state.lastUpdated < 5000).map(state => state.userId) ?? []);
+  }, 1000)
+
+  useEffect(() => {
+    if (sync.isLoading === false && sync.initialContent === null ) {
+      createDocument({ docName: threadId || channelId })
+    }
+  }, [sync.isLoading, sync.initialContent])
 
   const { mutate: sendMessage } = useSendMessage();
-  const { mutate: saveDraft } = useSaveDraft();
-  const { mutate: deleteDraft } = useDeleteDraft();
-  const { data: draft } = useDraft(channelId)
-  const send = useSendAIMessage()
+  const uploadFile = useUploadFile();
   
   const editor = useEditor({
-    content: draft?.text ? JSON.parse(draft.text) : undefined,
+    content: sync.initialContent,
     extensions: [
       Document,
       Paragraph,
       Text,
       HardBreak,
+      BoldExtension,
+      ItalicExtension,
+      UnderlineExtension,
+      StrikeExtension,
+      CharacterCount,
       Placeholder.configure({ placeholder: 'Ask anything, use @ to mention' }),
       MentionSuggestion,
+      ...(sync.extension ? [sync.extension] : []),
     ],
     editorProps: {
       attributes: {
         class: "focus:outline-none text-sm min-h-12 max-h-100 overflow-auto"
       },
-      handleKeyDown: (_, event) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-          event.preventDefault();
-          sendRef.current();
-          return true;
-        }
-      },
     },
-    onBlur(props) {
-      saveDraft({ channelId, text: JSON.stringify(props.editor.state.doc.toJSON()) });
-    },
-    onCreate(props) {},
-  }, [channelId, draft?.text])!;
+    onFocus() {},
+    onBlur() {},
+    onCreate() {},
+    onUpdate: ({editor}) => {
+      if (editor.isFocused) {
+        setTypingState({ fieldId: inputId, userId: user!.id });
+      }
+    }
+  }, [channelId, sync.isLoading])!;
 
   const isEmpty = !editor.getText().trim();
   
   const handleSend = () => {
     if (isEmpty) return;
+    const content = editor.getJSON().content ?? [];
+    const mentions = Object.fromEntries(
+      content
+        .flatMap(node => node.content)
+        .filter(node => node?.type === 'mention')
+        .map(node => [node?.attrs?.id, node])
+    );
+    console.log('metions', mentions)
     const message = editor.getText();
-    sendMessage({ channelId, text: message, threadId });
+    sendMessage({ channelId, text: message, threadId, files: files.map(f => f.fileId as Id<'_storage'>) });
     editor.commands.clearContent();
-    deleteDraft({ channelId });
+    setFiles([]);
+
+    removeTypingState({ userId: user!.id });
   }
-  sendRef.current = handleSend;
 
   
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
-    if (files && files.length > 0) {}
-    e.target.value = '';
+    if (files && files.length > 0) {
+      const newFiles = Array.from(files).map(file => ({status: 'uploading' as const, file}));
+      setFiles(prev => [...prev, ...newFiles]);
+      const uploadPromises = Array.from(files).map(async (file) => {
+        try {
+          const fileId = await uploadFile(file);
+          setFiles(prev => prev.map(f => f.file === file ? { ...f, status: 'completed', fileId } : f));
+        } catch (error) {
+          setFiles(prev => prev.filter(f => f.file !== file));
+        }
+      });
+      await Promise.allSettled(uploadPromises);
+      e.target.value = '';
+    }
   };
+
 
   return (
     <div className={cn(
       "m-2 mt-0 flex flex-col gap-2 rounded-md border p-2",
       "overflow-auto",
-      "focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/50",
-      "fade-in-0 delay-100 duration-300 animate-in",
+      "fade-in-0 duration-200 animate-in",
+      editor.isFocused && "border-ring ring-2 ring-ring/50",
       className
     )} {...props}
     >
-      
+
+      {JSON.stringify(activeTypingUsers)}
       {/* Context items */}
-      {contextItems.length > 0 && (
-        <div className="-mx-2 -mt-2 flex flex-wrap gap-1 border-b bg-muted/50 p-2">
-          {contextItems.map((item, index) => (
-            <div
-              className="group/context-item flex flex-row items-center gap-1 rounded border bg-background px-1 py-1"
-              key={index}
-            >
-              <Table className="size-3.5 group-hover/context-item:hidden" />
-              <X className="hidden size-3.5 cursor-pointer group-hover/context-item:block" />
-              <p className="text-xs">{item.attrs.label}</p>
+      <div className={cn("-mx-2 -mt-2 flex flex-row gap-2 border-b bg-muted/50 p-2 overflow-x-auto", files.length === 0 && "hidden")}>
+        {files.map((item, index) => (
+          <div key={index} className="group/context-item flex flex-row items-center gap-1.5 rounded-md border bg-background p-1 relative">
+            <div className='rounded p-2 size-8 flex items-center justify-center bg-muted'>
+              {item.status === 'uploading' ? <Loader2 className="size-4 animate-spin text-muted-foreground" /> : <Table className="size-4" />}
             </div>
-          ))}
-        </div>
-      )}
+            <div className='flex flex-col max-w-40'>
+              <p className="text-xs font-medium truncate">{item.file.name}</p>
+              <p className="text-xs text-muted-foreground">{prettyFileType(item.file.type)} • {prettyBytes(item.file.size)}</p>
+            </div>
+            <TooltipButton 
+              variant='outline'
+              className='absolute -top-1.5 -right-1.5 rounded-full size-4 p-0 hidden group-hover/context-item:flex' 
+              onClick={() => {setFiles(prev => prev.filter(f => f.file !== item.file))}}
+            >
+              <X className='size-2.5' />
+            </TooltipButton>
 
+          </div>
+        ))}
+      </div>
 
-      <EditorContent key={channelId} editor={editor} className=''/>
+      <div className={cn("flex flex-row items-center gap-1 -ml-1 -mt-1 overflow-x-auto", !showFormatMenu && "hidden")}>
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Bold"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={cn(
+            "hover:bg-transparent",
+            editor.isActive('bold') ? "bg-muted hover:bg-muted" : "",
+          )}
+        >
+          <Bold className="size-4" />
+        </TooltipButton>
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Italic"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={cn(
+            "hover:bg-transparent",
+            editor.isActive('italic') ? "bg-muted hover:bg-muted" : "",
+          )}
+        >
+          <Italic className="size-4" />
+        </TooltipButton>
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Underline"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={cn(
+            "hover:bg-transparent",
+            editor.isActive('underline') ? "bg-muted hover:bg-muted" : "",
+          )}
+        >
+          <Underline className="size-4" />
+        </TooltipButton>
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Strikethrough"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          className={cn(
+            "hover:bg-transparent",
+            editor.isActive('strike') ? "bg-muted hover:bg-muted" : "",
+          )}
+        >
+          <Strikethrough className="size-4" />
+        </TooltipButton>
+        <div className='h-5 border-r' />
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Bulleted list"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          <List className="size-4" />
+        </TooltipButton>
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Numbered list"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          <ListOrdered className="size-4" />
+        </TooltipButton>
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Checklist"
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+        >
+          <ListChecks className="size-4" />
+        </TooltipButton>
+        <div className='h-5 border-r' />
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Code"
+          onClick={() => editor.chain().focus().toggleCode().run()}
+        >
+          <CodeXml className="size-4" />
+        </TooltipButton>        
+        <TooltipButton
+          size="icon"
+          variant="ghost"
+          tooltip="Quote"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        >
+          <Quote className="size-4" />
+        </TooltipButton>
+      </div>
+
+      <EditorContent 
+        editor={editor} 
+        onKeyDown={(e) => {if (e.key === 'Enter' && !e.shiftKey) {e.preventDefault(); handleSend()}}}
+        className={cn("",)}
+      />
       <input
         className="hidden"
         multiple
+        accept="image/jpeg,image/png,application/pdf"
         onChange={handleFileChange}
         ref={fileInputRef}
         type="file"
       />
-      <div className="flex flex-row gap-2">
-        <div className="flex h-6 flex-1 items-center gap-1">
-          <TooltipButton
-            className="size-6 p-0"
-            onClick={() => fileInputRef.current?.click()}
-            variant="ghost"
-            tooltip="Attach files"
-          >
-            <Paperclip className="size-4" />
-          </TooltipButton>
-          <TooltipButton
-            className="size-6 p-0"
-            onClick={() => {editor?.chain().insertContent('@').focus().run()}}
-            variant="ghost"
-            tooltip="Add context"
-          >
-            <AtSign className="size-4" />
-          </TooltipButton>
-          <Popover>
-              <PopoverTrigger asChild>
-                <TooltipButton
-                  className="size-6 p-0"
-                  variant="ghost"
-                  tooltip="Add emojis"
-                >
-                  <Smile className="size-4" />
-                </TooltipButton>
-              </PopoverTrigger>
-            <PopoverContent alignOffset={-7} className="max-h-64 overflow-y-auto p-0 w-fit">
-              <EmojiPicker onEmojiSelect={(emoji) => editor.chain().insertContent(emoji.emoji).focus().run()}>
-                <EmojiPickerSearch />
-                <EmojiPickerContent />
-              </EmojiPicker>
-            </PopoverContent>
-          </Popover>
-          <TooltipButton
-            className="size-6 p-0"
-            onClick={() => {send({ channelId, text: "Write me an essay with 30 short sentences"})}}
-            variant="ghost"
-            tooltip="Format text"
-          >
-            <Baseline className="size-4" />
-          </TooltipButton>
-        </div>
+      <div className="flex flex-row items-center gap-1">
+        <TooltipButton
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          variant="ghost"
+          tooltip="Attach files"
+          disabled={files.some(f => f.status === 'uploading')}
+        >
+          <Paperclip className="size-4" />
+        </TooltipButton>
+        <TooltipButton
+          size="icon"
+          onClick={() => {editor?.chain().insertContent('@').focus().run()}}
+          variant="ghost"
+          tooltip="Add context"
+        >
+          <AtSign className="size-4" />
+        </TooltipButton>
+        <Popover>
+          <PopoverTrigger asChild>
+            <TooltipButton
+              size="icon"
+              variant="ghost"
+              tooltip="Add emojis"
+            >
+              <Smile className="size-4" />
+            </TooltipButton>
+          </PopoverTrigger>
+          <PopoverContent alignOffset={-7} className="max-h-64 overflow-y-auto p-0 w-fit">
+            <EmojiPicker onEmojiSelect={(emoji) => editor.chain().insertContent(emoji.emoji).focus().run()}>
+              <EmojiPickerSearch />
+              <EmojiPickerContent />
+            </EmojiPicker>
+          </PopoverContent>
+        </Popover>
+        <TooltipButton
+          size="icon"
+          onClick={() => setShowFormatMenu(!showFormatMenu)}
+          variant="ghost"
+          tooltip="Format text"
+        >
+          <Baseline className="size-4" />
+        </TooltipButton>
 
-        <Button 
-          aria-label="Send"
-          className={cn("size-6 p-0 rounded-full",)} 
-          disabled={isEmpty}
+        <Button
+          size="icon"
+          className={cn("rounded-full ml-auto")} 
+          disabled={isEmpty || files.some(f => f.status === 'uploading')}
           onClick={handleSend}
         >
           <ArrowUp className="size-4" />

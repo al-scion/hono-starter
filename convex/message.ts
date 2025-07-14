@@ -24,6 +24,15 @@ export const listMessages = query({
   },
 });
 
+export const getMessage = query({
+  args: {
+    messageId: v.id('messages'),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.messageId);
+  },
+});
+
 export const listThreadMessages = query({
   args: {
     threadId: v.id('messages'),
@@ -46,20 +55,22 @@ export const sendMessage = mutation({
     channelId: v.id('channels'),
     text: v.string(),
     threadId: v.optional(v.id('messages')),
+    files: v.optional(v.array(v.id('_storage'))),
+    agentId: v.optional(v.id('agents')),
+    status: v.optional(v.union(v.literal('pending'), v.literal('streaming'), v.literal('completed'))),
   },
   handler: async (ctx, args) => {
     const { channelId, text } = args;
     const user = await ctx.auth.getUserIdentity();
-    if (!user) {
-      throw new Error('Unauthorized');
-    }
+    if (!user) throw new Error('Unauthorized');
 
     const messageId = await ctx.db.insert('messages', {
       channelId,
-      author: { type: 'user', id: user.subject },
+      author: args.agentId ? { type: 'agent', id: args.agentId } : { type: 'user', id: user.subject },
       text,
-      status: 'completed',
+      status: args.status || 'completed',
       threadId: args.threadId,
+      files: args.files,
     });
 
     return messageId;
@@ -119,10 +130,13 @@ export const updateMessage = mutation({
   args: {
     messageId: v.id('messages'),
     text: v.string(),
+    status: v.optional(v.union(v.literal('pending'), v.literal('streaming'), v.literal('completed'))),
   },
   handler: async (ctx, args) => {
-    const { messageId, text } = args;
-    await ctx.db.patch(messageId, { text });
+    await ctx.db.patch(args.messageId, { 
+      text: args.text, 
+      ...(args.status && { status: args.status })
+    });
     return { success: true };
   },
 });
@@ -130,6 +144,7 @@ export const updateMessage = mutation({
 export const sendAIMessage = action({
   args: {
     channelId: v.id('channels'),
+    agentId: v.id('agents'),
     text: v.string(),
   },
   handler: async (ctx, args) => {
@@ -144,8 +159,10 @@ export const sendAIMessage = action({
       if (!messageId) {
         messageId = await ctx.runMutation(api.message.sendMessage, {
           channelId: args.channelId,
-          text: response
-        })
+          text: response,
+          agentId: args.agentId,
+          status: 'streaming'
+        });
       } else {
         await ctx.runMutation(api.message.updateMessage, {
           messageId,
@@ -157,11 +174,10 @@ export const sendAIMessage = action({
     const { textStream } = streamText({
       model: openai('gpt-4o-mini'),
       prompt: args.text,
-      onChunk({chunk}) {},
-      onFinish({text}) {}
+      onChunk() {},
+      onFinish() {}
     });
 
-    // Process the stream
     for await (const chunk of textStream) {
       response += chunk;
       if (hasDelimeter(chunk)) {
@@ -169,12 +185,12 @@ export const sendAIMessage = action({
       }
     }
 
-    console.log(response)
-    // Update the message with the final response
-    // await ctx.runMutation(api.message.updateMessage, {
-    //   messageId,
-    //   text: response
-    // });
-
+    if (messageId) {
+      await ctx.runMutation(api.message.updateMessage, {
+        messageId,
+        text: response,
+        status: 'completed'
+      })
+    }
   }
 })

@@ -1,22 +1,37 @@
+import React from 'react';
 import type { Editor, Range } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
-import { Extension, ReactRenderer } from '@tiptap/react';
-import Suggestion from '@tiptap/suggestion';
+import { Extension, NodeViewWrapper, ReactRenderer, ReactNodeViewRenderer } from '@tiptap/react';
+import Suggestion, { SuggestionProps } from '@tiptap/suggestion';
+import { type Instance } from 'tippy.js';
 import {
   Compass,
   Globe,
   Heading1,
   Heading2,
   Heading3,
+  List,
+  ListChecks,
+  ListOrdered,
   Loader,
   Minus,
+  Quote,
+  Table,
 } from 'lucide-react';
 import { useImperativeHandle, useState } from 'react';
 import tippy from 'tippy.js';
 import { Button } from '@/components/ui/button';
 import { Gmail, Google } from '@/lib/icons';
+import { cn } from '@/lib/utils';
+import { X } from 'lucide-react';
 
-const suggestionItems = [
+interface SuggestionItem {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+}
+
+const suggestionItems: SuggestionItem[] = [
   { id: 'webSearch', label: 'Web Search', icon: Globe },
   { id: 'webScrape', label: 'Web Scrape', icon: Compass },
   { id: 'googleDrive', label: 'Google Drive', icon: Google },
@@ -24,7 +39,14 @@ const suggestionItems = [
   { id: 'agent', label: 'Agent', icon: Loader },
 ];
 
-const slashCommandItems = [
+interface SlashCommandItem {
+  label: string;
+  icon: React.ElementType;
+  shortcut: string;
+  command: (props: { editor: Editor; range: Range }) => void;
+}
+
+const slashCommandItems: SlashCommandItem[] = [
   {
     label: 'Heading 1',
     icon: Heading1,
@@ -57,28 +79,110 @@ const slashCommandItems = [
       editor.chain().focus().deleteRange(range).setHorizontalRule().run();
     },
   },
+  {
+    label: 'Bulleted list',
+    icon: List,
+    shortcut: '-',
+    command: ({ editor, range }: { editor: Editor; range: Range }) => {
+      editor.chain().focus().deleteRange(range).toggleBulletList().run();
+    },
+  },
+  {
+    label: 'Numbered list',
+    icon: ListOrdered,
+    shortcut: '1.',
+    command: ({ editor, range }: { editor: Editor; range: Range }) => {
+      editor.chain().focus().deleteRange(range).toggleOrderedList().run();
+    },
+  },
+  {
+    label: 'Check list',
+    icon: ListChecks,
+    shortcut: '[]',
+    command: ({ editor, range }: { editor: Editor; range: Range }) => {
+      editor.chain().focus().deleteRange(range).toggleTaskList().run();
+    },
+  },
+  {
+    label: 'Quote',
+    icon: Quote,
+    shortcut: '>',
+    command: ({ editor, range }: { editor: Editor; range: Range }) => {
+      editor.chain().focus().deleteRange(range).toggleBlockquote().run();
+    },
+  },
+  {
+    label: 'Table',
+    icon: Table,
+    shortcut: '',
+    command: ({ editor, range }: { editor: Editor; range: Range }) => {
+      console.log(editor, range)
+    },
+  }
 ];
 
-export const MentionSuggestion = Mention.configure({
-  HTMLAttributes: {
-    class: 'mention bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 px-0.5 rounded focus:outline-none',
+export const MentionSuggestion = Mention.extend({
+  inline: true,
+  addNodeView() {
+    return ReactNodeViewRenderer((props) => {
+      const attrs = props.node.attrs as {id: string, label: string};
+      const icon = suggestionItems.find((item) => item.id === attrs.id)?.icon;
+      
+      return (
+        <NodeViewWrapper as='span'>
+          <button 
+            className={cn(
+              "inline-flex items-baseline px-1 gap-1",
+              "bg-muted rounded ring ring-border",
+              "group/mention-item"
+            )}
+          >
+            {icon && React.createElement(icon, { className: "size-[1em] self-center group-hover/mention-item:hidden" })}
+            <X className='size-[1em] self-center cursor-pointer hidden group-hover/mention-item:block' onClick={() => props.deleteNode()} />
+            <span>{attrs.label}</span>
+          </button>
+        </NodeViewWrapper>
+      )}
+    );
   },
+}).configure({
   deleteTriggerWithBackspace: true,
+  HTMLAttributes: {
+    class: 'mention testing',
+  },
   suggestion: {
-    decorationClass: 'bg-muted px-1 py-0.5 rounded',
+    decorationClass: 'bg-muted p-0.5 rounded',
     allowSpaces: false,
-    items: ({ query }: { query: string }) => {
+    items: ({ query }) => {
       const filteredItems = suggestionItems.filter((item) =>
         item.label.toLowerCase().startsWith(query.toLowerCase())
       );
       return filteredItems;
     },
     render: () => {
-      let component: ReactRenderer;
-      let popup: any;
+      let component: ReactRenderer<SuggestionProps<SuggestionItem>>;
+      let popup: Instance[];
 
       return {
-        onStart: (props: any) => {
+        onUpdate(props) {
+          component.updateProps(props);
+          if (!props.clientRect) return;
+          popup[0].setProps({ getReferenceClientRect: props.clientRect as () => DOMRect });
+        },
+        onExit() {
+          popup[0].destroy();
+          component.destroy();
+        },
+        onKeyDown(props) {
+          return (component.ref as any)?.onKeyDown?.(props)
+        },
+        onStart: (props: SuggestionProps<SuggestionItem>) => {
+
+          const handleExit = () => {
+            props.editor.commands.insertContent(' ');
+            popup[0].hide();
+          }
+
           component = new ReactRenderer(
             (props: any) => {
               const [selectedIndex, setSelectedIndex] = useState(0);
@@ -93,37 +197,17 @@ export const MentionSuggestion = Mention.configure({
                 }
               };
 
-              const upHandler = () => {
-                setSelectedIndex(
-                  (selectedIndex + props.items.length - 1) % props.items.length
-                );
-              };
-
-              const downHandler = () => {
-                setSelectedIndex((selectedIndex + 1) % props.items.length);
-              };
-
-              const enterHandler = () => {
-                selectItem(selectedIndex);
-              };
-
               useImperativeHandle(props.ref, () => ({
                 onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-                  if (event.key === 'ArrowUp') {
-                    upHandler();
-                    return true;
-                  }
-
-                  if (event.key === 'ArrowDown') {
-                    downHandler();
-                    return true;
-                  }
-
+                  if (event.key === 'Escape') {handleExit();return true;}
+                  if (event.key === 'ArrowUp') {setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);return true;}
+                  if (event.key === 'ArrowDown') {setSelectedIndex((selectedIndex + 1) % props.items.length);return true;}
                   if (event.key === 'Enter' || event.key === 'Tab') {
-                    enterHandler();
+                    event.preventDefault();
+                    event.stopPropagation();
+                    selectItem(selectedIndex);
                     return true;
                   }
-
                   return false;
                 },
                 reset: () => setSelectedIndex(0),
@@ -132,11 +216,12 @@ export const MentionSuggestion = Mention.configure({
               return (
                 <div className="z-50 min-w-[14rem] overflow-hidden rounded-md border bg-popover p-1 shadow-md">
                   {props.items.length ? (
-                    props.items.map((item: any, index: number) => (
+                    props.items.map((item: SuggestionItem, index: number) => (
                       <Button
-                        className={`flex h-7 w-full justify-start gap-2 px-2 text-sm [&>svg]:text-foreground ${index === selectedIndex && 'bg-accent'}`}
+                        className={`flex h-7 w-full justify-start gap-2 px-2 text-sm transition-none [&>svg]:text-foreground ${index === selectedIndex && 'bg-accent'}`}
                         key={item.id}
                         onClick={() => selectItem(index)}
+                        onMouseEnter={() => setSelectedIndex(index)}
                         variant="ghost"
                       >
                         <item.icon className="size-4" />
@@ -144,7 +229,7 @@ export const MentionSuggestion = Mention.configure({
                       </Button>
                     ))
                   ) : (
-                    <div className="px-2 py-1.5 text-muted-foreground text-sm">
+                    <div className="h-7 px-2 flex items-center text-muted-foreground text-sm">
                       No result
                     </div>
                   )}
@@ -157,12 +242,8 @@ export const MentionSuggestion = Mention.configure({
             }
           );
 
-          if (!props.clientRect) {
-            return;
-          }
-
           popup = tippy('body', {
-            getReferenceClientRect: props.clientRect,
+            getReferenceClientRect: props.clientRect as () => DOMRect,
             appendTo: () => document.body,
             content: component.element,
             showOnCreate: true,
@@ -171,34 +252,6 @@ export const MentionSuggestion = Mention.configure({
             placement: 'bottom-start',
           });
         },
-
-        onUpdate(props: any) {
-          component.updateProps(props);
-
-          if (!props.clientRect) {
-            return;
-          }
-
-          popup[0]
-            .setProps({
-              getReferenceClientRect: props.clientRect,
-            })(component.ref)
-            .reset();
-        },
-
-        onKeyDown(props: any) {
-          if (props.event.key === 'Escape') {
-            popup[0].hide();
-            return true;
-          }
-
-          return (component.ref as any)?.onKeyDown(props);
-        },
-
-        onExit() {
-          popup[0].destroy();
-          component.destroy();
-        },
       };
     },
   },
@@ -206,7 +259,6 @@ export const MentionSuggestion = Mention.configure({
 
 export const SlashCommand = Extension.create({
   name: 'slashCommand',
-
   addProseMirrorPlugins() {
     return [
       Suggestion({
@@ -221,7 +273,7 @@ export const SlashCommand = Extension.create({
         },
         render: () => {
           let component: ReactRenderer;
-          let popup: any;
+          let popup: Instance[];
 
           return {
             onStart: (props: any) => {
@@ -281,9 +333,10 @@ export const SlashCommand = Extension.create({
                       {props.items.length ? (
                         props.items.map((item: any, index: number) => (
                           <Button
-                            className={`flex h-7 w-full justify-start gap-2 px-2 font-normal text-sm [&>svg]:text-foreground ${index === selectedIndex && 'bg-accent'}`}
+                            className={`flex h-7 w-full justify-start gap-2 px-2 font-normal text-sm transition-none [&>svg]:text-foreground ${index === selectedIndex && 'bg-accent'}`}
                             key={index}
                             onClick={() => selectItem(index)}
+                            onMouseEnter={() => setSelectedIndex(index)}
                             variant="ghost"
                           >
                             <item.icon className="size-4" />
@@ -294,9 +347,7 @@ export const SlashCommand = Extension.create({
                           </Button>
                         ))
                       ) : (
-                        <div className="px-2 py-1.5 text-muted-foreground text-sm">
-                          No result
-                        </div>
+                        <div className="h-7 px-2 flex items-center text-sm">No commands found</div>
                       )}
                     </div>
                   );
@@ -312,7 +363,7 @@ export const SlashCommand = Extension.create({
               }
 
               popup = tippy('body', {
-                getReferenceClientRect: props.clientRect,
+                getReferenceClientRect: props.clientRect as () => DOMRect,
                 appendTo: () => document.body,
                 content: component.element,
                 showOnCreate: true,
@@ -329,14 +380,12 @@ export const SlashCommand = Extension.create({
                 return;
               }
 
-              popup[0]
-                .setProps({
-                  getReferenceClientRect: props.clientRect,
-                })(component.ref)
-                .reset();
+              popup[0].setProps({
+                getReferenceClientRect: props.clientRect as () => DOMRect,
+              });
             },
 
-            onKeyDown(props: any) {
+            onKeyDown(props) {
               if (props.event.key === 'Escape') {
                 popup[0].hide();
                 return true;
