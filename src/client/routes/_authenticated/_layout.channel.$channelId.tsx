@@ -9,8 +9,9 @@ import { DefaultChatTransport } from 'ai';
 import { UserMessageMetadata } from '@/lib/types';
 import { useStickToBottom } from 'use-stick-to-bottom';
 import { TooltipButton } from '@/components/custom/tooltip-button';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Pencil, UserPlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 export const Route = createFileRoute(
   '/_authenticated/_layout/channel/$channelId'
@@ -47,13 +48,24 @@ function RouteComponent() {
   return (
     <div className="flex flex-col flex-1 h-full">
       <ChannelHeader />
-      <div className='flex flex-col gap-4'>
-        <span className='text-xl font-bold'>{channel?.name}</span>
-      </div>
 
 
-      <div className="flex flex-col flex-1 overflow-auto pb-4 relative" ref={scrollRef}> 
+      <div className="flex flex-col flex-1 overflow-auto pb-4 relative justify-end-safe" ref={scrollRef}> 
         <div ref={contentRef}>
+          <div className='flex flex-col gap-2 p-4'>
+            <span className='text-3xl font-bold mt-4'># {channel?.name}</span>
+            <span className='text-md'>This is the start of the channel.</span>
+            <div className='flex flex-row gap-2'>
+              <TooltipButton variant='outline' className='h-7 px-2'>
+                <UserPlus className='size-4' />
+                Add members
+              </TooltipButton>
+              <TooltipButton variant='outline' className='h-7 px-2'>
+                <Pencil className='size-4' />
+                Edit channel
+              </TooltipButton>
+            </div>
+          </div>
           {messagesToDisplay?.map((msg, index) => {
             const prevMsg = messagesToDisplay[index - 1];
             const shouldGroup =
@@ -82,17 +94,20 @@ function RouteComponent() {
         </div>
         <TooltipButton 
           variant='outline' 
-          size='icon'
+          size='sm'
           className={cn(
-            'sticky bottom-0 ml-auto mr-4 rounded-full transition-all duration-300 ease-out',
+            'sticky mx-auto bottom-0',
+            'px-3 py-0.5 rounded-full transition-all duration-300 ease-out [&>svg]:size-3',
             isAtBottom ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
           )}
           onClick={() => scrollToBottom()}
         >
-          <ChevronDown className="size-4" />
+          Scroll to bottom
+          <ChevronDown className='-mr-1 size-3' />
         </TooltipButton>
       </div>
       <ChatInput channelId={channelId} chat={chat} isLoading={isLoading} />
+      <Badge type='color' size='sm' color='pink'>Hello</Badge>
     </div>
   );
 }

@@ -11,19 +11,19 @@ const isValidConvexId = (id: string | undefined): id is Id<any> => {
   return !!id && !id.startsWith('temp');
 }
 
-interface ConvexStore {
-  syncInstances: Record<string, ReturnType<typeof useTiptapSync>>;
-  addSyncInstance: (id: string, instance: ReturnType<typeof useTiptapSync>) => void;
-  removeSyncInstance: (id: string) => void;
-  clearSyncInstances: () => void;
-}
+// interface ConvexStore {
+//   syncInstances: Record<string, ReturnType<typeof useTiptapSync>>;
+//   addSyncInstance: (id: string, instance: ReturnType<typeof useTiptapSync>) => void;
+//   removeSyncInstance: (id: string) => void;
+//   clearSyncInstances: () => void;
+// }
 
-export const useConvexStore = create<ConvexStore>((set, get) => ({
-  syncInstances: {},
-  addSyncInstance: (id, instance) => set({ syncInstances: { ...get().syncInstances, [id]: instance } }),
-  removeSyncInstance: (id) => set(({ syncInstances: { [id]: _, ...rest } }) => ({ syncInstances: rest })),
-  clearSyncInstances: () => set({ syncInstances: {} }),
-}));
+// export const useConvexStore = create<ConvexStore>((set, get) => ({
+//   syncInstances: {},
+//   addSyncInstance: (id, instance) => set({ syncInstances: { ...get().syncInstances, [id]: instance } }),
+//   removeSyncInstance: (id) => set(({ syncInstances: { [id]: _, ...rest } }) => ({ syncInstances: rest })),
+//   clearSyncInstances: () => set({ syncInstances: {} }),
+// }));
 
 // Channels hooks
 export function useChannels() {
@@ -40,9 +40,6 @@ export function useChannels() {
 
 export function useChannel(channelId: Id<'channels'>) {
   const { data: channels } = useChannels();
-  const syncInstance = useTiptapSync(convexApi.prosemirror, channelId);
-  const { addSyncInstance } = useConvexStore();
-  addSyncInstance(channelId, syncInstance);
 
   return useQuery({
     ...convexQuery(convexApi.channel.getChannel, { channelId }),

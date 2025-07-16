@@ -20,7 +20,7 @@ export function AgentTabs() {
           <TabsTrigger
             className={cn(
               'rounded-[5px] px-0.5 font-normal text-muted-foreground shadow-none h-6.5',
-              'data-[state=active]:text-foreground data-[state=active]:shadow-xs data-[state=active]:ring data-[state=active]:ring-border'
+              'data-[state=active]:text-foreground data-[state=active]:shadow-xs data-[state=active]:ring data-[state=active]:ring-zinc-300'
             )}
             key={option}
             onClick={() =>
