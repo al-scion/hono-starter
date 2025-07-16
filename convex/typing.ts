@@ -18,7 +18,6 @@ export const setTypingState = mutation({
     fieldId: v.string(),
   },
   handler: async (ctx, args) => {
-    console.log('setTypingState', args)
 
     const existing = await ctx.db.query('typingStates').withIndex('by_user', q => q.eq('userId', args.userId)).first();
 

@@ -42,11 +42,16 @@ export default defineSchema({
     channelId: v.id('channels'),
     author: author,
     text: v.string(),
-    status: v.optional(v.union(v.literal('pending'), v.literal('streaming'), v.literal('completed'))),
+    // status: v.optional(v.union(v.literal('pending'), v.literal('streaming'), v.literal('completed'))),
 
     // Thread related fields 
     threadId: v.optional(v.id('messages')),
     path: v.optional(v.string()), // A materialized path of the message in the thread
+
+    // Stream related fields
+    streamingId: v.optional(v.string()),
+    streamingText: v.optional(v.string()),
+    streamingStatus: v.optional(v.union(v.literal('streaming'), v.literal('completed'))),
 
     // Other fields
     files: v.optional(v.array(v.id('_storage'))),

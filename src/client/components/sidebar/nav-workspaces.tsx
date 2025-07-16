@@ -94,8 +94,8 @@ export function NavWorkspaces() {
         </SidebarGroupLabel>
         <SidebarGroupContent
           className={cn(
-            'grid overflow-hidden transition-[grid-template-rows] duration-200 ease-in-out',
-            workspaceOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+            'grid overflow-hidden transition-all duration-200 ease-in-out',
+            workspaceOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
           )}
         >
           <SidebarMenu className="min-h-0 gap-[1px]">
@@ -105,7 +105,7 @@ export function NavWorkspaces() {
                 <React.Fragment key={agent._id}>
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      className="group/workspace-item relative"
+                      className="group/workspace-item relative transition-none"
                       isActive={location.pathname.includes(agent._id)}
                       onClick={() =>
                         router.navigate({
@@ -209,8 +209,8 @@ export function NavWorkspaces() {
         </SidebarGroupLabel>
         <SidebarGroupContent
           className={cn(
-            'grid overflow-hidden transition-[grid-template-rows] duration-200 ease-in-out',
-            channelsOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+            'grid overflow-hidden transition-all duration-200 ease-in-out',
+            channelsOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
           )}
         >
           <SidebarMenu className="min-h-0 gap-[1px]">
@@ -298,8 +298,8 @@ export function NavWorkspaces() {
         </SidebarGroupLabel>
         <SidebarGroupContent
           className={cn(
-            'grid overflow-hidden transition-[grid-template-rows] duration-200 ease-in-out',
-            directMessagesOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+            'grid overflow-hidden transition-all duration-200 ease-in-out',
+            directMessagesOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
           )}
         >
           <SidebarMenu className="min-h-0 gap-[1px]">
@@ -310,10 +310,10 @@ export function NavWorkspaces() {
                   // isActive={channelParams?.channelId === channel._id}
                   onClick={() => router.navigate({ to: '/direct-message'})}
                 >
-                  <div className="-ml-0.5 relative shrink-0">
+                  <div className=" relative shrink-0">
                     <img
                       alt={member.publicUserData?.firstName || ''}
-                      className="size-5 rounded-full"
+                      className="size-5 rounded-sm"
                       src={member.publicUserData?.imageUrl}
                     />
                     {presenceState?.find(

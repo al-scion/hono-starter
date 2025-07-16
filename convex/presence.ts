@@ -30,3 +30,13 @@ export const disconnect = mutation({
     return await presence.disconnect(ctx, sessionToken);
   },
 });
+
+export const getActiveUsers = query({
+  args: { roomToken: v.string() },
+  handler: async (ctx, { roomToken }) => {
+
+    const users = await presence.listRoom(ctx, roomToken, true)
+
+    // return users.map(user => user.userId)
+  },
+});

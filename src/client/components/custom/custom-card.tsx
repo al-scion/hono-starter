@@ -52,7 +52,7 @@ function CardContentItem({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'flex flex-row items-center gap-2 p-2 border-b last:border-b-0 hover:bg-muted/50 transition-colors duration-200',
+        'flex flex-row items-center gap-2 p-2 border-b last:border-b-0',
         className
       )}
       data-slot="card-content-item"

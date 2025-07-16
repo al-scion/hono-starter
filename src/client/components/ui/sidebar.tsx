@@ -499,7 +499,7 @@ function SidebarMenuButton({
 
   const button = (
     <Comp
-      className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+      className={cn(sidebarMenuButtonVariants({ variant, size }), 'cursor-pointer', className)}
       data-active={isActive}
       data-sidebar="menu-button"
       data-size={size}

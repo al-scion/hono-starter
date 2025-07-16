@@ -4,20 +4,19 @@ import { Button } from '../ui/button';
 import { WandSparkles } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardFooter, CardHeader } from '../custom/custom-card';
-import { useSyncDocument, useCreateDocument } from '@/hooks/use-convex';
+import { useSyncDocument, useCreateDocument, useAgents } from '@/hooks/use-convex';
 import { useState } from 'react';
 
 import Highlight from '@tiptap/extension-highlight';
-import TaskItem from '@tiptap/extension-task-item';
-import TaskList from '@tiptap/extension-task-list';
 import Typography from '@tiptap/extension-typography';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Details from '@tiptap-pro/extension-details';
 import DetailsContent from '@tiptap-pro/extension-details-content';
 import DetailsSummary from '@tiptap-pro/extension-details-summary';
-import CharacterCount from '@tiptap/extension-character-count'
-import Link from '@tiptap/extension-link'
+import Link from '@tiptap/extension-link';
+import { CharacterCount } from '@tiptap/extensions'
+import { TaskList, TaskItem } from '@tiptap/extension-list'
 import { MentionSuggestion, SlashCommand } from '@/components/tiptap/suggestion';
 import { PlaceholderExtension } from '@/components/tiptap/placeholder';
 
@@ -27,6 +26,7 @@ export function Agent({ agent }: { agent: Doc<'agents'> }) {
   const sync = useSyncDocument(`system_${agent._id}`);
   const { mutate: createDocument } = useCreateDocument();
   const [characterCount, setCharacterCount] = useState(0);
+  const { data: agents } = useAgents();
 
   useEffect(() => {
     if (sync.isLoading === false && sync.initialContent === null) {
@@ -37,16 +37,7 @@ export function Agent({ agent }: { agent: Doc<'agents'> }) {
   const editor = useEditor({
     content: sync.initialContent,
     extensions: [
-      StarterKit.configure({
-        code: {},
-        heading: {levels: [1, 2, 3]},
-        listItem: {},
-        orderedList: {},
-        blockquote: {},
-        codeBlock: {},
-        horizontalRule: {},
-        hardBreak: {},
-      }),
+      StarterKit,
       Highlight,
       Typography,
       TaskList,
@@ -60,7 +51,7 @@ export function Agent({ agent }: { agent: Doc<'agents'> }) {
         },
       }),
       PlaceholderExtension,
-      MentionSuggestion,
+      MentionSuggestion({ agents: agents || [] }),
       SlashCommand,
       CharacterCount,
       ...(sync.extension ? [sync.extension] : []),
@@ -71,12 +62,13 @@ export function Agent({ agent }: { agent: Doc<'agents'> }) {
       },
     },
     onCreate({ editor }) {
+      editor.commands.focus('end')
       setCharacterCount(editor.storage.characterCount.characters());
     },
     onUpdate({ editor }) {
       setCharacterCount(editor.storage.characterCount.characters());
     },
-  }, [agent._id, sync.isLoading])!;
+  }, [agent._id, sync.isLoading, agents])!;
 
   return (
     <Card className='flex-1 flex flex-col h-full'>

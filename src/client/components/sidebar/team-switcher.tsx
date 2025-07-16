@@ -80,7 +80,7 @@ export function TeamSwitcher() {
             <SidebarMenuButton className="h-8 w-fit rounded-md px-2 font-normal hover:bg-sidebar-accent">
               <img
                 alt={organization?.name}
-                className="-ml-0.5 size-5 rounded-full"
+                className="-ml-0.5 size-5 rounded-sm"
                 src={organization?.imageUrl}
               />
               <span className="min-w-0 truncate">{organization?.name}</span>
@@ -99,7 +99,7 @@ export function TeamSwitcher() {
               >
                 <img
                   alt={org.organization.name}
-                  className="-ml-0.5 size-5 rounded-full"
+                  className="-ml-0.5 size-5 rounded-md"
                   src={org.organization.imageUrl}
                 />
                 <span className="min-w-0 truncate">
@@ -167,7 +167,7 @@ export function TeamSwitcher() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              className="ml-auto size-6 p-0 opacity-0 hover:bg-sidebar-accent group-hover:opacity-100"
+              className="ml-auto size-6 p-0 hover:bg-sidebar-accent hidden group-hover:flex"
               onClick={toggleLeftSidebarCollapse}
               variant="ghost"
             >

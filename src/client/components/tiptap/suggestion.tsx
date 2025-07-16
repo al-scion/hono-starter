@@ -24,19 +24,23 @@ import { Button } from '@/components/ui/button';
 import { Gmail, Google } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
+import type { Doc, Id } from '@/lib/api';
+import { useMemo } from 'react';
+import { useAgent } from '@/hooks/use-convex';
+
 
 interface SuggestionItem {
   id: string;
   label: string;
+  type: 'tool' | 'agent';
   icon: React.ElementType;
 }
 
 const suggestionItems: SuggestionItem[] = [
-  { id: 'webSearch', label: 'Web Search', icon: Globe },
-  { id: 'webScrape', label: 'Web Scrape', icon: Compass },
-  { id: 'googleDrive', label: 'Google Drive', icon: Google },
-  { id: 'gmail', label: 'Gmail', icon: Gmail },
-  { id: 'agent', label: 'Agent', icon: Loader },
+  { id: 'webSearch', label: 'Web Search', type: 'tool', icon: Globe },
+  { id: 'webScrape', label: 'Web Scrape', type: 'tool', icon: Compass },
+  { id: 'googleDrive', label: 'Google Drive', type: 'tool', icon: Google },
+  { id: 'gmail', label: 'Gmail', type: 'tool', icon: Gmail },
 ];
 
 interface SlashCommandItem {
@@ -121,12 +125,32 @@ const slashCommandItems: SlashCommandItem[] = [
   }
 ];
 
-export const MentionSuggestion = Mention.extend({
+export const MentionSuggestion = ({
+  agents = []
+}: { 
+  agents?: Doc<'agents'>[]
+}) => Mention.extend({
+
   inline: true,
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      type: {}
+    };
+  },
   addNodeView() {
     return ReactNodeViewRenderer((props) => {
-      const attrs = props.node.attrs as {id: string, label: string};
-      const icon = suggestionItems.find((item) => item.id === attrs.id)?.icon;
+      const attrs = props.node.attrs as {id: string, label: string, type: string};
+      const icon = suggestionItems.find((item) => item.id === attrs.id)?.icon || Loader;
+
+      const { data: agent } = attrs.type === 'agent' ? useAgent(attrs.id as Id<'agents'>) : {data: null};
+
+      const label = useMemo(() => {
+        if (agent) {
+          return agent.name || 'New agent';
+        }
+        return attrs.label;
+      },[agent, attrs.label])
       
       return (
         <NodeViewWrapper as='span'>
@@ -134,12 +158,13 @@ export const MentionSuggestion = Mention.extend({
             className={cn(
               "inline-flex items-baseline px-1 gap-1",
               "bg-muted rounded ring ring-border",
-              "group/mention-item"
+              "group/mention-item",
+              "select-none"
             )}
           >
             {icon && React.createElement(icon, { className: "size-[1em] self-center group-hover/mention-item:hidden" })}
             <X className='size-[1em] self-center cursor-pointer hidden group-hover/mention-item:block' onClick={() => props.deleteNode()} />
-            <span>{attrs.label}</span>
+            <span>{label}</span>
           </button>
         </NodeViewWrapper>
       )}
@@ -147,17 +172,23 @@ export const MentionSuggestion = Mention.extend({
   },
 }).configure({
   deleteTriggerWithBackspace: true,
-  HTMLAttributes: {
-    class: 'mention testing',
-  },
   suggestion: {
-    decorationClass: 'bg-muted p-0.5 rounded',
+    decorationClass: 'bg-muted rounded ring-2 ring-muted',
     allowSpaces: false,
     items: ({ query }) => {
-      const filteredItems = suggestionItems.filter((item) =>
+      
+      const agentItems = agents.map(agent => ({
+        id: agent._id,
+        label: agent.name,
+        type: 'agent',
+        icon: Loader,
+      }));
+
+      const allItems = [...suggestionItems, ...agentItems];
+
+      return allItems.filter((item) =>
         item.label.toLowerCase().startsWith(query.toLowerCase())
       );
-      return filteredItems;
     },
     render: () => {
       let component: ReactRenderer<SuggestionProps<SuggestionItem>>;
@@ -193,6 +224,7 @@ export const MentionSuggestion = Mention.extend({
                   props.command({
                     id: item.id,
                     label: item.label,
+                    type: item.type,
                   });
                 }
               };
@@ -225,7 +257,8 @@ export const MentionSuggestion = Mention.extend({
                         variant="ghost"
                       >
                         <item.icon className="size-4" />
-                        <span className="font-normal">{item.label}</span>
+                        <span className="font-normal">{item.label || 'New agent'}</span>
+                        {/* {item.type} */}
                       </Button>
                     ))
                   ) : (
@@ -264,7 +297,7 @@ export const SlashCommand = Extension.create({
       Suggestion({
         editor: this.editor,
         char: '/',
-        decorationClass: 'bg-muted px-1 py-0.5 rounded',
+        decorationClass: 'bg-muted rounded ring-2 ring-muted',
         allowSpaces: false,
         items: ({ query }: { query: string }) => {
           return slashCommandItems.filter((item) =>

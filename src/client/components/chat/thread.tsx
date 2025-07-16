@@ -6,6 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Ellipsis, ListTree, X } from 'lucide-react';
 import { TooltipButton } from '../custom/tooltip-button';
 
+import { useChat, type UIMessage } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import type { UserMessageMetadata } from "@/lib/types";
+
+
 export function Thread() {
 
   const navigate = useNavigate();
@@ -15,6 +20,13 @@ export function Thread() {
   const { data: threadMessages } = useThreadMessages(thread);
 
   const parentMessage = messages?.find((msg) => msg._id === thread);
+
+    const chat = useChat<UIMessage<UserMessageMetadata>>({
+      id: thread,
+      transport: new DefaultChatTransport({
+        api: `${import.meta.env.VITE_CONVEX_ENDPOINT}/stream`,
+      }),
+    });
 
   return (
     <div className="flex flex-col flex-1 h-full">
@@ -38,17 +50,17 @@ export function Thread() {
           </TooltipButton>
         </div>
       </div>
-      <div className="flex flex-col flex-1 overflow-auto py-4">
-        {parentMessage && <ChatMessage msg={parentMessage} isThread />}
+      <div className="flex flex-col flex-1 overflow-auto py-6">
+        {parentMessage && <ChatMessage msg={parentMessage} chat={chat} isThread />}
         {threadMessages && threadMessages.length > 0 && <div className="flex flex-row items-center gap-2 p-4">
-          <span className="text-xs text-muted-foreground">{threadMessages?.length} replies</span>
+          <span className="text-xs text-muted-foreground">{threadMessages?.length} {threadMessages?.length === 1 ? 'reply' : 'replies'}</span>
           <div className="flex-1 border-b" />
         </div>}
         {threadMessages?.map((msg) => (
-          <ChatMessage key={msg._id} msg={msg} />
+          <ChatMessage key={msg._id} msg={msg} chat={chat} />
         ))}
       </div>
-      <ChatInput channelId={channelId} threadId={thread} />
+      <ChatInput channelId={channelId} threadId={thread} chat={chat} />
     </div>
   );
 }

@@ -135,10 +135,8 @@
   }
 
   p { 
-    @apply my-1
+    @apply my-1.5
   }
-
-  
   
   /* Placeholder styles */
   p.is-editor-empty:first-child::before,
@@ -195,9 +193,9 @@
   
   /* List styles */
   ul, ol {
-    @apply pl-4;
+    @apply pl-6 my-2;
 
-    li, li p {
+    li p {
       @apply ml-1;
     }
     
@@ -219,7 +217,11 @@
       @apply flex items-center;
 
       > label {
-        @apply flex items-center justify-center size-4;
+        @apply flex items-center justify-center size-4 mx-1;
+      }
+
+      div p {
+        @apply my-0.5;
       }
     }
 

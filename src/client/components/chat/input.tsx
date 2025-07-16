@@ -8,13 +8,13 @@ import {
   List,
   ListChecks,
   ListOrdered,
+  Loader,
   Loader2,
   Paperclip,
   Quote,
   Smile,
   Strikethrough,
   Table,
-  TextQuote,
   Underline,
   X,
 } from 'lucide-react';
@@ -23,12 +23,22 @@ import { Button } from '@/components/ui/button';
 import { cn, prettyFileType } from '@/lib/utils';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { Id } from '@/lib/api';
-import { useSendMessage, useUploadFile, useCreateDocument, useSyncDocument, useSetTypingState, useTypingStates, useRemoveTypingState } from '@/hooks/use-convex';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EmojiPicker, EmojiPickerContent, EmojiPickerSearch } from '@/components/custom/emoji-picker';
 import { TooltipButton } from '../custom/tooltip-button';
 import prettyBytes from 'pretty-bytes';
 import { useLocalStorage } from 'usehooks-ts';
+
+import { 
+  useSendMessage, 
+  useUploadFile, 
+  useCreateDocument, 
+  useSyncDocument, 
+  useSetTypingState, 
+  useTypingStates, 
+  useRemoveTypingState, 
+  useAgents 
+} from '@/hooks/use-convex';
 
 import { Paragraph } from '@tiptap/extension-paragraph';
 import Document from '@tiptap/extension-document';
@@ -39,21 +49,26 @@ import BoldExtension from '@tiptap/extension-bold';
 import UnderlineExtension from '@tiptap/extension-underline';
 import StrikeExtension from '@tiptap/extension-strike';
 import ItalicExtension from '@tiptap/extension-italic'
-import CharacterCount from '@tiptap/extension-character-count'
 import { MentionSuggestion } from '@/components/tiptap/suggestion';
 import { useUser } from '@clerk/clerk-react';
-// import { useDebounceCallback } from 'usehooks-ts';
 import { useInterval } from 'usehooks-ts';
+
+import type { UIMessage, useChat } from '@ai-sdk/react';
+import { UserMessageMetadata } from '@/lib/types';
 
 
 export function ChatInput({ 
   className, 
   channelId,
   threadId,
+  chat,
+  isLoading,
   ...props 
 }: React.ComponentProps<'div'> & {
   channelId: Id<'channels'>;
+  chat: ReturnType<typeof useChat<UIMessage<UserMessageMetadata>>>;
   threadId?: Id<'messages'>;
+  isLoading?: boolean;
 }) {
 
   const { user } = useUser();
@@ -65,7 +80,6 @@ export function ChatInput({
   }[]>([]);
 
   const [showFormatMenu, setShowFormatMenu] = useLocalStorage('showFormatMenu', true);
-  // const [isTyping, setIsTyping] = useState(false);
 
   const inputId = threadId || channelId;
   const sync = useSyncDocument(inputId);
@@ -75,6 +89,8 @@ export function ChatInput({
   const { data: typingStates } = useTypingStates(inputId);
   const { mutate: removeTypingState } = useRemoveTypingState();
   const [activeTypingUsers, setActiveTypingUsers] = useState<string[]>([]);
+
+  const { data: agents } = useAgents();
   
   useInterval(() => {
     setActiveTypingUsers(typingStates?.filter(state => Date.now() - state.lastUpdated < 5000).map(state => state.userId) ?? []);
@@ -100,40 +116,52 @@ export function ChatInput({
       ItalicExtension,
       UnderlineExtension,
       StrikeExtension,
-      CharacterCount,
       Placeholder.configure({ placeholder: 'Ask anything, use @ to mention' }),
-      MentionSuggestion,
+      MentionSuggestion({ agents: agents || [] }),
       ...(sync.extension ? [sync.extension] : []),
     ],
     editorProps: {
       attributes: {
-        class: "focus:outline-none text-sm min-h-12 max-h-100 overflow-auto"
+        class: "focus:outline-none text-sm min-h-12 max-h-100 overflow-visible"
       },
     },
     onFocus() {},
     onBlur() {},
-    onCreate() {},
+    onCreate(props) {props.editor.commands.focus('end')},
     onUpdate: ({editor}) => {
       if (editor.isFocused) {
         setTypingState({ fieldId: inputId, userId: user!.id });
       }
     }
-  }, [channelId, sync.isLoading])!;
+  }, [channelId, sync.isLoading, agents])!;
 
-  const isEmpty = !editor.getText().trim();
+  const isEmpty = !editor.getText().trim() && files.length === 0;
+  const submitDisabled = isEmpty || files.some(f => f.status === 'uploading') || isLoading;
   
   const handleSend = () => {
-    if (isEmpty) return;
-    const content = editor.getJSON().content ?? [];
-    const mentions = Object.fromEntries(
-      content
-        .flatMap(node => node.content)
-        .filter(node => node?.type === 'mention')
-        .map(node => [node?.attrs?.id, node])
-    );
-    console.log('metions', mentions)
+    if (submitDisabled) return;
+
     const message = editor.getText();
+    const mentions = editor.getJSON().content?.flatMap(node => node.content).filter(node => node?.type === 'mention').map(node => node?.attrs);
     sendMessage({ channelId, text: message, threadId, files: files.map(f => f.fileId as Id<'_storage'>) });
+
+    if (mentions && mentions.length > 0) {
+      const mentionItem = mentions[0]!;
+      chat.sendMessage({
+        role: 'user',
+        parts: [{
+          type: 'text',
+          text: message
+        }],
+        metadata: {
+          channelId,
+          agentId: mentionItem.id,
+          threadId,
+        }
+      })
+    }
+
+
     editor.commands.clearContent();
     setFiles([]);
 
@@ -169,12 +197,10 @@ export function ChatInput({
       className
     )} {...props}
     >
-
-      {JSON.stringify(activeTypingUsers)}
       {/* Context items */}
       <div className={cn("-mx-2 -mt-2 flex flex-row gap-2 border-b bg-muted/50 p-2 overflow-x-auto", files.length === 0 && "hidden")}>
         {files.map((item, index) => (
-          <div key={index} className="group/context-item flex flex-row items-center gap-1.5 rounded-md border bg-background p-1 relative">
+          <div key={index} className="group/context-item flex flex-row items-center gap-1.5 rounded-md border bg-background p-1 relative cursor-default">
             <div className='rounded p-2 size-8 flex items-center justify-center bg-muted'>
               {item.status === 'uploading' ? <Loader2 className="size-4 animate-spin text-muted-foreground" /> : <Table className="size-4" />}
             </div>
@@ -202,7 +228,7 @@ export function ChatInput({
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={cn(
             "hover:bg-transparent",
-            editor.isActive('bold') ? "bg-muted hover:bg-muted" : "",
+            editor.isActive('bold') ? "bg-muted hover:bg-muted [&>svg]:text-foreground" : "",
           )}
         >
           <Bold className="size-4" />
@@ -214,7 +240,7 @@ export function ChatInput({
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className={cn(
             "hover:bg-transparent",
-            editor.isActive('italic') ? "bg-muted hover:bg-muted" : "",
+            editor.isActive('italic') ? "bg-muted hover:bg-muted [&>svg]:text-foreground" : "",
           )}
         >
           <Italic className="size-4" />
@@ -226,7 +252,7 @@ export function ChatInput({
           onClick={() => editor.chain().focus().toggleUnderline().run()}
           className={cn(
             "hover:bg-transparent",
-            editor.isActive('underline') ? "bg-muted hover:bg-muted" : "",
+            editor.isActive('underline') ? "bg-muted hover:bg-muted [&>svg]:text-foreground" : "",
           )}
         >
           <Underline className="size-4" />
@@ -238,7 +264,7 @@ export function ChatInput({
           onClick={() => editor.chain().focus().toggleStrike().run()}
           className={cn(
             "hover:bg-transparent",
-            editor.isActive('strike') ? "bg-muted hover:bg-muted" : "",
+            editor.isActive('strike') ? "bg-muted hover:bg-muted [&>svg]:text-foreground" : "",
           )}
         >
           <Strikethrough className="size-4" />
@@ -249,6 +275,10 @@ export function ChatInput({
           variant="ghost"
           tooltip="Bulleted list"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={cn(
+            "hover:bg-transparent",
+            editor.isActive('bulletList') ? "bg-muted hover:bg-muted [&>svg]:text-foreground" : "",
+          )}
         >
           <List className="size-4" />
         </TooltipButton>
@@ -257,6 +287,10 @@ export function ChatInput({
           variant="ghost"
           tooltip="Numbered list"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={cn(
+            "hover:bg-transparent",
+            editor.isActive('orderedList') ? "bg-muted hover:bg-muted [&>svg]:text-foreground" : "",
+          )}
         >
           <ListOrdered className="size-4" />
         </TooltipButton>
@@ -265,6 +299,10 @@ export function ChatInput({
           variant="ghost"
           tooltip="Checklist"
           onClick={() => editor.chain().focus().toggleTaskList().run()}
+          className={cn(
+            "hover:bg-transparent",
+            editor.isActive('taskList') ? "bg-muted hover:bg-muted [&>svg]:text-foreground" : "",
+          )}
         >
           <ListChecks className="size-4" />
         </TooltipButton>
@@ -344,14 +382,17 @@ export function ChatInput({
           <Baseline className="size-4" />
         </TooltipButton>
 
-        <Button
-          size="icon"
-          className={cn("rounded-full ml-auto")} 
-          disabled={isEmpty || files.some(f => f.status === 'uploading')}
-          onClick={handleSend}
-        >
-          <ArrowUp className="size-4" />
-        </Button>
+        <div className='ml-auto flex flex-row items-center gap-1'>
+          {isLoading && <Loader className="size-5 animate-spin" />}
+          <Button
+            size="icon"
+            className={cn("rounded-full")}
+            disabled={submitDisabled}
+            onClick={handleSend}
+          >
+            <ArrowUp className="size-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

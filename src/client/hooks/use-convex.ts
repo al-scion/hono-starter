@@ -1,6 +1,6 @@
 import { useOrganization, useUser } from '@clerk/clerk-react';
 import { convexQuery, useConvexMutation } from '@convex-dev/react-query';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueries } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { convexApi, type Id } from '@/lib/api';
 import { useTiptapSync } from "@convex-dev/prosemirror-sync/tiptap";
@@ -368,5 +368,13 @@ export function useRemoveTypingState() {
     onError: (error) => {
       console.error('Failed to remove typing state:', error);
     },
+  });
+}
+
+export function useMultipleFileMetadata(storageIds: Id<'_storage'>[]) {
+  return useQueries({
+    queries: storageIds.map((storageId) => ({
+      ...convexQuery(convexApi.files.getFileMetadata, { storageId }),
+    })),
   });
 }

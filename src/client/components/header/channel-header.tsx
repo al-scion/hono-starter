@@ -5,6 +5,7 @@ import { Id } from "@/lib/api";
 import { useParams } from "@tanstack/react-router";
 import { useChannels } from "@/hooks/use-convex";
 import { Ellipsis, Hash } from "lucide-react";
+import { Facepile } from './facepile';
 
 export function ChannelHeader({
   className,
@@ -37,6 +38,7 @@ export function ChannelHeader({
       </Breadcrumb>
 
       <div className="flex flex-row items-center gap-2 ml-auto">
+        <Facepile />
         <Button variant="ghost" size="icon">
           <Ellipsis className="size-4" />
         </Button>

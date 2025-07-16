@@ -6,6 +6,7 @@ import persistentTextStreaming from '@convex-dev/persistent-text-streaming/conve
 import prosemirrorSync from "@convex-dev/prosemirror-sync/convex.config";
 
 const app = defineApp();
+
 app.use(presence);
 app.use(resend);
 app.use(persistentTextStreaming);
